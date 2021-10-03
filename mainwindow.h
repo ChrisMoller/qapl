@@ -1,8 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QFileSystemWatcher>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QTemporaryDir>
 #include <QTextEdit>
 
 #include "history.h"
@@ -23,8 +25,8 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
-  MainWindow *mainwin;
-  QLineEdit *watched;
+  MainWindow    *mainwin;
+  QLineEdit     *watched;
 };
 
 class MainWindow : public QMainWindow
@@ -38,12 +40,16 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void createMenubar ();
+  void update_screen (QString &errString, QString &outString);
 
   QLineEdit *inputLine;
   QTextEdit *outputLog;
   History   *history;
 
 private:
-  InputLineFilter *inputLineFilter;
+  InputLineFilter   *inputLineFilter;
+  QString            editor;
+  QTemporaryDir      tempdir;
+  QFileSystemWatcher watcher;
 };
 #endif // MAINWINDOW_H
