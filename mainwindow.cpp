@@ -219,6 +219,8 @@ MainWindow::MainWindow(QWidget *parent)
   createMenubar ();
 
   outputLog = new QTextEdit;
+  QFont outputFont ("DejaVu Sans Mono", 10);
+  outputLog->setCurrentFont (outputFont);
   outputLog->setReadOnly (true);
   layout->addWidget(outputLog);
 
