@@ -13,6 +13,7 @@ LIBS += -L`apl --show_lib_dir` -lapl -lreadline
 
 SOURCES += \
     aplexec.cpp \
+    edif.cpp \
     history.cpp \
     main.cpp \
     mainwindow.cpp

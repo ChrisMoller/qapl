@@ -23,6 +23,8 @@
 
 #include "aplexec.h"
 
+#define APL_VARIABLE "([⍙∆a-z][⍙∆_a-z0-9]*)"
+
 typedef enum {
   APL_OP_EXEC,
   APL_OP_COMMAND

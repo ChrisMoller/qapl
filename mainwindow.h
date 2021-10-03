@@ -46,7 +46,12 @@ public:
   QTextEdit *outputLog;
   History   *history;
 
+private slots:
+  void fileChanged(const QString &path);
+
 private:
+  void 		     show_fcn (QString text);
+  void 		     edit_fcn (QString text);
   InputLineFilter   *inputLineFilter;
   QString            editor;
   QTemporaryDir      tempdir;
