@@ -7,9 +7,6 @@
 #define LAMBDA_HEADER "lambda_"
 #define expvar "expvarλ"
 
-#define DEFAULT_EDITOR \
-   "emacs --geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
-
 /*******  WARNING:  TINKER WITH THESE ONLY IF YOU'RE A MASOCHIST!!  *******/
 #define CLINE_RE "(([[:alpha:]][[:alnum:]]*)\\s*)"
       // 0 = whole thing

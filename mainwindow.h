@@ -11,6 +11,25 @@
 
 #define toCString(v)       ((v).toStdString ().c_str ())
 
+#define SETTINGS_EDITOR            "Editor"
+#define SETTINGS_FONT_FAMILY       "FontFamily"
+#define SETTINGS_FONT_SIZE         "FontSize"
+#define SETTINGS_HEIGHT            "Height"
+#define SETTINGS_WIDTH             "Width"
+#define SETTINGS_BG_COLOUR         "BG_Colour"
+#define SETTINGS_FG_COLOUR         "FG_COLOUR"
+
+#define DEFAULT_EDITOR \
+   "emacs --geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
+
+#define DEFAULT_FONT_FAMILY "DejaVu Sans Mono"
+#define DEFAULT_FONT_SIZE   10
+#define DEFAULT_BG_COLOUR   "#f4f4d3"	// pale yellow
+#define DEFAULT_FG_COLOUR   "#000000"	// black
+#define DEFAULT_HEIGHT      512
+#define DEFAULT_WIDTH       640
+
+
 class MainWindow;
 
 class InputLineFilter : public QObject
@@ -52,6 +71,7 @@ private slots:
 private:
   void 		     show_fcn (QString text);
   void 		     edit_fcn (QString text);
+  void               setEditor ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
   QTemporaryDir      tempdir;

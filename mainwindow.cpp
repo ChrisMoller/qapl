@@ -188,6 +188,25 @@ void MainWindow::inputLineReturn()
   history->rebase ();
 }
 
+
+void
+MainWindow::setEditor ()
+{
+  bool ok;
+  QString text =
+    QInputDialog::getText(this,                                 // parent
+                          tr("Select editor"),  // title
+                          tr("Editor:"),                        // label
+                          QLineEdit::Normal,                    // echo mode
+                          editor,               // text
+                          &ok);
+  if (ok && !text.isEmpty()) {
+    QSettings settings;
+    editor = text;
+    settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
+  }
+}
+
 void MainWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -200,16 +219,58 @@ void MainWindow::createMenubar ()
   QAction *exitAct =
     fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
   exitAct->setShortcuts(QKeySequence::Quit);
+
+
+  QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
+
+  QAction *editorAct =
+    settingsMenu->addAction(tr("&Editor"), this, &MainWindow::setEditor);
+  editorAct->setStatusTip(tr("Set editor"));
 }
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
 {
+  QSettings settings;
+
+  editor = settings.value (SETTINGS_EDITOR).toString ();
+  if (editor.isEmpty ())
+    editor = QString (DEFAULT_EDITOR);
+
+  QString fontFamily = settings.value (SETTINGS_FONT_FAMILY).toString ();
+  if (fontFamily.isEmpty ())
+    fontFamily = QString (DEFAULT_FONT_FAMILY);
+  QString fontSizeString = settings.value (SETTINGS_FONT_SIZE).toString ();
+  int fontSize
+    = (fontSizeString.isEmpty ()) ? DEFAULT_FONT_SIZE : fontSizeString.toInt ();
+  //  QApplication::setFont (font);
+  
+  QString heightString = settings.value (SETTINGS_HEIGHT).toString ();
+  int height
+    = (heightString.isEmpty ()) ? DEFAULT_HEIGHT : heightString.toInt ();
+  
+  QString widthString = settings.value (SETTINGS_WIDTH).toString ();
+  int width
+    = (widthString.isEmpty ()) ? DEFAULT_WIDTH : widthString.toInt ();
+
+  QString foregroundString = settings.value (SETTINGS_FG_COLOUR).toString ();
+  if (foregroundString.isEmpty ())
+    foregroundString = QString (DEFAULT_FG_COLOUR);
+  QColor foreground (foregroundString);
+
+  QString backgroundString = settings.value (SETTINGS_BG_COLOUR).toString ();
+  if (backgroundString.isEmpty ())
+    backgroundString = QString (DEFAULT_BG_COLOUR);
+  QColor background (backgroundString);
+  
+  
+  
   history = new History ();
 
   connect(&watcher,
           &QFileSystemWatcher::fileChanged,
           this, &MainWindow::fileChanged);
+  this->resize (width, height);
 
   QWidget *mainWidget = new QWidget();
   setCentralWidget(mainWidget);
@@ -219,8 +280,13 @@ MainWindow::MainWindow(QWidget *parent)
   createMenubar ();
 
   outputLog = new QTextEdit;
-  QFont outputFont ("DejaVu Sans Mono", 10);
+  QFont outputFont (fontFamily, fontSize);
   outputLog->setCurrentFont (outputFont);
+
+  QPalette p = outputLog->palette(); 
+  p.setColor(QPalette::Base, background);
+  p.setColor(QPalette::Text, foreground); 
+  outputLog->setPalette(p);
   outputLog->setReadOnly (true);
   layout->addWidget(outputLog);
 
