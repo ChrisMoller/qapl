@@ -72,6 +72,7 @@ private:
   void 		     show_fcn (QString text);
   void 		     edit_fcn (QString text);
   void               setEditor ();
+  void               setFont ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
   QTemporaryDir      tempdir;

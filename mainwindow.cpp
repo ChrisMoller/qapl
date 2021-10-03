@@ -207,6 +207,23 @@ MainWindow::setEditor ()
   }
 }
 
+void
+MainWindow::setFont ()
+{
+  QFontDialog dialog ();
+  bool ok;
+  QFont newfont = QFontDialog::getFont(&ok, this);
+  if (ok) {
+    QSettings settings;
+    outputLog->setCurrentFont (newfont);
+    settings.setValue (SETTINGS_FONT_FAMILY, QVariant (newfont.family ()));
+    settings.setValue (SETTINGS_FONT_SIZE, QVariant (newfont.pointSize ()));
+  }
+  else {
+    // fixme bad font
+  }
+}
+
 void MainWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -226,6 +243,10 @@ void MainWindow::createMenubar ()
   QAction *editorAct =
     settingsMenu->addAction(tr("&Editor"), this, &MainWindow::setEditor);
   editorAct->setStatusTip(tr("Set editor"));
+  
+  QAction *fontAct =
+    settingsMenu->addAction(tr("&Font"), this, &MainWindow::setFont);
+  fontAct->setStatusTip(tr("Set font"));
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -234,34 +255,48 @@ MainWindow::MainWindow(QWidget *parent)
   QSettings settings;
 
   editor = settings.value (SETTINGS_EDITOR).toString ();
-  if (editor.isEmpty ())
+  if (editor.isEmpty ()) {
     editor = QString (DEFAULT_EDITOR);
+    settings.setValue (SETTINGS_EDITOR, QVariant (editor));
+  }
 
   QString fontFamily = settings.value (SETTINGS_FONT_FAMILY).toString ();
-  if (fontFamily.isEmpty ())
+  if (fontFamily.isEmpty ()) {
     fontFamily = QString (DEFAULT_FONT_FAMILY);
-  QString fontSizeString = settings.value (SETTINGS_FONT_SIZE).toString ();
-  int fontSize
-    = (fontSizeString.isEmpty ()) ? DEFAULT_FONT_SIZE : fontSizeString.toInt ();
+    settings.setValue (SETTINGS_FONT_FAMILY, QVariant (fontFamily));
+  }
+
+  qreal fontSize = DEFAULT_FONT_SIZE;
+  QVariant fontSizeVar = settings.value (SETTINGS_FONT_SIZE);
+  if (fontSizeVar.isValid ()) fontSize = fontSizeVar.toReal ();
+  else settings.setValue (SETTINGS_FONT_SIZE, fontSize);
+
   //  QApplication::setFont (font);
   
-  QString heightString = settings.value (SETTINGS_HEIGHT).toString ();
-  int height
-    = (heightString.isEmpty ()) ? DEFAULT_HEIGHT : heightString.toInt ();
+  int height = DEFAULT_HEIGHT;
+  QVariant heightVar = settings.value (SETTINGS_HEIGHT);
+  if (heightVar.isValid ()) height = heightVar.toInt ();
+  else settings.setValue (SETTINGS_HEIGHT, height);
   
-  QString widthString = settings.value (SETTINGS_WIDTH).toString ();
-  int width
-    = (widthString.isEmpty ()) ? DEFAULT_WIDTH : widthString.toInt ();
-
+  int width = DEFAULT_WIDTH;
+  QVariant widthVar = settings.value (SETTINGS_WIDTH);
+  if (widthVar.isValid ()) width = widthVar.toInt ();
+  else settings.setValue (SETTINGS_WIDTH, width);
+  
   QString foregroundString = settings.value (SETTINGS_FG_COLOUR).toString ();
-  if (foregroundString.isEmpty ())
+  if (foregroundString.isEmpty ()) {
     foregroundString = QString (DEFAULT_FG_COLOUR);
+    settings.setValue (SETTINGS_FG_COLOUR, QVariant (foregroundString));
+  }
   QColor foreground (foregroundString);
-
+  
   QString backgroundString = settings.value (SETTINGS_BG_COLOUR).toString ();
-  if (backgroundString.isEmpty ())
+  if (backgroundString.isEmpty ()) {
     backgroundString = QString (DEFAULT_BG_COLOUR);
+    settings.setValue (SETTINGS_BG_COLOUR, QVariant (backgroundString));
+  }
   QColor background (backgroundString);
+
   
   
   
