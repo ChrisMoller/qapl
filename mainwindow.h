@@ -23,6 +23,9 @@
 #define DEFAULT_EDITOR \
    "emacs --geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
 
+#define DEFAULT_GVIM_EDITOR \
+   "gvim -geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
+
 #define DEFAULT_FONT_FAMILY "DejaVu Sans Mono"
 #define DEFAULT_FONT_SIZE   10.0
 #define DEFAULT_BG_COLOUR   "#f4f4d3"	// pale yellow
@@ -75,11 +78,15 @@ private:
   void 		     edit_fcn (QString text);
   void               setEditor ();
   void               setFont ();
+  void               setBGColour ();
+  void               setFGColour ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
   QTemporaryDir      tempdir;
   QFileSystemWatcher watcher;
   QSettings  	     settings;
+  QColor	     bg_colour;
+  QColor	     fg_colour;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

@@ -211,17 +211,52 @@ void MainWindow::inputLineReturn()
 void
 MainWindow::setEditor ()
 {
-  bool ok;
-  QString text =
-    QInputDialog::getText(this,                                 // parent
-                          tr("Select editor"),  // title
-                          tr("Editor:"),                        // label
-                          QLineEdit::Normal,                    // echo mode
-                          editor,               // text
-                          &ok);
-  if (ok && !text.isEmpty()) {
-    editor = text;
-    settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  
+  QLineEdit *editorLine = new QLineEdit (editor);
+  layout->addWidget (editorLine, row, 0);
+
+  row++;
+
+  QPushButton *defaultEditor = new QPushButton (tr ("Use default editor"));
+  connect (defaultEditor,
+           &QAbstractButton::clicked,
+           [=](){
+	     editorLine->setText (QString (DEFAULT_EDITOR));
+	   });  
+  layout->addWidget (defaultEditor, row, 0, 1, 2);
+
+  row++;
+
+  QPushButton *defaultGvimEditor
+    = new QPushButton (tr ("Use default gvim editor"));
+  connect (defaultGvimEditor,
+           &QAbstractButton::clicked,
+           [=](){
+	     editorLine->setText (QString (DEFAULT_GVIM_EDITOR));
+	   });  
+  layout->addWidget (defaultGvimEditor, row, 0, 1, 2);
+
+  row++;  
+  
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
+  layout->addWidget (cancelButton, row, 0);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+                    &dialog, &QDialog::reject);
+
+  if (QDialog::Accepted == dialog.exec ()) {
+    editor = editorLine->text ();
+    settings.setValue (SETTINGS_EDITOR, QVariant (editor));
   }
 }
 
@@ -255,13 +290,14 @@ MainWindow::setFont ()
            [=](){
 	     fontSize->setValue (DEFAULT_FONT_SIZE);
 	     fontCombo->setCurrentFont (QString (DEFAULT_FONT_FAMILY));
-	   });
-  
+	   });  
   layout->addWidget (defaultFont, row, 0, 1, 2);
 
   row++;
   
   QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
   layout->addWidget (closeButton, row, 1);
   QObject::connect (closeButton, &QPushButton::clicked,
                     &dialog, &QDialog::accept);
@@ -275,6 +311,42 @@ MainWindow::setFont ()
     double ps = fontSize->value ();
     QFont outputFont (newFont.family (), ps);
     outputLog->setFont (outputFont);
+    settings.setValue (SETTINGS_FONT_FAMILY, QVariant (newFont.family ()));
+    settings.setValue (SETTINGS_FONT_SIZE, QVariant (ps));
+  }
+}
+
+void  MainWindow::setFGColour ()
+{
+  QColorDialog *colourDialog = new QColorDialog (fg_colour);
+  colourDialog->setCustomColor (0, QColor (DEFAULT_BG_COLOUR));
+  colourDialog->setCustomColor (1, QColor (DEFAULT_FG_COLOUR));
+  colourDialog->setWindowTitle (tr ("Select foreground colour"));
+  if (QDialog::Accepted == colourDialog->exec ()) {
+    fg_colour = colourDialog->selectedColor ();
+    QPalette p = outputLog->palette(); 
+    p.setColor(QPalette::Text, fg_colour);
+    //    p.setColor(QPalette::Base, bg_colour);
+    outputLog->setPalette(p);
+    //    fprintf (stderr, "fg %s\n", toCString (fg_colour.name ()));
+    settings.setValue (SETTINGS_FG_COLOUR, QVariant (fg_colour.name ()));
+  }
+}
+
+void  MainWindow::setBGColour ()
+{
+  QColorDialog *colourDialog = new QColorDialog (bg_colour);
+  colourDialog->setCustomColor (0, QColor (DEFAULT_BG_COLOUR));
+  colourDialog->setCustomColor (1, QColor (DEFAULT_FG_COLOUR));
+  colourDialog->setWindowTitle (tr ("Select background colour"));
+  if (QDialog::Accepted == colourDialog->exec ()) {
+    bg_colour = colourDialog->selectedColor ();
+    QPalette p = outputLog->palette(); 
+    //    p.setColor(QPalette::Text, fg_colour);
+    p.setColor(QPalette::Base, bg_colour);
+    outputLog->setPalette(p);
+    //    fprintf (stderr, "bg %s\n", toCString (bg_colour.name ()));
+    settings.setValue (SETTINGS_BG_COLOUR, QVariant (bg_colour.name ()));
   }
 }
 
@@ -301,6 +373,16 @@ void MainWindow::createMenubar ()
   QAction *fontAct =
     settingsMenu->addAction(tr("&Font"), this, &MainWindow::setFont);
   fontAct->setStatusTip(tr("Set font"));
+  
+  QAction *FGcolourAct =
+    settingsMenu->addAction(tr("&Foreground Colour"), this,
+			    &MainWindow::setFGColour);
+  FGcolourAct->setStatusTip(tr("Set foreground colour"));
+  
+  QAction *BGcolourAct =
+    settingsMenu->addAction(tr("&Background Colour"), this,
+			    &MainWindow::setBGColour);
+  BGcolourAct->setStatusTip(tr("Set background colour"));
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -340,14 +422,14 @@ MainWindow::MainWindow(QWidget *parent)
     foregroundString = QString (DEFAULT_FG_COLOUR);
     settings.setValue (SETTINGS_FG_COLOUR, QVariant (foregroundString));
   }
-  QColor foreground (foregroundString);
+  fg_colour = QColor (foregroundString);
   
   QString backgroundString = settings.value (SETTINGS_BG_COLOUR).toString ();
   if (backgroundString.isEmpty ()) {
     backgroundString = QString (DEFAULT_BG_COLOUR);
     settings.setValue (SETTINGS_BG_COLOUR, QVariant (backgroundString));
   }
-  QColor background (backgroundString);
+  bg_colour = QColor (backgroundString);
 
   
   
@@ -376,8 +458,8 @@ MainWindow::MainWindow(QWidget *parent)
 	   (double)font.pointSize ());
 #endif
   QPalette p = outputLog->palette(); 
-  p.setColor(QPalette::Base, background);
-  p.setColor(QPalette::Text, foreground); 
+  p.setColor(QPalette::Base, bg_colour);
+  p.setColor(QPalette::Text, fg_colour); 
   outputLog->setPalette(p);
   outputLog->setReadOnly (true);
   layout->addWidget(outputLog);
