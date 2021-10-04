@@ -167,24 +167,14 @@ MainWindow::update_screen (QString &errString, QString &outString)
   sb->setValue (sb->maximum ());
 }
 
-void MainWindow::inputLineReturn()
+void MainWindow::processLine (bool suppressOppressOutput, QString text)
 {
   QString outString;
   QString errString;
-  QString text = inputLine->text ();
-  text = text.trimmed ();
-  inputLine->clear ();
-
-  if (text.startsWith (QString ("∇"))) {
-    if (text.endsWith (QString ("∇"))) show_fcn (text);
-    else edit_fcn (text);
-    return;
-  }
-
-  history->insert (toCString (text));
-  outputLog->append ("      " + text);
-
+  
   LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text,outString, errString);
+
+  if (suppressOppressOutput) return;
   
   if (rc != LAE_NO_ERROR) {
     QString emsg =
@@ -202,8 +192,25 @@ void MainWindow::inputLineReturn()
   outputLog->ensureCursorVisible();
   QScrollBar *sb = outputLog->verticalScrollBar();
   sb->setValue (sb->maximum ());
+}
 
+void MainWindow::inputLineReturn()
+{
+  QString text = inputLine->text ();
+  text = text.trimmed ();
+  inputLine->clear ();
+
+  if (text.startsWith (QString ("∇"))) {
+    if (text.endsWith (QString ("∇"))) show_fcn (text);
+    else edit_fcn (text);
+    return;
+  }
+
+  history->insert (toCString (text));
   history->rebase ();
+  outputLog->append ("      " + text);
+
+  processLine (false, text);
 }
 
 
@@ -423,21 +430,9 @@ void MainWindow::createMenubar ()
     settingsMenu->addAction(tr("&Font"), this, &MainWindow::setFont);
   fontAct->setStatusTip(tr("Set font"));
 
-#if 1
   QAction *coloursAct =
     settingsMenu->addAction(tr("&Colours"), this, &MainWindow::setColours);
   coloursAct->setStatusTip(tr("Set colours"));
-#else
-  QAction *FGcolourAct =
-    settingsMenu->addAction(tr("&Foreground Colour"), this,
-			    &MainWindow::setFGColour);
-  FGcolourAct->setStatusTip(tr("Set foreground colour"));
-  
-  QAction *BGcolourAct =
-    settingsMenu->addAction(tr("&Background Colour"), this,
-			    &MainWindow::setBGColour);
-  BGcolourAct->setStatusTip(tr("Set background colour"));
-#endif
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -464,8 +459,6 @@ MainWindow::MainWindow(QWidget *parent)
   if (fontSizeVar.isValid ()) fontSize = fontSizeVar.toReal ();
   else settings->setValue (SETTINGS_FONT_SIZE, fontSize);
 
-  //  QApplication::setFont (font);
-  
   int height = DEFAULT_HEIGHT;
   QVariant heightVar = settings->value (SETTINGS_HEIGHT);
   if (heightVar.isValid ()) height = heightVar.toInt ();
@@ -535,6 +528,8 @@ MainWindow::MainWindow(QWidget *parent)
 		   SLOT(inputLineReturn()));
 
   mainWidget->setLayout(layout);
+
+  processLine (true, ")copy startup");
 }
 
 MainWindow::~MainWindow()

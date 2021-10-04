@@ -65,6 +65,7 @@ public:
   ~MainWindow();
   void createMenubar ();
   void update_screen (QString &errString, QString &outString);
+  void processLine (bool suppressOppressOutput, QString text);
 
   QLineEdit *inputLine;
   QTextEdit *outputLog;
