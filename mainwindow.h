@@ -4,6 +4,7 @@
 #include <QFileSystemWatcher>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QSettings>
 #include <QTemporaryDir>
 #include <QTextEdit>
 
@@ -23,7 +24,7 @@
    "emacs --geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
 
 #define DEFAULT_FONT_FAMILY "DejaVu Sans Mono"
-#define DEFAULT_FONT_SIZE   10
+#define DEFAULT_FONT_SIZE   10.0
 #define DEFAULT_BG_COLOUR   "#f4f4d3"	// pale yellow
 #define DEFAULT_FG_COLOUR   "#000000"	// black
 #define DEFAULT_HEIGHT      512
@@ -67,6 +68,7 @@ public:
 
 private slots:
   void fileChanged(const QString &path);
+  void byebye ();
 
 private:
   void 		     show_fcn (QString text);
@@ -77,5 +79,9 @@ private:
   QString            editor;
   QTemporaryDir      tempdir;
   QFileSystemWatcher watcher;
+  QSettings  	     settings;
+  
+protected:
+  void closeEvent(QCloseEvent *event) override;
 };
 #endif // MAINWINDOW_H

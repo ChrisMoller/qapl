@@ -1,4 +1,8 @@
+#include <QDoubleSpinBox>
+#include <QFontComboBox>
+#include <QLabel>
 #include <QMenuBar>
+#include <QPushButton>
 #include <QRegularExpression>
 #include <QVBoxLayout>
 
@@ -46,6 +50,21 @@ doPage (MainWindow  *mainwin, int dir)
                                    QTextCursor::MoveAnchor);
   }
 }
+
+void MainWindow::byebye ()
+{
+  QRect geo = this->geometry ();
+  settings.setValue (SETTINGS_WIDTH,  geo.width ());
+  settings.setValue (SETTINGS_HEIGHT, geo.height ());
+  QCoreApplication::quit ();
+}
+
+void
+MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
+{
+  byebye ();
+}
+
 
 bool
 InputLineFilter::eventFilter(QObject *obj, QEvent *event)
@@ -201,7 +220,6 @@ MainWindow::setEditor ()
                           editor,               // text
                           &ok);
   if (ok && !text.isEmpty()) {
-    QSettings settings;
     editor = text;
     settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
   }
@@ -210,17 +228,53 @@ MainWindow::setEditor ()
 void
 MainWindow::setFont ()
 {
-  QFontDialog dialog ();
-  bool ok;
-  QFont newfont = QFontDialog::getFont(&ok, this);
-  if (ok) {
-    QSettings settings;
-    outputLog->setCurrentFont (newfont);
-    settings.setValue (SETTINGS_FONT_FAMILY, QVariant (newfont.family ()));
-    settings.setValue (SETTINGS_FONT_SIZE, QVariant (newfont.pointSize ()));
-  }
-  else {
-    // fixme bad font
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+  
+  QFont font = outputLog->property("font").value<QFont>();
+
+  int row = 0;
+  
+  QFontComboBox *fontCombo = new QFontComboBox();
+  fontCombo->setCurrentFont (font);
+  fontCombo->setFontFilters (QFontComboBox::MonospacedFonts);
+  layout->addWidget (fontCombo, row, 0);
+
+  QDoubleSpinBox *fontSize = new QDoubleSpinBox ();
+  fontSize->setDecimals (1);
+  fontSize->setRange (2.0, 24.0);
+  fontSize->setValue ((double)font.pointSize ());
+  layout->addWidget (fontSize, row, 1);
+
+  row++;
+
+  QPushButton *defaultFont = new QPushButton (tr ("Use default font"));
+  connect (defaultFont,
+           &QAbstractButton::clicked,
+           [=](){
+	     fontSize->setValue (DEFAULT_FONT_SIZE);
+	     fontCombo->setCurrentFont (QString (DEFAULT_FONT_FAMILY));
+	   });
+  
+  layout->addWidget (defaultFont, row, 0, 1, 2);
+
+  row++;
+  
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
+  layout->addWidget (cancelButton, row, 0);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+                    &dialog, &QDialog::reject);
+
+  if (QDialog::Accepted == dialog.exec ()) {
+    QFont newFont = fontCombo->currentFont ();
+    double ps = fontSize->value ();
+    QFont outputFont (newFont.family (), ps);
+    outputLog->setFont (outputFont);
   }
 }
 
@@ -252,8 +306,6 @@ void MainWindow::createMenubar ()
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
 {
-  QSettings settings;
-
   editor = settings.value (SETTINGS_EDITOR).toString ();
   if (editor.isEmpty ()) {
     editor = QString (DEFAULT_EDITOR);
@@ -316,8 +368,13 @@ MainWindow::MainWindow(QWidget *parent)
 
   outputLog = new QTextEdit;
   QFont outputFont (fontFamily, fontSize);
-  outputLog->setCurrentFont (outputFont);
-
+  outputLog->setFont (outputFont);
+#if 0
+  QFont font = outputLog->property("font").value<QFont>();
+  fprintf (stderr, "font %s %g\n",
+	   toCString (font.family ()),
+	   (double)font.pointSize ());
+#endif
   QPalette p = outputLog->palette(); 
   p.setColor(QPalette::Base, background);
   p.setColor(QPalette::Text, foreground); 
