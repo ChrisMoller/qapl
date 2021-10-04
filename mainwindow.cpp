@@ -54,8 +54,8 @@ doPage (MainWindow  *mainwin, int dir)
 void MainWindow::byebye ()
 {
   QRect geo = this->geometry ();
-  settings.setValue (SETTINGS_WIDTH,  geo.width ());
-  settings.setValue (SETTINGS_HEIGHT, geo.height ());
+  settings->setValue (SETTINGS_WIDTH,  geo.width ());
+  settings->setValue (SETTINGS_HEIGHT, geo.height ());
   QCoreApplication::quit ();
 }
 
@@ -181,7 +181,6 @@ void MainWindow::inputLineReturn()
     return;
   }
 
-  outputLog->append (text);
   history->insert (toCString (text));
   outputLog->append ("      " + text);
 
@@ -256,7 +255,7 @@ MainWindow::setEditor ()
 
   if (QDialog::Accepted == dialog.exec ()) {
     editor = editorLine->text ();
-    settings.setValue (SETTINGS_EDITOR, QVariant (editor));
+    settings->setValue (SETTINGS_EDITOR, QVariant (editor));
   }
 }
 
@@ -311,8 +310,8 @@ MainWindow::setFont ()
     double ps = fontSize->value ();
     QFont outputFont (newFont.family (), ps);
     outputLog->setFont (outputFont);
-    settings.setValue (SETTINGS_FONT_FAMILY, QVariant (newFont.family ()));
-    settings.setValue (SETTINGS_FONT_SIZE, QVariant (ps));
+    settings->setValue (SETTINGS_FONT_FAMILY, QVariant (newFont.family ()));
+    settings->setValue (SETTINGS_FONT_SIZE, QVariant (ps));
   }
 }
 
@@ -327,7 +326,7 @@ void  MainWindow::setFGColour ()
     QPalette p = outputLog->palette(); 
     p.setColor(QPalette::Text, fg_colour);
     outputLog->setPalette(p);
-    settings.setValue (SETTINGS_FG_COLOUR, QVariant (fg_colour.name ()));
+    settings->setValue (SETTINGS_FG_COLOUR, QVariant (fg_colour.name ()));
   }
 }
 
@@ -342,7 +341,7 @@ void  MainWindow::setBGColour ()
     QPalette p = outputLog->palette(); 
     p.setColor(QPalette::Base, bg_colour);
     outputLog->setPalette(p);
-    settings.setValue (SETTINGS_BG_COLOUR, QVariant (bg_colour.name ()));
+    settings->setValue (SETTINGS_BG_COLOUR, QVariant (bg_colour.name ()));
   }
 }
 
@@ -381,10 +380,10 @@ MainWindow::setColours ()
 	     p.setColor(QPalette::Base, bg_colour);
 	     p.setColor(QPalette::Text, fg_colour);
 	     outputLog->setPalette(p);
-	     settings.setValue (SETTINGS_BG_COLOUR,
-				QVariant (bg_colour.name ()));
-	     settings.setValue (SETTINGS_FG_COLOUR,
-				QVariant (fg_colour.name ()));
+	     settings->setValue (SETTINGS_BG_COLOUR,
+				 QVariant (bg_colour.name ()));
+	     settings->setValue (SETTINGS_FG_COLOUR,
+				 QVariant (fg_colour.name ()));
 	   });
   layout->addWidget (defaultColours, row, 0);
 
@@ -444,46 +443,50 @@ void MainWindow::createMenubar ()
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
 {
-  editor = settings.value (SETTINGS_EDITOR).toString ();
+  static QSettings lsettings(SETTINGS_ORGANISATION,
+			     QCoreApplication::applicationName ());;
+  settings = &lsettings;
+
+  editor = settings->value (SETTINGS_EDITOR).toString ();
   if (editor.isEmpty ()) {
     editor = QString (DEFAULT_EDITOR);
-    settings.setValue (SETTINGS_EDITOR, QVariant (editor));
+    settings->setValue (SETTINGS_EDITOR, QVariant (editor));
   }
 
-  QString fontFamily = settings.value (SETTINGS_FONT_FAMILY).toString ();
+  QString fontFamily = settings->value (SETTINGS_FONT_FAMILY).toString ();
   if (fontFamily.isEmpty ()) {
     fontFamily = QString (DEFAULT_FONT_FAMILY);
-    settings.setValue (SETTINGS_FONT_FAMILY, QVariant (fontFamily));
+    settings->setValue (SETTINGS_FONT_FAMILY, QVariant (fontFamily));
   }
 
   qreal fontSize = DEFAULT_FONT_SIZE;
-  QVariant fontSizeVar = settings.value (SETTINGS_FONT_SIZE);
+  QVariant fontSizeVar = settings->value (SETTINGS_FONT_SIZE);
   if (fontSizeVar.isValid ()) fontSize = fontSizeVar.toReal ();
-  else settings.setValue (SETTINGS_FONT_SIZE, fontSize);
+  else settings->setValue (SETTINGS_FONT_SIZE, fontSize);
 
   //  QApplication::setFont (font);
   
   int height = DEFAULT_HEIGHT;
-  QVariant heightVar = settings.value (SETTINGS_HEIGHT);
+  QVariant heightVar = settings->value (SETTINGS_HEIGHT);
   if (heightVar.isValid ()) height = heightVar.toInt ();
-  else settings.setValue (SETTINGS_HEIGHT, height);
+  else settings->setValue (SETTINGS_HEIGHT, height);
   
   int width = DEFAULT_WIDTH;
-  QVariant widthVar = settings.value (SETTINGS_WIDTH);
+  QVariant widthVar = settings->value (SETTINGS_WIDTH);
   if (widthVar.isValid ()) width = widthVar.toInt ();
-  else settings.setValue (SETTINGS_WIDTH, width);
+  else settings->setValue (SETTINGS_WIDTH, width);
   
-  QString foregroundString = settings.value (SETTINGS_FG_COLOUR).toString ();
+  QString foregroundString = settings->value (SETTINGS_FG_COLOUR).toString ();
   if (foregroundString.isEmpty ()) {
     foregroundString = QString (DEFAULT_FG_COLOUR);
-    settings.setValue (SETTINGS_FG_COLOUR, QVariant (foregroundString));
+    settings->setValue (SETTINGS_FG_COLOUR, QVariant (foregroundString));
   }
   fg_colour = QColor (foregroundString);
   
-  QString backgroundString = settings.value (SETTINGS_BG_COLOUR).toString ();
+  QString backgroundString = settings->value (SETTINGS_BG_COLOUR).toString ();
   if (backgroundString.isEmpty ()) {
     backgroundString = QString (DEFAULT_BG_COLOUR);
-    settings.setValue (SETTINGS_BG_COLOUR, QVariant (backgroundString));
+    settings->setValue (SETTINGS_BG_COLOUR, QVariant (backgroundString));
   }
   bg_colour = QColor (backgroundString);
 
@@ -536,5 +539,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+  delete history;
 }
 

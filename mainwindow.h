@@ -12,6 +12,7 @@
 
 #define toCString(v)       ((v).toStdString ().c_str ())
 
+#define SETTINGS_ORGANISATION	   "qapl"
 #define SETTINGS_EDITOR            "Editor"
 #define SETTINGS_FONT_FAMILY       "FontFamily"
 #define SETTINGS_FONT_SIZE         "FontSize"
@@ -85,7 +86,7 @@ private:
   QString            editor;
   QTemporaryDir      tempdir;
   QFileSystemWatcher watcher;
-  QSettings  	     settings;
+  QSettings  	    *settings;
   QColor	     bg_colour;
   QColor	     fg_colour;
   
