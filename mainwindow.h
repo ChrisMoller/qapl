@@ -80,6 +80,7 @@ private:
   void               setFont ();
   void               setBGColour ();
   void               setFGColour ();
+  void               setColours ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
   QTemporaryDir      tempdir;

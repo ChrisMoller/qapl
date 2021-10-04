@@ -326,9 +326,7 @@ void  MainWindow::setFGColour ()
     fg_colour = colourDialog->selectedColor ();
     QPalette p = outputLog->palette(); 
     p.setColor(QPalette::Text, fg_colour);
-    //    p.setColor(QPalette::Base, bg_colour);
     outputLog->setPalette(p);
-    //    fprintf (stderr, "fg %s\n", toCString (fg_colour.name ()));
     settings.setValue (SETTINGS_FG_COLOUR, QVariant (fg_colour.name ()));
   }
 }
@@ -342,12 +340,64 @@ void  MainWindow::setBGColour ()
   if (QDialog::Accepted == colourDialog->exec ()) {
     bg_colour = colourDialog->selectedColor ();
     QPalette p = outputLog->palette(); 
-    //    p.setColor(QPalette::Text, fg_colour);
     p.setColor(QPalette::Base, bg_colour);
     outputLog->setPalette(p);
-    //    fprintf (stderr, "bg %s\n", toCString (bg_colour.name ()));
     settings.setValue (SETTINGS_BG_COLOUR, QVariant (bg_colour.name ()));
   }
+}
+
+void
+MainWindow::setColours ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  
+  QPushButton *setFG = new QPushButton (tr ("Set foreground colour"));
+  connect (setFG,
+           &QAbstractButton::clicked,
+           [=](){ setFGColour (); });
+  layout->addWidget (setFG, row, 0);
+
+  row++;
+
+  QPushButton *setBG = new QPushButton (tr ("Set background colour"));
+  connect (setBG,
+           &QAbstractButton::clicked,
+           [=](){ setBGColour (); });
+  layout->addWidget (setBG, row, 0);
+
+  row++;
+
+  QPushButton *defaultColours = new QPushButton (tr ("Set default colours"));
+  connect (defaultColours,
+           &QAbstractButton::clicked,
+           [=](){
+	     QPalette p = outputLog->palette();
+	     bg_colour = QColor (DEFAULT_BG_COLOUR);
+	     fg_colour = QColor (DEFAULT_FG_COLOUR);
+	     p.setColor(QPalette::Base, bg_colour);
+	     p.setColor(QPalette::Text, fg_colour);
+	     outputLog->setPalette(p);
+	     settings.setValue (SETTINGS_BG_COLOUR,
+				QVariant (bg_colour.name ()));
+	     settings.setValue (SETTINGS_FG_COLOUR,
+				QVariant (fg_colour.name ()));
+	   });
+  layout->addWidget (defaultColours, row, 0);
+
+  row++;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+  
+  dialog.exec ();
 }
 
 void MainWindow::createMenubar ()
@@ -373,7 +423,12 @@ void MainWindow::createMenubar ()
   QAction *fontAct =
     settingsMenu->addAction(tr("&Font"), this, &MainWindow::setFont);
   fontAct->setStatusTip(tr("Set font"));
-  
+
+#if 1
+  QAction *coloursAct =
+    settingsMenu->addAction(tr("&Colours"), this, &MainWindow::setColours);
+  coloursAct->setStatusTip(tr("Set colours"));
+#else
   QAction *FGcolourAct =
     settingsMenu->addAction(tr("&Foreground Colour"), this,
 			    &MainWindow::setFGColour);
@@ -383,6 +438,7 @@ void MainWindow::createMenubar ()
     settingsMenu->addAction(tr("&Background Colour"), this,
 			    &MainWindow::setBGColour);
   BGcolourAct->setStatusTip(tr("Set background colour"));
+#endif
 }
 
 MainWindow::MainWindow(QWidget *parent)
