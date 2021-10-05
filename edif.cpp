@@ -44,7 +44,7 @@ void  MainWindow::edit_fcn (QString text)
    if (isLambda) {
      if (isNew || ((list.size () == 3) && (list[2].isEmpty ())))
        fn = QString ("%1/%2%3.apl").
-	 arg (tempdir.path ()).arg (LAMBDA_HEADER).arg (text);
+	 arg (tempdir.path (), LAMBDA_HEADER, text);
      else if ((list.size () != 0) && (list.size () != 2)){
        QMessageBox msgBox (QMessageBox::Warning,
 			   QString ("Invalid lambda"),
@@ -55,7 +55,7 @@ void  MainWindow::edit_fcn (QString text)
      }	
    }
    else
-     fn = QString ("%1/%2.apl").arg (tempdir.path ()).arg (text);
+     fn = QString ("%1/%2.apl").arg (tempdir.path (), text);
    QFile file (fn);
    if  (file.open (QIODevice::WriteOnly | QIODevice::Text)) {
      QTextStream out(&file);
@@ -157,7 +157,7 @@ MainWindow::fileChanged(const QString &path)
         QString stmt = fcn.last ().trimmed ();
         QString cmd = QString (")erase %1").arg (name);
         AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-        cmd = QString ("%1←{%2}").arg (name).arg (stmt);
+        cmd = QString ("%1←{%2}").arg (name, stmt);
         AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
         update_screen (errString, outString);
       }

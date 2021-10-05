@@ -408,6 +408,31 @@ MainWindow::setColours ()
   dialog.exec ();
 }
 
+void MainWindow::read_script (QString pfn) {
+  QFile pfile(pfn);
+  if (pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+#define BUFFER_SIZE 512
+    char buffer[BUFFER_SIZE];
+    qint64 charsIn;
+    while (0 < (charsIn = pfile.readLine(buffer, BUFFER_SIZE))) {
+      if (charsIn > 0) {
+	QString pb (buffer);
+	QString pbt = pb.trimmed ();
+	if (pbt.endsWith ("\n")) pbt.chop (1);
+	if (!pbt.startsWith ("#")) {
+	  bool suppress = true;
+	  if (pbt.startsWith ("!")) {
+	    pbt.remove (0, 1);
+	    suppress = false;
+	  }
+	  processLine (suppress, pbt);
+	}
+      }
+    }
+    pfile.close ();
+  }
+}
+
 void MainWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -543,31 +568,14 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   
   if (!parser.isSet (OPT_noINIT)) {
     QString pfn = QString ("%1/.config/%2/%3.init")
-      .arg (getenv ("HOME"))
-      .arg (APPLICATION_ORGANISATION).
-      arg (APPLICATION_NAME);
-    QFile pfile(pfn);
-    if (pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
-#define BUFFER_SIZE 512
-      char buffer[BUFFER_SIZE];
-      qint64 charsIn;
-      while (0 < (charsIn = pfile.readLine(buffer, BUFFER_SIZE))) {
-	if (charsIn > 0) {
-	  QString pb (buffer);
-	  QString pbt = pb.trimmed ();
-	  if (pbt.endsWith ("\n")) pbt.chop (1);
-	  if (!pbt.startsWith ("#")) {
-	    bool suppress = true;
-	    if (pbt.startsWith ("!")) {
-	      pbt.remove (0, 1);
-	      suppress = false;
-	    }
-	    processLine (suppress, pbt);
-	  }
-	}
-      }
-      pfile.close ();
-    }
+      .arg (getenv ("HOME"), APPLICATION_ORGANISATION, APPLICATION_NAME);
+    read_script (pfn);
+  }
+
+  QStringList pargs = parser.positionalArguments();
+  if (0 < pargs.size ()) {
+    for (int i = 0; i <  pargs.size (); i++)
+      read_script (pargs[i]);
   }
 }
 

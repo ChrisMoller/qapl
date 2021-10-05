@@ -70,6 +70,7 @@ public:
   void createMenubar ();
   void update_screen (QString &errString, QString &outString);
   void processLine (bool suppressOppressOutput, QString text);
+  void read_script (QString pfn);
 
   QLineEdit *inputLine;
   QTextEdit *outputLog;
