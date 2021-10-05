@@ -5,18 +5,15 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QVBoxLayout>
+#include <signal.h>
 
 #include "mainwindow.h"
+#include "optionstrings.h"
 #include "aplexec.h"
 #include "history.h"
 
 #include <apl/libapl.h>
 
-#if 0
-#define LAMBDA_HEADER "lambda_"
-#define EDITOR \
-   "emacs --geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
-#endif
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
@@ -53,6 +50,11 @@ doPage (MainWindow  *mainwin, int dir)
 
 void MainWindow::byebye ()
 {
+  for (int i = 0; i < processList.size (); i++) {
+    qint64 pid = processList[i];
+    kill (pid, SIGTERM);
+  }
+  tempdir.remove ();			// just in case
   QRect geo = this->geometry ();
   settings->setValue (SETTINGS_WIDTH,  geo.width ());
   settings->setValue (SETTINGS_HEIGHT, geo.height ());
@@ -435,11 +437,21 @@ void MainWindow::createMenubar ()
   coloursAct->setStatusTip(tr("Set colours"));
 }
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   : QMainWindow(parent)
 {
+#if 1
+  static QSettings lsettings;
+#else
   static QSettings lsettings(SETTINGS_ORGANISATION,
 			     QCoreApplication::applicationName ());;
+#endif
+  
+  if (!parser.isSet (OPT_noCONT)) {
+    fprintf (stderr, "noCont clear\n");
+  }
+
+  
   settings = &lsettings;
 
   editor = settings->value (SETTINGS_EDITOR).toString ();
@@ -481,10 +493,7 @@ MainWindow::MainWindow(QWidget *parent)
     backgroundString = QString (DEFAULT_BG_COLOUR);
     settings->setValue (SETTINGS_BG_COLOUR, QVariant (backgroundString));
   }
-  bg_colour = QColor (backgroundString);
-
-  
-  
+  bg_colour = QColor (backgroundString);  
   
   history = new History ();
 

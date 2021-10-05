@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QCommandLineParser>
 #include <QFileSystemWatcher>
 #include <QLineEdit>
 #include <QMainWindow>
@@ -12,7 +13,10 @@
 
 #define toCString(v)       ((v).toStdString ().c_str ())
 
-#define SETTINGS_ORGANISATION	   "qapl"
+#define APPLICATION_ORGANISATION   "qapl"
+#define APPLICATION_NAME	   "qapl"
+#define APPLICATION_VERSION	   "1.0"
+
 #define SETTINGS_EDITOR            "Editor"
 #define SETTINGS_FONT_FAMILY       "FontFamily"
 #define SETTINGS_FONT_SIZE         "FontSize"
@@ -61,7 +65,7 @@ public slots:
   void inputLineReturn ();
 
 public:
-  MainWindow(QWidget *parent = nullptr);
+  MainWindow(QCommandLineParser &parser, QWidget *parent = nullptr);
   ~MainWindow();
   void createMenubar ();
   void update_screen (QString &errString, QString &outString);
@@ -90,6 +94,7 @@ private:
   QSettings  	    *settings;
   QColor	     bg_colour;
   QColor	     fg_colour;
+  QVector<qint64>    processList;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

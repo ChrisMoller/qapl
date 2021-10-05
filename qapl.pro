@@ -21,7 +21,8 @@ SOURCES += \
 HEADERS += \
     aplexec.h \
     history.h \
-    mainwindow.h
+    mainwindow.h \
+    optionstrings.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

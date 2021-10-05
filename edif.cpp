@@ -101,6 +101,11 @@ void  MainWindow::edit_fcn (QString text)
      args << fn;
 
      QProcess *edit = new QProcess ();
+     connect (edit, &QProcess::started,
+	      [=]() {
+		qint64 pid = edit->processId ();
+		processList.append (pid);
+	      });
      watcher.addPath (fn);
      edit->start (real_ed, args);
    }
