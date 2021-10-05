@@ -83,6 +83,7 @@ private slots:
 private:
   void 		     show_fcn (QString text);
   void 		     edit_fcn (QString text);
+  void               wsLoad ();
   void               setEditor ();
   void               setFont ();
   void               setBGColour ();
@@ -96,6 +97,7 @@ private:
   QColor	     bg_colour;
   QColor	     fg_colour;
   QVector<qint64>    processList;
+  QString 	     libpath;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

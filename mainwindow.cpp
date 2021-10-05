@@ -215,6 +215,88 @@ void MainWindow::inputLineReturn()
   processLine (false, text);
 }
 
+void
+MainWindow::wsLoad ()
+{
+   /***
+      xml )load )copy
+      atf  )in
+      
+      apl not work
+      xml works
+      atf works but no msg
+      
+   ***/
+
+  static bool protect = false;
+  static bool do_load = true;
+  QString filter = QString ("*.xml *.atf");
+  QFileDialog dialog (this, QString ("Open APL file"), libpath, filter);
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+  QLayout *layout = dialog.layout ();
+
+  QGroupBox *gbox = new QGroupBox ();
+  QHBoxLayout *btnlayout = new QHBoxLayout ();
+  gbox->setLayout (btnlayout);
+  QCheckBox *button_protected  = new QCheckBox ("Protected", this);
+  QRadioButton *button_load    = new QRadioButton ("Load", this);
+  QRadioButton *button_copy    = new QRadioButton ("Copy", this);
+  button_load->setChecked (do_load);
+  btnlayout->addWidget (button_protected);
+  btnlayout->addWidget (button_load);
+  btnlayout->addWidget (button_copy);
+  layout->addWidget (gbox);
+
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  QString outString;
+  QString errString;
+  if (dialog.exec() == QDialog::Accepted) {
+    do_load = button_load->isChecked();
+    protect =
+      (button_protected->checkState() == Qt::Checked) ? true : false;
+    QString fn = dialog.selectedFiles().first();
+    if (fn.endsWith (QString (".xml"),Qt::CaseInsensitive)) {
+      if (do_load && protect) {
+        QMessageBox msgBox;
+  msgBox.setText("Loaded workspaces cannot be protected.  Use )copy instead..");
+        msgBox.setIcon (QMessageBox::Warning);
+        msgBox.exec();
+      }
+      else {
+        QString op =
+          do_load
+          ? QString (")load")
+          : (protect ? QString (")pcopy") : QString (")copy"));
+        QString cmd = QString ("%1 %2").arg (op).arg (fn);
+#if 1
+	processLine (false, cmd);
+#else
+        AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+#endif
+      }
+    }
+    else if (fn.endsWith (QString (".atf"),Qt::CaseInsensitive)) {
+      QString op =
+        protect ? QString (")pin") : QString (")in");
+      QString cmd = QString ("%1 %2").arg(op).arg (fn);
+#if 1
+	processLine (false, cmd);
+#else
+      AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+#endif
+    }
+    else {
+      QMessageBox msgBox;
+      msgBox.setText("File type not supported.");
+      msgBox.setIcon (QMessageBox::Warning);
+      msgBox.exec();
+    }
+  }
+  //  update_screen (errString, outString);
+  delete gbox;
+}
+
 
 void
 MainWindow::setEditor ()
@@ -437,13 +519,19 @@ void MainWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
+  const QIcon openIcon =
+    QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
+  QAction *loadAct =
+    fileMenu->addAction(openIcon, tr("&Load"), this, &MainWindow::wsLoad);
+  loadAct->setStatusTip(tr("Set font"));
+
   fileMenu->addSeparator();
 
   const QIcon exitIcon =
     QIcon::fromTheme("application-exit",
                      QIcon(":/images/application-exit.png"));
   QAction *exitAct =
-    fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
+    fileMenu->addAction(exitIcon, tr("E&xit"), this, &MainWindow::byebye);
   exitAct->setShortcuts(QKeySequence::Quit);
 
 
@@ -465,13 +553,34 @@ void MainWindow::createMenubar ()
 MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   : QMainWindow(parent)
 {
-#if 1
-  static QSettings lsettings;
-#else
-  static QSettings lsettings(SETTINGS_ORGANISATION,
-			     QCoreApplication::applicationName ());;
-#endif
+  QString pfn = QString ("%1/.gnu-apl/preferences").arg (getenv ("HOME"));
+  QFile pfile(pfn);
+  if (!pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+    QString pfn = QString ("%1/.config/gnu-apl/preferences")
+      .arg (getenv ("HOME"));
+    pfile.setFileName (pfn);
+  }
+  if (pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+#define BUFFER_SIZE 512
+    char buffer[BUFFER_SIZE];
+    while (0 < pfile.readLine(buffer, BUFFER_SIZE)) {
+      if (strcasestr (buffer, "LIBREF-0")) {
+        char path[BUFFER_SIZE];
+        if (0 < sscanf (buffer, " %*s %s \n", path))
+          libpath = QString (path);
+      }
+    }
+    pfile.close ();
+  }
+
+  {		// override if env vbl exists
+    char *lp = getenv ("APL_LIB_ROOT");
+    if (lp)
+      libpath = QString (lp) + "/workspaces";
+  }
   
+
+  static QSettings lsettings;
   settings = &lsettings;
 
   editor = settings->value (SETTINGS_EDITOR).toString ();
