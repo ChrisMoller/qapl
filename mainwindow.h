@@ -38,6 +38,12 @@
 #define DEFAULT_HEIGHT      512
 #define DEFAULT_WIDTH       640
 
+typedef enum {
+  SAVE_MODE_NONE,
+  SAVE_MODE_SAVE,
+  SAVE_MODE_DUMP,
+  SAVE_MODE_OUT
+} save_mode_e;
 
 class MainWindow;
 
@@ -84,6 +90,8 @@ private:
   void 		     show_fcn (QString text);
   void 		     edit_fcn (QString text);
   void               wsLoad ();
+  bool               wsSave ();
+  bool               wsSaveAs ();
   void               setEditor ();
   void               setFont ();
   void               setBGColour ();
@@ -98,6 +106,9 @@ private:
   QColor	     fg_colour;
   QVector<qint64>    processList;
   QString 	     libpath;
+  save_mode_e        save_mode;                                                 
+  QString    	     curFile;
+
   
 protected:
   void closeEvent(QCloseEvent *event) override;

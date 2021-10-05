@@ -249,8 +249,6 @@ MainWindow::wsLoad ()
 
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptOpen);
-  QString outString;
-  QString errString;
   if (dialog.exec() == QDialog::Accepted) {
     do_load = button_load->isChecked();
     protect =
@@ -269,22 +267,14 @@ MainWindow::wsLoad ()
           ? QString (")load")
           : (protect ? QString (")pcopy") : QString (")copy"));
         QString cmd = QString ("%1 %2").arg (op).arg (fn);
-#if 1
 	processLine (false, cmd);
-#else
-        AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
-#endif
       }
     }
     else if (fn.endsWith (QString (".atf"),Qt::CaseInsensitive)) {
       QString op =
         protect ? QString (")pin") : QString (")in");
       QString cmd = QString ("%1 %2").arg(op).arg (fn);
-#if 1
 	processLine (false, cmd);
-#else
-      AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
-#endif
     }
     else {
       QMessageBox msgBox;
@@ -293,10 +283,105 @@ MainWindow::wsLoad ()
       msgBox.exec();
     }
   }
-  //  update_screen (errString, outString);
   delete gbox;
 }
 
+bool
+MainWindow::wsSave()
+{
+/***
+    )save and )dump need wsid or argument
+    )out always needs argument
+ ***/
+  bool rc = false;
+  QString op;
+  switch(save_mode) {
+  case SAVE_MODE_NONE:
+    break;
+  case SAVE_MODE_SAVE:
+    op = QString (")save");
+    break;
+  case SAVE_MODE_DUMP:
+    op = QString (")save");
+    break;
+  case SAVE_MODE_OUT:
+    break;
+  }
+  if (!op.isEmpty ()) {
+#if 1
+    processLine (false, op);
+#else
+    AplExec::aplExec (APL_OP_EXEC, op, outString, errString);
+    update_screen (errString, outString);
+#endif
+    rc = true;
+  }
+  return rc;
+}
+
+bool
+MainWindow::wsSaveAs()
+{
+  bool rc = false;
+  QFileDialog dialog(this);
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+  QLayout *layout = dialog.layout ();
+  QGroupBox *gbox = new QGroupBox ("Save mode");
+  QHBoxLayout *btnlayout = new QHBoxLayout ();
+  gbox->setLayout (btnlayout);
+  QRadioButton *button_save = new QRadioButton("Save", this);
+  QRadioButton *button_dump = new QRadioButton("Dump", this);
+  QRadioButton *button_out  = new QRadioButton("Out", this);
+  btnlayout->addWidget (button_save);
+  btnlayout->addWidget (button_dump);
+  btnlayout->addWidget (button_out);
+  switch (save_mode) {
+  case  SAVE_MODE_NONE:
+    break;
+  case  SAVE_MODE_SAVE:
+    button_save->setChecked (true);
+    break;
+  case  SAVE_MODE_DUMP:
+    button_dump->setChecked (true);
+    break;
+  case  SAVE_MODE_OUT:
+    button_out->setChecked (true);
+    break;
+  }
+  layout->addWidget (gbox);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+  int drc = dialog.exec();
+  delete gbox;
+  if (drc == QDialog::Accepted) {
+    QString op;
+    curFile = dialog.selectedFiles().first();
+    if (button_save->isChecked ()) {
+      if (!curFile.endsWith (".xml", Qt::CaseInsensitive))
+        curFile.append (".xml");
+      save_mode = SAVE_MODE_SAVE;
+      op = QString (")save");
+    }
+    else if (button_dump->isChecked ()) {
+      save_mode = SAVE_MODE_DUMP;
+      if (!curFile.endsWith (".apl", Qt::CaseInsensitive))
+        curFile.append (".apl");
+      op = QString (")dump");
+    }
+    else if (button_out->isChecked ()) {
+      save_mode = SAVE_MODE_OUT;
+      if (!curFile.endsWith (".atf", Qt::CaseInsensitive))
+        curFile.append (".atf");
+      op = QString (")out");
+    }
+    if (!op.isEmpty ()) {
+      QString cmd = QString ("%1 %2").arg (op).arg (curFile);
+      processLine (false, cmd);
+      rc = true;
+    }
+  }
+  return rc;
+}
 
 void
 MainWindow::setEditor ()
@@ -523,7 +608,22 @@ void MainWindow::createMenubar ()
     QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
   QAction *loadAct =
     fileMenu->addAction(openIcon, tr("&Load"), this, &MainWindow::wsLoad);
-  loadAct->setStatusTip(tr("Set font"));
+  loadAct->setShortcuts(QKeySequence::Open);
+  loadAct->setStatusTip(tr("Load workspace"));
+
+  const QIcon saveIcon =
+    QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
+  QAction *saveAct = 
+    fileMenu->addAction(openIcon, tr("&Save"), this, &MainWindow::wsSave);
+  saveAct->setShortcuts(QKeySequence::Save);
+  saveAct->setStatusTip(tr("Save workspace"));
+
+  const QIcon saveAsIcon = QIcon::fromTheme("document-save-as");
+  QAction *saveAsAct =
+    fileMenu->addAction(saveAsIcon, tr("Save &As..."), this,
+                        &MainWindow::wsSaveAs);
+  saveAsAct->setShortcuts(QKeySequence::SaveAs);
+  saveAsAct->setStatusTip(tr("Save workspace with name"));
 
   fileMenu->addSeparator();
 
