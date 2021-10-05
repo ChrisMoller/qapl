@@ -1,0 +1,35 @@
+⎕io←0
+#)copy startup
+
+sin   ← {1○⍵}
+sind  ← {1○○⍵÷180}
+sinr  ← {1○○⍵}
+asin  ← {¯1○⍵}
+asind ← {(¯1○⍵)÷(○÷180)}
+asinr ← {(¯1○⍵)÷(○1)}
+
+cos   ← {2○⍵}
+cosd  ← {2○○⍵÷180}
+cosr  ← {2○○⍵}
+acos  ← {¯2○⍵}
+acosd ← {(¯2○⍵)÷(○÷180)}
+acosr ← {(¯2○⍵)÷(○1)}
+
+tan   ← {3○⍵}
+tand  ← {3○○⍵÷180}
+tanr  ← {3○○⍵}
+atan  ← {¯3○⍵}
+atand ← {(¯3○⍵)÷(○÷180)}
+atanr ← {(¯3○⍵)÷(○1)}
+
+sinh  ← {5○⍵}
+cosh  ← {6○⍵}
+tanh  ← {7○⍵}
+asinh ← {¯5○⍵}
+acosh ← {¯6○⍵}
+atanh ← {¯7○⍵}
+
+sqr   ← {⍵*2}
+sqrt  ← {⍵*.5}
+
+!'Hi there!'

@@ -447,11 +447,6 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
 			     QCoreApplication::applicationName ());;
 #endif
   
-  if (!parser.isSet (OPT_noCONT)) {
-    fprintf (stderr, "noCont clear\n");
-  }
-
-  
   settings = &lsettings;
 
   editor = settings->value (SETTINGS_EDITOR).toString ();
@@ -537,8 +532,43 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
 		   SLOT(inputLineReturn()));
 
   mainWidget->setLayout(layout);
-
-  processLine (true, ")copy startup");
+  
+  if (!parser.isSet (OPT_noCONT))
+    processLine (true, ")load CONTINUE");
+  
+  if (parser.isSet (OPT_L)) {
+    QString cmd = QString (")load %1").arg(parser.value (OPT_L));
+    processLine (false, cmd);
+  }
+  
+  if (!parser.isSet (OPT_noINIT)) {
+    QString pfn = QString ("%1/.config/%2/%3.init")
+      .arg (getenv ("HOME"))
+      .arg (APPLICATION_ORGANISATION).
+      arg (APPLICATION_NAME);
+    QFile pfile(pfn);
+    if (pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+#define BUFFER_SIZE 512
+      char buffer[BUFFER_SIZE];
+      qint64 charsIn;
+      while (0 < (charsIn = pfile.readLine(buffer, BUFFER_SIZE))) {
+	if (charsIn > 0) {
+	  QString pb (buffer);
+	  QString pbt = pb.trimmed ();
+	  if (pbt.endsWith ("\n")) pbt.chop (1);
+	  if (!pbt.startsWith ("#")) {
+	    bool suppress = true;
+	    if (pbt.startsWith ("!")) {
+	      pbt.remove (0, 1);
+	      suppress = false;
+	    }
+	    processLine (suppress, pbt);
+	  }
+	}
+      }
+      pfile.close ();
+    }
+  }
 }
 
 MainWindow::~MainWindow()

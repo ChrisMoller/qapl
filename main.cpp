@@ -23,6 +23,9 @@ int main(int argc, char *argv[])
   QCommandLineOption noCONT (OPT_noCONT, "Skip CONTINUE workspace.");
   parser.addOption(noCONT);
 
+  QCommandLineOption noINIT (OPT_noINIT, "Skip initialisation script.");
+  parser.addOption(noINIT);
+
   QCommandLineOption loadws(OPT_L, "Workspace to load.", "<ws>");
   parser.addOption(loadws);
 
