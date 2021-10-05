@@ -173,6 +173,20 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 {
   QString outString;
   QString errString;
+  QString outFile;
+
+  outFile.clear ();
+  if (text.contains (">>")) {
+    QStringList parts = text.split (">>");
+    text = parts[0].trimmed ();
+    if (parts.size () == 2) {
+      if (!parts[1].isEmpty ())
+	outFile = parts[1].trimmed ();
+    }
+    else {
+      //fixme error
+    }
+  }
   
   LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text,outString, errString);
 
@@ -188,8 +202,27 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
     outputLog->setTextColor (black);
   }
 
-  if (outString.size () > 0)
-    outputLog->append (outString);
+  if (outString.size () > 0) {
+    bool done = false;
+    if (!outFile.isEmpty ()) {
+      if ((outFile.startsWith ("'") && outFile.endsWith ("'")) ||
+	  (outFile.startsWith ("\"") && outFile.endsWith ("\""))) {
+	outFile.chop (1);
+	outFile.remove (0, 1);
+	if (!outFile.isEmpty ()) {
+	  QFile file(outFile);
+	  if (file.open(QIODevice::ReadWrite)) {
+	    QTextStream stream(&file);
+	    stream << outString;
+	    file.close ();
+	    done = true;
+	  }
+	}
+      }
+    }
+    if (!done)
+      outputLog->append (outString);
+  }
   outputLog->moveCursor (QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);
   outputLog->ensureCursorVisible();
   QScrollBar *sb = outputLog->verticalScrollBar();
@@ -308,12 +341,7 @@ MainWindow::wsSave()
     break;
   }
   if (!op.isEmpty ()) {
-#if 1
     processLine (false, op);
-#else
-    AplExec::aplExec (APL_OP_EXEC, op, outString, errString);
-    update_screen (errString, outString);
-#endif
     rc = true;
   }
   return rc;
