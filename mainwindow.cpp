@@ -175,6 +175,50 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
   QString errString;
   QString outFile;
 
+#if 0
+  static bool done = false;
+  if (!done) {
+    QString bob ("Bob");
+#if 1
+    QVector<uint> ubob (200);
+    ubob = bob.toUcs4();
+    uint *vbob = ubob.data();
+#else
+    QVector<uint> ubob = bob.toUcs4();
+    uint *vbob = ubob.data();
+#endif
+
+    uint64_t shapeb[2] = {3, 4};
+    APL_value avb = assign_var(vbob, 2, shapeb);
+    for (uint64_t i = 0; i < 12; i++)
+      set_double ((APL_Float)i, avb, i);
+    
+#if 0
+    QString tom ("Tom");
+    QVector<uint> utom = tom.toUcs4();
+    uint *vtom = utom.data();
+
+    uint64_t shapet[2] = {3, 4};
+    APL_value avt = assign_var(vtom, 2, shapet);
+    for (uint64_t i = 0; i < 12; i++)
+      set_double ((APL_Float)i, avt, i);
+#endif
+
+#if 0
+    QString tom ("Tom");
+    const char *utom = tom.toUtf8().constData();
+    QVector<uint> xtom = tom.toUcs4();
+    uint *vtom = xtom.data();
+    assign_var(vtom, 0, nullptr);
+    APL_value av1 = int_scalar(122, "qapl 1");
+    set_var_value(utom, av1, "qapl 2");
+#endif
+    
+    done = true;
+  }
+#endif
+
+  
   outFile.clear ();
   if (text.contains (">>")) {
     QStringList parts = text.split (">>");
@@ -218,6 +262,9 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 	    done = true;
 	  }
 	}
+      }
+      if (!done) {
+	// fisme 
       }
     }
     if (!done)

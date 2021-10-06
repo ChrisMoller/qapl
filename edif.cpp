@@ -23,6 +23,37 @@ static const QRegularExpression cre (CLINE_RE,
 static const QRegularExpression sre (STRING_RE,
                                QRegularExpression::CaseInsensitiveOption);
 
+QStringList parseCl (QString str)
+{
+  QStringList args;
+  QRegularExpressionMatch match = cre.match (str);
+  if (match.hasMatch ()) {
+    QStringList matches = match.capturedTexts ();
+    int offset = match.capturedLength (0);
+    str.remove (0, offset);
+#if 1
+    args << matches[2];
+#else
+    real_ed = matches[2];
+#endif
+    while (!str.isEmpty ()) {
+      match = sre.match (str);
+      if (match.hasMatch ()) {
+	matches = match.capturedTexts ();
+	offset = match.capturedLength (0);
+	str.remove (0, offset);
+	int count = matches.size ();
+	args << matches[count - 1];
+      }
+    }
+  }
+#if 0
+  for (int i = 0; i < args.size (); i++)
+    fprintf (stderr, "arg %d \"%s\"\n", i, toCString (args[i]));
+#endif
+  return args;
+}
+
 void  MainWindow::edit_fcn (QString text)
 {
   QString outString;
@@ -75,39 +106,26 @@ void  MainWindow::edit_fcn (QString text)
      }
      file.close ();
 
-     QStringList args;
-     QString real_ed;
      {
+       QStringList args;
+       QString real_ed;
        QString editor_copy
 	 = editor.isEmpty () ? QString (DEFAULT_EDITOR) : editor;
-       QRegularExpressionMatch match = cre.match (editor_copy);
-       if (match.hasMatch ()) {
-	 QStringList matches = match.capturedTexts ();
-	 int offset = match.capturedLength (0);
-	 editor_copy.remove (0, offset);
-	 real_ed = matches[2];
-	 while (!editor_copy.isEmpty ()) {
-	   match = sre.match (editor_copy);
-	   if (match.hasMatch ()) {
-	     matches = match.capturedTexts ();
-	     offset = match.capturedLength (0);
-	     editor_copy.remove (0, offset);
-	     int count = matches.size ();
-	     args << matches[count - 1];
-	   }
-	 }
+       args = parseCl (editor_copy);
+       if (!args.isEmpty ()) {
+	 args << fn;
+	 real_ed = args[0];
+	 args.removeFirst ();
+	 QProcess *edit = new QProcess ();
+	 connect (edit, &QProcess::started,
+		  [=]() {
+		    qint64 pid = edit->processId ();
+		    processList.append (pid);
+		  });
+	 watcher.addPath (fn);
+	 edit->start (real_ed, args);
        }
      }
-     args << fn;
-
-     QProcess *edit = new QProcess ();
-     connect (edit, &QProcess::started,
-	      [=]() {
-		qint64 pid = edit->processId ();
-		processList.append (pid);
-	      });
-     watcher.addPath (fn);
-     edit->start (real_ed, args);
    }
    else {
      // fixme file open error
