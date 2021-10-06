@@ -77,6 +77,9 @@ public:
   void update_screen (QString &errString, QString &outString);
   void processLine (bool suppressOppressOutput, QString text);
   void read_script (QString pfn);
+  QStringList parseCl (QString str);
+  void printError (QString emsg, QString estr);
+  void printError (QString emsg);
 
   QLineEdit *inputLine;
   QTextEdit *outputLog;

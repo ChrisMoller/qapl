@@ -23,7 +23,7 @@ static const QRegularExpression cre (CLINE_RE,
 static const QRegularExpression sre (STRING_RE,
                                QRegularExpression::CaseInsensitiveOption);
 
-QStringList parseCl (QString str)
+QStringList MainWindow::parseCl (QString str)
 {
   QStringList args;
   QRegularExpressionMatch match = cre.match (str);

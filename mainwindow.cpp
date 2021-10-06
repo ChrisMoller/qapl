@@ -17,6 +17,22 @@
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
+void MainWindow::printError (QString emsg, QString estr)
+{
+  outputLog->setTextColor (red);
+  outputLog->append (emsg);
+  if (estr.size () > 0)
+    outputLog->append (estr);
+  outputLog->setTextColor (black);
+}
+
+void MainWindow::printError (QString emsg)
+{
+  outputLog->setTextColor (red);
+  outputLog->append (emsg);
+  outputLog->setTextColor (black);
+}
+
 static void
 lineKey (MainWindow  *mainwin, int dir)
 {
@@ -146,9 +162,11 @@ InputLineFilter::eventFilter(QObject *obj, QEvent *event)
             }
           }
         }
+#if 0			// nothing found
         else if (!errString.isEmpty ()) {
           fprintf (stderr, "got fns err\n"); // fixme, use msgbox
         }
+#endif
         return true;
       }
     }
@@ -174,6 +192,7 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
   QString outString;
   QString errString;
   QString outFile;
+  QString outExec;
 
 #if 0
   static bool done = false;
@@ -220,34 +239,41 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 
   
   outFile.clear ();
+  outExec.clear ();
+
   if (text.contains (">>")) {
     QStringList parts = text.split (">>");
     text = parts[0].trimmed ();
     if (parts.size () == 2) {
       if (!parts[1].isEmpty ())
 	outFile = parts[1].trimmed ();
+      else printError ("Output filename can't be empty.");
     }
-    else {
-      //fixme error
+    else printError ("Output filename must exist.");
+  }
+
+  if (text.contains ("|>")) {
+    QStringList parts = text.split ("|>");
+    text = parts[0].trimmed ();
+    if (parts.size () == 2) {
+      if (!parts[1].isEmpty ())
+	outExec = parts[1].trimmed ();
+      else printError ("Piped executable string can't be empty.");
     }
+    else printError ("Piped executable string must exist.");
   }
   
-  LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text,outString, errString);
+  LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text, outString, errString);
 
   if (suppressOppressOutput) return;
   
   if (rc != LAE_NO_ERROR) {
     QString emsg =
       QString ("APL error %1").arg ((int)rc, 8, 16, QLatin1Char('0'));
-    outputLog->setTextColor (red);
-    outputLog->append (emsg);
-    if (errString.size () > 0)
-      outputLog->append (errString);
-    outputLog->setTextColor (black);
+    printError (emsg, errString);
   }
 
   if (outString.size () > 0) {
-    bool done = false;
     if (!outFile.isEmpty ()) {
       if ((outFile.startsWith ("'") && outFile.endsWith ("'")) ||
 	  (outFile.startsWith ("\"") && outFile.endsWith ("\""))) {
@@ -259,16 +285,50 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 	    QTextStream stream(&file);
 	    stream << outString;
 	    file.close ();
-	    done = true;
 	  }
 	}
+	else printError ("Output filename can't be null.");
       }
-      if (!done) {
-	// fisme 
-      }
+      else 
+printError ("Output filename must be enclosed in single or double quotes.",
+	    outFile);
     }
-    if (!done)
-      outputLog->append (outString);
+    else if (!outExec.isEmpty ()) {
+      if ((outExec.startsWith ("'") && outExec.endsWith ("'")) ||
+	  (outExec.startsWith ("\"") && outExec.endsWith ("\""))) {
+
+	outExec.chop (1);
+	outExec.remove (0, 1);
+	if (!outExec.isEmpty ()) {
+
+	  QStringList args = parseCl (outExec);
+	  QString exec = args[0];
+	  args.removeFirst ();
+	  QProcess *proc = new QProcess ();
+	  connect (proc, &QProcess::started,
+		   [=]() {
+		     proc->write (toCString (outString));
+		     proc->closeWriteChannel ();
+		   });
+	  connect(proc,
+		  QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+		  [=](
+		      int exitCode __attribute__((unused)),
+		      QProcess::ExitStatus exitStatus __attribute__((unused))
+		      ){
+		    QByteArray qby = proc->readAllStandardOutput();
+		    QString qs (qby);
+		    outputLog->append (qs);
+		  });
+	  proc->start (exec, args);
+	}
+	else printError ("Output exec string can't be null.");
+      }
+      else 
+printError ("Output exec string must be enclosed in single or double quotes.",
+	    outExec);
+    }
+    else outputLog->append (outString);
   }
   outputLog->moveCursor (QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);
   outputLog->ensureCursorVisible();
