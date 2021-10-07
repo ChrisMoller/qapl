@@ -31,6 +31,10 @@
 #define DEFAULT_GVIM_EDITOR \
    "gvim -geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
 
+#if 0
+#define DEFAULT_SLICK_EDITOR "/opt/slickedit-pro2020/bin/vs -q"
+#endif
+
 #define DEFAULT_FONT_FAMILY "DejaVu Sans Mono"
 #define DEFAULT_FONT_SIZE   10.0
 #define DEFAULT_BG_COLOUR   "#f4f4d3"	// pale yellow
@@ -111,7 +115,6 @@ private:
   QString 	     libpath;
   save_mode_e        save_mode;                                                 
   QString    	     curFile;
-  int		     lastExit;
 
   
 protected:

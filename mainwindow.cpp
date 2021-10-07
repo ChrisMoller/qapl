@@ -293,62 +293,88 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 	  (outFile.startsWith ("\"") && outFile.endsWith ("\""))) {
 	outFile.chop (1);
 	outFile.remove (0, 1);
-	if (!outFile.isEmpty ()) {
-	  QFile file(outFile);
-	  QIODevice::OpenMode mode = QIODevice::ReadWrite;
-	  if (appendFile) mode |= QIODevice::Append;
-	  if (file.open(mode)) {
-	    QTextStream stream(&file);
-	    stream << outString;
-	    file.close ();
-	  }
-	}
-	else printError ("Output filename can't be null.");
       }
-      else 
-printError ("Output filename must be enclosed in single or double quotes.",
-	    outFile);
+      if (!outFile.isEmpty ()) {
+	QFile file(outFile);
+	QIODevice::OpenMode mode = QIODevice::ReadWrite;
+	if (appendFile) mode |= QIODevice::Append;
+	if (file.open(mode)) {
+	  QTextStream stream(&file);
+	  stream << outString;
+	  file.close ();
+	}
+      }
+      else printError ("Output filename can't be null.");
     }
     else if (!outExec.isEmpty ()) {
-      if ((outExec.startsWith ("'") && outExec.endsWith ("'")) ||
-	  (outExec.startsWith ("\"") && outExec.endsWith ("\""))) {
+      /***
+	  <expr> |> cmd op op op...
 
-	outExec.chop (1);
-	outExec.remove (0, 1);
-	if (!outExec.isEmpty ()) {
+	  or
+	  
+	  <expr> |> z ← cmd op op op...
 
-	  QStringList args = parseCl (outExec);
-	  QString exec = args[0];
-	  args.removeFirst ();
-	  QProcess *proc = new QProcess ();
-	  connect (proc, &QProcess::started,
-		   [=]() {
-		     proc->write (toCString (outString));
-		     proc->closeWriteChannel ();
-		   });
-	  connect(proc,
-		  QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-		  [=](
-		      int exitCode,
-		      QProcess::ExitStatus exitStatus __attribute__((unused))
-		      ){
-		    lastExit = exitCode;
-		    QByteArray qby = proc->readAllStandardOutput();
-		    if (0 < qby.size ()) {
-		      QString qs (qby);
-		      outputLog->append (qs);
-		    }
-		  });
-	  proc->start (exec, args);
+	  or
+	  
+	  <expr> |> z ← 'cmd op op op...'
+       ***/
+
+      QString outTarget;
+      bool wasQuoted = false;
+      if (outExec.contains ("←")) {
+	QStringList parts = outExec.split ("←");
+	outTarget = parts[0].trimmed ();
+	outExec   = parts[1].trimmed ();
+	if (outExec.startsWith ("'") && outExec.endsWith ("'")) {
+	  outExec.chop (1);
+	  outExec.remove (0, 1);
+	  wasQuoted = true;
 	}
-	else printError ("Output exec string can't be null.");
       }
-      else 
-printError ("Output exec string must be enclosed in single or double quotes.",
-	    outExec);
+
+      if (!outExec.isEmpty ()) {
+	QStringList args = parseCl (outExec);
+	QString exec = args[0];
+	args.removeFirst ();
+	QProcess *proc = new QProcess ();
+	connect (proc, &QProcess::started,
+		 [=]() {
+		   proc->write (toCString (outString));
+		   proc->closeWriteChannel ();
+		 });
+	connect(proc,
+		QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+		[=](
+		    int exitCode __attribute__((unused)) ,
+		    QProcess::ExitStatus exitStatus __attribute__((unused))
+		    ){
+		  QByteArray qby = proc->readAllStandardOutput();
+		  if (0 < qby.size ()) {
+		    QString qs (qby);
+		    if (outTarget.isEmpty ())
+		      outputLog->append (qs);
+		    else {
+		      /***
+			  either z ← qs
+			  or
+			  z ← 'qs'
+		       ***/
+		      if (qs.endsWith ("\n")) qs.chop (1);
+		      QString cmd = 
+		       wasQuoted
+			? QString ("%1←'%2'").arg (outTarget,qs)
+			: QString ("%1←%2").arg (outTarget,qs);
+		      processLine (false, cmd);
+		    }
+		  }
+		});
+	proc->start (exec, args);
+      }
+      else printError ("Invalid executable string.");
     }
-    else outputLog->append (outString);
+    else outputLog->append (outString);		// not captured
   }
+
   outputLog->moveCursor (QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);
   outputLog->ensureCursorVisible();
   QScrollBar *sb = outputLog->verticalScrollBar();
@@ -569,6 +595,19 @@ MainWindow::setEditor ()
 	     editorLine->setText (QString (DEFAULT_GVIM_EDITOR));
 	   });  
   layout->addWidget (defaultGvimEditor, row, 0, 1, 2);
+
+#if 0
+  row++;
+
+  QPushButton *defaultSlickEditor
+    = new QPushButton (tr ("Use default Slick editor"));
+  connect (defaultSlickEditor,
+           &QAbstractButton::clicked,
+           [=](){
+	     editorLine->setText (QString (DEFAULT_SLICK_EDITOR));
+	   });  
+  layout->addWidget (defaultSlickEditor, row, 0, 1, 2);
+#endif
 
   row++;  
   
@@ -807,8 +846,6 @@ void MainWindow::createMenubar ()
 MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   : QMainWindow(parent)
 {
-  lastExit = -1;
-  
   QString pfn = QString ("%1/.gnu-apl/preferences").arg (getenv ("HOME"));
   QFile pfile(pfn);
   if (!pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
