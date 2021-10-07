@@ -111,6 +111,7 @@ private:
   QString 	     libpath;
   save_mode_e        save_mode;                                                 
   QString    	     curFile;
+  int		     lastExit;
 
   
 protected:
