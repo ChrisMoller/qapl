@@ -77,8 +77,6 @@ will create z:
 If a command doesn't accept or doesn't need standard input, the left argument
 may be omitted:
 
-<p style="text-align: center;">date</p>
-
 ```
       |>date
 Fri Oct  8 02:20:49 PM EDT 2021
