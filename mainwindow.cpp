@@ -194,50 +194,6 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
   QString outFile;
   QString outExec;
 
-#if 0
-  static bool done = false;
-  if (!done) {
-    QString bob ("Bob");
-#if 1
-    QVector<uint> ubob (200);
-    ubob = bob.toUcs4();
-    uint *vbob = ubob.data();
-#else
-    QVector<uint> ubob = bob.toUcs4();
-    uint *vbob = ubob.data();
-#endif
-
-    uint64_t shapeb[2] = {3, 4};
-    APL_value avb = assign_var(vbob, 2, shapeb);
-    for (uint64_t i = 0; i < 12; i++)
-      set_double ((APL_Float)i, avb, i);
-    
-#if 0
-    QString tom ("Tom");
-    QVector<uint> utom = tom.toUcs4();
-    uint *vtom = utom.data();
-
-    uint64_t shapet[2] = {3, 4};
-    APL_value avt = assign_var(vtom, 2, shapet);
-    for (uint64_t i = 0; i < 12; i++)
-      set_double ((APL_Float)i, avt, i);
-#endif
-
-#if 0
-    QString tom ("Tom");
-    const char *utom = tom.toUtf8().constData();
-    QVector<uint> xtom = tom.toUcs4();
-    uint *vtom = xtom.data();
-    assign_var(vtom, 0, nullptr);
-    APL_value av1 = int_scalar(122, "qapl 1");
-    set_var_value(utom, av1, "qapl 2");
-#endif
-    
-    done = true;
-  }
-#endif
-
-  
   outFile.clear ();
   outExec.clear ();
 
@@ -287,59 +243,70 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
     printError (emsg, errString);
   }
 
-  if (outString.size () > 0) {
+  if (!outFile.isEmpty ()) {
+    if ((outFile.startsWith ("'") && outFile.endsWith ("'")) ||
+	(outFile.startsWith ("\"") && outFile.endsWith ("\""))) {
+      outFile.chop (1);
+      outFile.remove (0, 1);
+    }
     if (!outFile.isEmpty ()) {
-      if ((outFile.startsWith ("'") && outFile.endsWith ("'")) ||
-	  (outFile.startsWith ("\"") && outFile.endsWith ("\""))) {
-	outFile.chop (1);
-	outFile.remove (0, 1);
-      }
-      if (!outFile.isEmpty ()) {
-	QFile file(outFile);
+      QFile file(outFile);
+      if (0 < outString.size ()) {
 	QIODevice::OpenMode mode = QIODevice::ReadWrite;
 	if (appendFile) mode |= QIODevice::Append;
 	if (file.open(mode)) {
 	  QTextStream stream(&file);
 	  stream << outString;
-	  file.close ();
 	}
       }
-      else printError ("Output filename can't be null.");
+      else file.resize (0);
+      file.close ();
     }
-    else if (!outExec.isEmpty ()) {
-      /***
-	  <expr> |> cmd op op op...
-
-	  or
+    else printError ("Output filename can't be null.");
+  }
+  else if (!outExec.isEmpty ()) {
+    /***
+	<expr> |> cmd op op op...
+	
+	or
 	  
-	  <expr> |> z ← cmd op op op...
+	<expr> |> z ← cmd op op op...
 
-	  or
+	or
 	  
-	  <expr> |> z ← 'cmd op op op...'
-       ***/
+	<expr> |> z ← 'cmd op op op...'
+    ***/
 
-      QString outTarget;
-      bool wasQuoted = false;
-      if (outExec.contains ("←")) {
-	QStringList parts = outExec.split ("←");
-	outTarget = parts[0].trimmed ();
-	outExec   = parts[1].trimmed ();
-	if (outExec.startsWith ("'") && outExec.endsWith ("'")) {
-	  outExec.chop (1);
-	  outExec.remove (0, 1);
-	  wasQuoted = true;
-	}
+    QString outTarget;
+    bool wasQuoted = false;
+    if (outExec.contains ("←")) {
+      QStringList parts = outExec.split ("←");
+      outTarget = parts[0].trimmed ();
+      outExec   = parts[1].trimmed ();
+    }
+      if (outExec.startsWith ("'") && outExec.endsWith ("'")) {
+	outExec.chop (1);
+	outExec.remove (0, 1);
+	wasQuoted = true;
       }
 
-      if (!outExec.isEmpty ()) {
-	QStringList args = parseCl (outExec);
+    if (!outExec.isEmpty ()) {
+      QStringList args = parseCl (outExec);
+      if (0 < args.size ()) {
 	QString exec = args[0];
 	args.removeFirst ();
 	QProcess *proc = new QProcess ();
+	connect (proc,
+	 QOverload<QProcess::ProcessError>::of(&QProcess::errorOccurred),
+		 [=](
+		     QProcess::ProcessError error __attribute__((unused))
+		     ) {
+		   printError ("Error starting external process.");
+		 });
 	connect (proc, &QProcess::started,
 		 [=]() {
-		   proc->write (toCString (outString));
+		   if (0 < outString.size ()) 
+		     proc->write (toCString (outString));
 		   proc->closeWriteChannel ();
 		 });
 	connect(proc,
@@ -358,10 +325,10 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 			  either z ← qs
 			  or
 			  z ← 'qs'
-		       ***/
+		      ***/
 		      if (qs.endsWith ("\n")) qs.chop (1);
 		      QString cmd = 
-		       wasQuoted
+			wasQuoted
 			? QString ("%1←'%2'").arg (outTarget,qs)
 			: QString ("%1←%2").arg (outTarget,qs);
 		      processLine (false, cmd);
@@ -370,9 +337,15 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 		});
 	proc->start (exec, args);
       }
-      else printError ("Invalid executable string.");
+      else printError ("Empty executable string.");
     }
-    else outputLog->append (outString);		// not captured
+
+
+    else printError ("Invalid executable string.");
+  }
+  else if (outString.size () > 0) {
+    outputLog->setTextColor (black);
+    outputLog->append (outString);		// not captured
   }
 
   outputLog->moveCursor (QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);

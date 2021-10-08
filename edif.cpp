@@ -26,31 +26,38 @@ static const QRegularExpression sre (STRING_RE,
 QStringList MainWindow::parseCl (QString str)
 {
   QStringList args;
-  QRegularExpressionMatch match = cre.match (str);
-  if (match.hasMatch ()) {
-    QStringList matches = match.capturedTexts ();
-    int offset = match.capturedLength (0);
-    str.remove (0, offset);
-#if 1
-    args << matches[2];
-#else
-    real_ed = matches[2];
+  if (!str.isEmpty () && str.front ().isLetter ()) {
+#if 0
+    fprintf (stderr, "cat = %d %d\n",
+	     (int) str.front ().category (),
+	     str.front ().isLetter ());
 #endif
-    while (!str.isEmpty ()) {
-      match = sre.match (str);
-      if (match.hasMatch ()) {
-	matches = match.capturedTexts ();
-	offset = match.capturedLength (0);
-	str.remove (0, offset);
-	int count = matches.size ();
-	args << matches[count - 1];
+    QRegularExpressionMatch match = cre.match (str);
+    if (match.hasMatch ()) {
+      QStringList matches = match.capturedTexts ();
+      int offset = match.capturedLength (0);
+      str.remove (0, offset);
+#if 1
+      args << matches[2];
+#else
+      real_ed = matches[2];
+#endif
+      while (!str.isEmpty ()) {
+	match = sre.match (str);
+	if (match.hasMatch ()) {	
+	  matches = match.capturedTexts ();
+	  offset = match.capturedLength (0);
+	  str.remove (0, offset);
+	  int count = matches.size ();
+	  args << matches[count - 1];
+	}
       }
     }
-  }
 #if 0
-  for (int i = 0; i < args.size (); i++)
-    fprintf (stderr, "arg %d \"%s\"\n", i, toCString (args[i]));
+    for (int i = 0; i < args.size (); i++)
+      fprintf (stderr, "arg %d \"%s\"\n", i, toCString (args[i]));
 #endif
+  }
   return args;
 }
 
@@ -122,6 +129,13 @@ void  MainWindow::edit_fcn (QString text)
 		    qint64 pid = edit->processId ();
 		    processList.append (pid);
 		  });
+	 connect (edit,
+	QOverload<QProcess::ProcessError>::of(&QProcess::errorOccurred),
+		 [=](
+		     QProcess::ProcessError error  __attribute__((unused))
+		     ) {
+		   printError ("Error starting edit process.");
+		 });
 	 watcher.addPath (fn);
 	 edit->start (real_ed, args);
        }
