@@ -45,28 +45,23 @@ The piping function pipes the results of the left expression to the given
 external command and any standard output of that command will be captured.
 For example:
 
-<p style="text-align: center;">⍳8|>wc</p>
-
-results in:
-
-<p style="text-align: center;">1       8      16</p>
+```
+	⍳8|>wc
+1       8      16
+```
 
 Arguments may be provided ase well:
 
-<p style="text-align: center;">⍳8|>wc -w -l</p>
-
-results in:
-
-<p style="text-align: center;">1       8</p>
+```
+	wc -w -l
+1       8
+```
 
 
 The output can be assigned to an APL variable:
 
-<p style="text-align: center;">⍳8|>z←wc -w -l</p>
-
-will create z:
-
 ```
+	⍳8|>z←wc -w -l
       z
 1 8
 
