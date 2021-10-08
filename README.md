@@ -139,3 +139,10 @@ or
       |>echo `arga`
 "this is a different string"
 ```
+
+or
+
+```
+      |>echo `'iota 8 equals '`  `⍳8`
+ iota 8 equals   "0 1 2 3 4 5 6 7"
+```
