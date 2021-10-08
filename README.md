@@ -1,6 +1,6 @@
 # qapl
 
-<h1>qapl</i>
+<h1>qapl</h1>
 
 qapl is a Qt-based interface to GNU APL.  In effect, it replaces the terminal
 emulator in which APL is usually run but offers the following additional
