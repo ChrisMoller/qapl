@@ -15,8 +15,10 @@
 
 #define STRING_RE \
   "(([^[:space:]'\"]+)[[:space:]]*)|\
+(`([^`]*)'[[:space:]]*)|\
 ('([^']*)'[[:space:]]*)|\
-(\"([^\"]*)\"[[:space:]]*)"
+(\"([^\"]*)\"[[:space:]]*\
+)"
 
 static const QRegularExpression cre (CLINE_RE,
                                QRegularExpression::CaseInsensitiveOption);

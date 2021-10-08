@@ -111,4 +111,31 @@ Fri Oct  8 02:23:34 PM EDT 2021
 15
 )
 
+Argument substitutions maybe made to piped commands through the use of
+backquotes:
 
+```
+      opta←'-w'
+      optb←'-l'
+      ⍳8|>wc
+      1       8      16
+
+      ⍳8|>wc `opta` `optb`
+      1       8
+
+      optb←'-c'
+      ⍳8|>wc `opta` `optb`
+      8      16
+```
+
+or
+
+```
+      arga←'this is a string'
+      |>echo `arga`
+"this is a string"
+
+      arga←'this is a different string'
+      |>echo `arga`
+"this is a different string"
+```

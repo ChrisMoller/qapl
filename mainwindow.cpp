@@ -174,6 +174,8 @@ InputLineFilter::eventFilter(QObject *obj, QEvent *event)
   return QObject::eventFilter(obj, event);
 }
 
+static const QRegularExpression whitespace ("[[:space:]]");
+
 void
 MainWindow::update_screen (QString &errString, QString &outString)
 {
@@ -256,7 +258,6 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 	if (appendFile) mode |= QIODevice::Append;
 	if (file.open(mode)) {
 	  QTextStream stream(&file);
-	  //	  fprintf (stderr, "ou = \"%s\"\n", toCString (outString));
 	  stream << outString;
 	  file.close ();
 	}
@@ -336,6 +337,26 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 		    }
 		  }
 		});
+	for (int i = 0; i < args.size (); i++) {
+	  if (args[i].startsWith ("`") && args[i].endsWith ("`")) {
+	    args[i].chop (1);
+	    args[i].remove (0, 1);
+	    QString os;
+	    QString es;
+	    LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, args[i], os, es);
+	    if (rc != LAE_NO_ERROR)
+	      printError ("Error expanding argument.");
+	    else {
+	      if (os.endsWith ("\n")) os.chop (1);
+	      if (os.contains (whitespace)) {
+		os.prepend (QChar ('"'));
+		os.append (QChar ('"'));
+	      }
+	      args[i] = os;
+	    }
+	      
+	  }
+	}
 	proc->start (exec, args);
       }
       else printError ("Empty executable string.");
