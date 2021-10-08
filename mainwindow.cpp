@@ -256,11 +256,12 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 	if (appendFile) mode |= QIODevice::Append;
 	if (file.open(mode)) {
 	  QTextStream stream(&file);
+	  //	  fprintf (stderr, "ou = \"%s\"\n", toCString (outString));
 	  stream << outString;
+	  file.close ();
 	}
       }
       else file.resize (0);
-      file.close ();
     }
     else printError ("Output filename can't be null.");
   }
@@ -305,7 +306,7 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 		 });
 	connect (proc, &QProcess::started,
 		 [=]() {
-		   if (0 < outString.size ()) 
+		   if (0 < outString.size ())
 		     proc->write (toCString (outString));
 		   proc->closeWriteChannel ();
 		 });
