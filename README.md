@@ -163,3 +163,19 @@ or
       |>echo `'iota 8 equals '`  `⍳8`
  iota 8 equals   "0 1 2 3 4 5 6 7"
 ```
+
+
+<h1>Installation</h1>
+
+qapl uses the Qt toolkit, so Step One of the installation process is, if you
+don't already have Qt installed, you have to install it.
+
+The Qt equivalent of Makefile.am and configure.ac is a *.pro file that's
+processed by qmake to produce Makefiles.  qmake isn't as versatile as the
+autoconf/automake tools and doesn't understand constructs like
+
+<p style="text-align: center;">INCLUDES += \`apl --show_src_dir\`</p>
+
+So the real Step One is to run:
+
+<p style="text-align: center;">./autogen.sh</p>
