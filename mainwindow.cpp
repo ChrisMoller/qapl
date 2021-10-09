@@ -1,6 +1,5 @@
 #include <QDoubleSpinBox>
 #include <QFontComboBox>
-#include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -8,6 +7,7 @@
 #include <signal.h>
 
 #include "mainwindow.h"
+#include "helpwindow.h"
 #include "optionstrings.h"
 #include "aplexec.h"
 #include "history.h"
@@ -192,6 +192,12 @@ void MainWindow::inputLineReturn()
   QString text = inputLine->text ();
   text = text.trimmed ();
   inputLine->clear ();
+
+  if (text.startsWith (QString ("]help"), Qt::CaseInsensitive)) {
+    HelpWindow *hw = new HelpWindow ();
+    hw->show ();
+    return;
+  }
 
   if (text.startsWith (QString ("∇"))) {
     if (text.endsWith (QString ("∇"))) show_fcn (text);
