@@ -194,8 +194,8 @@ void MainWindow::inputLineReturn()
   inputLine->clear ();
 
   if (text.startsWith (QString ("]help"), Qt::CaseInsensitive)) {
-    HelpWindow *hw = new HelpWindow ();
-    hw->show ();
+    /*HelpWindow *hw = new */HelpWindow ();
+    //    hw->show ();
     return;
   }
 
@@ -509,6 +509,7 @@ MainWindow::setFont ()
     double ps = fontSize->value ();
     QFont outputFont (newFont.family (), ps);
     outputLog->setFont (outputFont);
+    inputLine->setFont (outputFont);
     settings->setValue (SETTINGS_FONT_FAMILY, QVariant (newFont.family ()));
     settings->setValue (SETTINGS_FONT_SIZE, QVariant (ps));
   }
@@ -522,9 +523,15 @@ void  MainWindow::setFGColour ()
   colourDialog->setWindowTitle (tr ("Select foreground colour"));
   if (QDialog::Accepted == colourDialog->exec ()) {
     fg_colour = colourDialog->selectedColor ();
+    
     QPalette p = outputLog->palette(); 
     p.setColor(QPalette::Text, fg_colour);
     outputLog->setPalette(p);
+    
+    p = inputLine->palette(); 
+    p.setColor(QPalette::Text, fg_colour);
+    inputLine->setPalette(p);
+
     settings->setValue (SETTINGS_FG_COLOUR, QVariant (fg_colour.name ()));
   }
 }
@@ -537,9 +544,15 @@ void  MainWindow::setBGColour ()
   colourDialog->setWindowTitle (tr ("Select background colour"));
   if (QDialog::Accepted == colourDialog->exec ()) {
     bg_colour = colourDialog->selectedColor ();
+    
     QPalette p = outputLog->palette(); 
     p.setColor(QPalette::Base, bg_colour);
     outputLog->setPalette(p);
+    
+    p = inputLine->palette(); 
+    p.setColor(QPalette::Base, bg_colour);
+    inputLine->setPalette(p);
+
     settings->setValue (SETTINGS_BG_COLOUR, QVariant (bg_colour.name ()));
   }
 }
@@ -573,12 +586,19 @@ MainWindow::setColours ()
   connect (defaultColours,
            &QAbstractButton::clicked,
            [=](){
-	     QPalette p = outputLog->palette();
 	     bg_colour = QColor (DEFAULT_BG_COLOUR);
 	     fg_colour = QColor (DEFAULT_FG_COLOUR);
+
+	     QPalette p = outputLog->palette();
 	     p.setColor(QPalette::Base, bg_colour);
 	     p.setColor(QPalette::Text, fg_colour);
 	     outputLog->setPalette(p);
+
+	     p = inputLine->palette();
+	     p.setColor(QPalette::Base, bg_colour);
+	     p.setColor(QPalette::Text, fg_colour);
+	     inputLine->setPalette(p);
+
 	     settings->setValue (SETTINGS_BG_COLOUR,
 				 QVariant (bg_colour.name ()));
 	     settings->setValue (SETTINGS_FG_COLOUR,
@@ -792,6 +812,11 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   layout->addWidget(outputLog);
 
   inputLine = new QLineEdit;
+  inputLine->setFont (outputFont);
+  p = inputLine->palette(); 
+  p.setColor(QPalette::Base, bg_colour);
+  p.setColor(QPalette::Text, fg_colour); 
+  inputLine->setPalette(p);
   inputLine->setPlaceholderText ("APL");
   inputLineFilter = new InputLineFilter (inputLine, this);
   inputLine->setEnabled (true);

@@ -176,3 +176,15 @@ autoconf/automake tools and doesn't understand constructs like
 So the real Step One is to run:
 
 <p style="text-align: center;">./autogen.sh</p>
+
+which will build qapl.pro
+
+Step Two:
+
+<p style="text-align: center;">qmake</p>
+
+followed by the usual steps
+
+<p style="text-align: center;">make</p>
+<p style="text-align: center;">sudo make install</p>
+
