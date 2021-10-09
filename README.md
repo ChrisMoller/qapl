@@ -6,9 +6,17 @@ capabilities:
 
 + Access to external editors such as emacs or gvim.
 + GUI-style access to APL )load, )save, )copy, etc., operations.
-+ >> operator to export expression results to a file or >>> to append to a file.
-+ |> operator to call an external function with expression results
++ &gt;&gt; function to export expression results to a file or >>> to append to a file.
++ |> function to call an external function with expression results
 
+qapl offers two major capabilities, a terminal emulator for user interaction,
+and a means of using external editors like emacs and gvim to edit APL
+functions and lambda.
+
+As a terminal emulator, qapl interfaces with the APL engine through libapl,
+avoiding potential interactions with the standard APL CLI.  For the editor
+interface, qapl uses Qt processes rather than APL native functions and
+operating system processes.
 
 <h1>Output redirection and pipes</h1>
 
@@ -50,7 +58,7 @@ For example:
 1       8      16
 ```
 
-Arguments may be provided ase well:
+Arguments may be provided as well:
 
 ```
 	wc -w -l

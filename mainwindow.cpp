@@ -842,12 +842,10 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   : QMainWindow(parent)
 {
   QString pfn = QString ("%1/.gnu-apl/preferences").arg (getenv ("HOME"));
-  QFile pfile(pfn);
-  if (!pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
-    QString pfn = QString ("%1/.config/gnu-apl/preferences")
+  if (!QFile::exists (pfn))
+    pfn = QString ("%1/.config/gnu-apl/preferences")
       .arg (getenv ("HOME"));
-    pfile.setFileName (pfn);
-  }
+  QFile pfile(pfn);
   if (pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
 #define BUFFER_SIZE 512
     char buffer[BUFFER_SIZE];
@@ -962,11 +960,14 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
     QString cmd = QString (")load %1").arg(parser.value (OPT_L));
     processLine (false, cmd);
   }
-  
+
   if (!parser.isSet (OPT_noINIT)) {
-    QString pfn = QString ("%1/.config/%2/%3.init")
-      .arg (getenv ("HOME"), APPLICATION_ORGANISATION, APPLICATION_NAME);
-    read_script (pfn);
+    QString pfn = QString ("./%1.init").arg (APPLICATION_NAME);
+    if (!QFile::exists (pfn))
+      pfn = QString ("%1/%2.init")
+	.arg (getenv ("HOME"), APPLICATION_NAME);
+    if (QFile::exists (pfn))
+      read_script (pfn);
   }
 
   QStringList pargs = parser.positionalArguments();
