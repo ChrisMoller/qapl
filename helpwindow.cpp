@@ -31,36 +31,51 @@ this->setCentralWidget (outerGroupBox)
 HelpWindow::HelpWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
-    //fprintf (stderr, "nr ets = %ld\n", (int)sizeof(help)/sizeof(help_s));
-
-
   QWidget *hw = new QWidget ();
   QVBoxLayout *layout = new QVBoxLayout;
   this->setCentralWidget(hw);
   
+  int rowCount = (int)sizeof(help)/sizeof(help_s);
+  QTableWidget *table = new QTableWidget (rowCount, 2, this);
+  table->setShowGrid(false);
+  //  QStringList headers = {"Symbol", "Name", "Title", "Description"};
+  QStringList headers = {"Name", "Title"};
+  table->setHorizontalHeaderLabels (headers);
+  
+  for (int i = 0; i < rowCount; i++) {
+    //  for (int i = 0; i < 10; i++) {
+#if 0
+    QTableWidgetItem *arityItem
+      = new QTableWidgetItem (QString::number (help[i].arity));
+    table->setItem (i, 0, arityItem);
+#endif
+
+    QTableWidgetItem *primItem
+      = new QTableWidgetItem (QString (help[i].prim));
+#if 1
+    table->setVerticalHeaderItem (i, primItem);
+#else
+    table->setItem (i, 0, primItem);
+#endif
+    
+    QTableWidgetItem *nameItem
+      = new QTableWidgetItem (QString (help[i].name));
+    table->setItem (i, 0, nameItem);
+    
+    QTableWidgetItem *titleItem
+      = new QTableWidgetItem (QString (help[i].title));
+    table->setItem (i, 1, titleItem);
 
 #if 0
-  QLabel *lbl1 = new QLabel ("llllllllll");
-  layout->addWidget(lbl1);
-
-  QLabel *lbl2 = new QLabel ("mmmmmmmmmmm");
-  layout->addWidget(lbl2);
+    QTableWidgetItem *descItem
+      = new QTableWidgetItem (QString (help[i].desc));
+    table->setItem (i, 3, descItem);
 #endif
-  
-  QTableWidget *table = new QTableWidget(this);
-  table->setSelectionMode(QAbstractItemView::NoSelection);
-  table->setShowGrid(false);
-  
-  int rowCount = (int)sizeof(help)/sizeof(help_s);
-  table->setRowCount (rowCount);
-  table->setColumnCount (5);
-  //  for (int i = 0; i < rowCount; i++) {
-  for (int i = 0; i < 10; i++) {
-    QTableWidgetItem arityItem (help[i].arity);
-    table->setItem (i, 0, &arityItem);
-    QTableWidgetItem nameItem (help[i].name);
-    table->setItem (i, 1, &nameItem);
   }
+
+  table->resizeColumnToContents (0);
+  table->setColumnWidth (1, 640 - table->columnWidth (0));
+  table->setMinimumWidth (640);
   layout->addWidget(table);
 
 
