@@ -213,6 +213,17 @@ void MainWindow::inputLineReturn()
 }
 
 void
+MainWindow::aboutHelp ()
+{
+  QMessageBox msgBox;
+  msgBox.setText("By:  C. H. L. M&oslash;ller<br>"
+		 "moller@mollerware.com");
+  msgBox.setTextFormat (Qt::RichText);
+  msgBox.setIcon (QMessageBox::Information);
+  msgBox.exec();
+}
+
+void
 MainWindow::symbolsHelp ()
 {
   HelpWindow *hw = new HelpWindow ();
@@ -669,6 +680,12 @@ void MainWindow::createMenubar ()
   QAction *symbolsAct =
     helpMenu->addAction(tr("&Symbols"), this, &MainWindow::symbolsHelp);
   symbolsAct->setStatusTip(tr("Symbols help"));
+
+  helpMenu->addSeparator();
+
+  QAction *aboutAct =
+    helpMenu->addAction(tr("&About"), this, &MainWindow::aboutHelp);
+  aboutAct->setStatusTip(tr("About qapl"));
 
 }
 
