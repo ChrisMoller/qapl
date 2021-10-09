@@ -16,13 +16,15 @@ SOURCES += \
     edif.cpp \
     history.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    processline.cpp
 
 HEADERS += \
     aplexec.h \
     history.h \
     mainwindow.h \
-    optionstrings.h
+    optionstrings.h \
+    processline.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
