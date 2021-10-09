@@ -165,10 +165,7 @@ or
 ```
 
 
-<h1>Installation</h1>
-
-qapl uses the Qt toolkit, so Step One of the installation process is, if you
-don't already have Qt installed, you have to install it.
+<h2>Installation</h2>
 
 The Qt equivalent of Makefile.am and configure.ac is a *.pro file that's
 processed by qmake to produce Makefiles.  qmake isn't as versatile as the
