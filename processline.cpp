@@ -13,12 +13,11 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
   QString errString;
   QString outFile;
   QString outExec;
+  bool appendFile = false;
 
   outFile.clear ();
   outExec.clear ();
 
-  bool appendFile = false;
-  
   if (text.contains (">>>")) {
     QStringList parts = text.split (">>>");
     appendFile = true;
@@ -90,25 +89,31 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 	
 	or
 	  
-	<expr> |> z ← cmd op op op...
+	<expr> |> z ←[?] cmd op op op...
 
 	or
 	  
-	<expr> |> z ← 'cmd op op op...'
+	<expr> |> z ←[+] 'cmd op op op...'
     ***/
 
     QString outTarget;
     bool wasQuoted = false;
+    bool extended  = false;
     if (outExec.contains ("←")) {
       QStringList parts = outExec.split ("←");
       outTarget = parts[0].trimmed ();
       outExec   = parts[1].trimmed ();
-    }
-      if (outExec.startsWith ("'") && outExec.endsWith ("'")) {
-	outExec.chop (1);
-	outExec.remove (0, 1);
-	wasQuoted = true;
+      if (outExec.startsWith ("+")) {
+	extended = true;
+	outExec.remove (0,1);
+	outExec = outExec.trimmed ();
       }
+    }
+    if (outExec.startsWith ("'") && outExec.endsWith ("'")) {
+      outExec.chop (1);
+      outExec.remove (0, 1);
+      wasQuoted = true;
+    }
 
     if (!outExec.isEmpty ()) {
       QStringList args = parseCl (outExec);
@@ -132,7 +137,7 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 	connect(proc,
 		QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
 		[=](
-		    int exitCode __attribute__((unused)) ,
+		    int exitCode,
 		    QProcess::ExitStatus exitStatus __attribute__((unused))
 		    ){
 		  QByteArray qby = proc->readAllStandardOutput();
@@ -141,16 +146,16 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
 		    if (outTarget.isEmpty ())
 		      outputLog->append (qs);
 		    else {
-		      /***
-			  either z ← qs
-			  or
-			  z ← 'qs'
-		      ***/
 		      if (qs.endsWith ("\n")) qs.chop (1);
-		      QString cmd = 
-			wasQuoted
-			? QString ("%1←'%2'").arg (outTarget,qs)
-			: QString ("%1←%2").arg (outTarget,qs);
+		      if (wasQuoted) {
+			qs.prepend (QChar ('\''));
+			qs.append (QChar ('\''));
+		      }
+		      QString cmd =
+			extended
+			? QString ("%1←%2,⊂%3")
+			.arg (outTarget). arg (exitCode). arg (qs)
+			: QString ("%1←%2").arg (outTarget, qs);
 		      processLine (false, cmd);
 		    }
 		  }

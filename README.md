@@ -112,6 +112,22 @@ Fri Oct  8 02:23:34 PM EDT 2021
 15
 )
 
+The exit code of the given command can be captured by using a "←+" assignment:
+```
+|>z←+'date'
+      z
+ 0 Sat Oct  9 09:15:08 AM EDT 2021 
+
+      ⍴z
+2
+
+      1↑z
+0
+
+      1↓z
+ Sat Oct  9 09:15:08 AM EDT 2021
+```
+
 Argument substitutions maybe made to piped commands through the use of
 backquotes:
 
