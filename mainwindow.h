@@ -104,6 +104,7 @@ private:
   void               setBGColour ();
   void               setFGColour ();
   void               setColours ();
+  void               symbolsHelp ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
   QTemporaryDir      tempdir;

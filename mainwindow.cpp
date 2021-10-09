@@ -213,6 +213,13 @@ void MainWindow::inputLineReturn()
 }
 
 void
+MainWindow::symbolsHelp ()
+{
+  HelpWindow *hw = new HelpWindow ();
+  hw->show ();
+}
+
+void
 MainWindow::wsLoad ()
 {
    /***
@@ -639,6 +646,7 @@ void MainWindow::createMenubar ()
     fileMenu->addAction(exitIcon, tr("E&xit"), this, &MainWindow::byebye);
   exitAct->setShortcuts(QKeySequence::Quit);
 
+  /****************************************/
 
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
 
@@ -653,6 +661,15 @@ void MainWindow::createMenubar ()
   QAction *coloursAct =
     settingsMenu->addAction(tr("&Colours"), this, &MainWindow::setColours);
   coloursAct->setStatusTip(tr("Set colours"));
+
+  /****************************************/
+
+  QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+
+  QAction *symbolsAct =
+    helpMenu->addAction(tr("&Symbols"), this, &MainWindow::symbolsHelp);
+  symbolsAct->setStatusTip(tr("Symbols help"));
+
 }
 
 MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
