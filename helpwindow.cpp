@@ -22,6 +22,7 @@ void
 HelpWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 {
   mw->closeHW ();
+  delete this;
 }
 
 HelpWindow::HelpWindow (MainWindow *parent)
