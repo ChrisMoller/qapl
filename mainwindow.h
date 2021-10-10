@@ -109,6 +109,7 @@ private:
   InputLineFilter   *inputLineFilter;
   QString            editor;
   int		     editorIndex;
+  QStringList	     extraEditors;
   QTemporaryDir      tempdir;
   QFileSystemWatcher watcher;
   QSettings  	    *settings;

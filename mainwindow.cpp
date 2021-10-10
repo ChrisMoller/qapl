@@ -420,6 +420,10 @@ MainWindow::setEditor ()
   QComboBox *editorCombo = new QComboBox ();
   editorCombo->addItem (QString (DEFAULT_EDITOR));
   editorCombo->addItem (QString (DEFAULT_GVIM_EDITOR));
+  if (!extraEditors.isEmpty ()) {
+    for (int i = 0; i < extraEditors.size (); i++)
+      editorCombo->addItem (extraEditors[i]);
+  }
   if (editorIndex != -1) editorCombo->setCurrentIndex(editorIndex);
   connect(editorCombo,
 	  QOverload<int>::of(&QComboBox::activated),
@@ -431,6 +435,7 @@ MainWindow::setEditor ()
   
   row++;
 
+#if 0
   QPushButton *defaultSlickEditor
     = new QPushButton (tr ("Use default Slick editor"));
   connect (defaultSlickEditor,
@@ -439,7 +444,6 @@ MainWindow::setEditor ()
 	     editorLine->setText (QString (DEFAULT_SLICK_EDITOR));
 	   });  
   layout->addWidget (defaultSlickEditor, row, 0, 1, 2);
-#endif
 #endif
 
   row++;  
@@ -634,11 +638,28 @@ void MainWindow::read_script (QString pfn) {
 	if (pbt.endsWith ("\n")) pbt.chop (1);
 	if (!pbt.startsWith ("#")) {
 	  bool suppress = true;
-	  if (pbt.startsWith ("!")) {
-	    pbt.remove (0, 1);
-	    suppress = false;
+#define QAPL_TAG "qapl"
+	  if (pbt.startsWith (QAPL_TAG, Qt::CaseInsensitive)) {
+	    pbt = pbt.remove (QAPL_TAG, Qt::CaseInsensitive);
+	    pbt = pbt.trimmed ();
+#define OP_EDITOR_PLUS "editor+"
+	    if (pbt.startsWith (OP_EDITOR_PLUS, Qt::CaseInsensitive)) {
+	      pbt = pbt.remove (OP_EDITOR_PLUS, Qt::CaseInsensitive);
+	      pbt = pbt.trimmed ();
+	      extraEditors.append (pbt);
+	    }
+	    else {
+	      // fixme unknown option
+	    }
+	    
 	  }
-	  processLine (suppress, pbt);
+	  else {
+	    if (pbt.startsWith ("!")) {
+	      pbt.remove (0, 1);
+	      suppress = false;
+	    }
+	    processLine (suppress, pbt);
+	  }
 	}
       }
     }
