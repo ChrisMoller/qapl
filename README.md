@@ -217,19 +217,28 @@ asinr ← {(¯1○⍵)÷(○1)}
 
 #etc
 
-!'Hi there!'
+!'Hi there!  It''s', ⎕ts
 
+qapl editor+ emacs --geometry=40x20  -background '#ff0000' -font "Monospace"
 ```
 
-These are all simpply passed to APL.  (In this case, obviously, to create a
-number of lambdas.  I've been using APL for half a century and still can't
-remember the circle-function numbers...)  By default, any output from these
-statements is suppressed, but if the statement is preceded by an exclamation
-point, the output is shown.
+Aside from the last one, discussed below, these are all simpply passed to APL.
+(In this case, obviously, to create a number of lambdas.  I've been using APL
+for half a century and still can't remember which the circle-function number
+does what...)  By default, any output from these statements is suppressed, but
+if the statement is preceded by an exclamation point, like the "!'Hi
+there!...'", the output is shown.
 
-gapl
+Lines that start with the string "qapl" (case insensitive) are qapl directives.
+At the moment, there's only one:  "editor+"  (also case insensitive).  When
+this directive is encountered, the remainder of the line following the
+directive (and any following whitespace) will be stored in a list of
+additional available editor invocations and made available as an optional
+editor selection in Settings&rArr;Editor.
 
 Any line that starts with # is ignored.
+
+See the sample qaplinit.txt file included with this package.
 
 
 <h1>Installation<h1>

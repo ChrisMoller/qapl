@@ -32,6 +32,6 @@ atanh ← {¯7○⍵}
 sqr   ← {⍵*2}
 sqrt  ← {⍵*.5}
 
-!'Hi there!'
+!'Hi there!  It''s', ⎕ts
 
-qapl editor+ emacs --geometry=40x20  -background '#ff0000' -font "DejaVu Sans Mono-10"
+qapl editor+ emacs --geometry=40x20  -background '#ff0000' -font "Monospace"
