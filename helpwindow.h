@@ -3,15 +3,23 @@
 
 #include <QtWidgets>
 #include "mainwindow.h"
-#include "helpwindow.h"
+//#include "helpwindow.h"
+
+class MainWindow;
 
 class HelpWindow : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  HelpWindow (MainWindow *parent=nullptr);
+  HelpWindow (MainWindow *parent = nullptr);
   ~HelpWindow ();
+
+private:
+  MainWindow *mw;
+  
+protected:
+  void closeEvent(QCloseEvent *event) override;
 };
 
 #endif // HELPWINDOW_H

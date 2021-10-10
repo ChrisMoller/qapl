@@ -18,19 +18,16 @@ help_s help[] = {
 #include "src/Help.def"
 };
 
-
-/*****
-MainWindow window (startupMsgs, args, libpath, nullptr);
-QVBoxLayout *layout = new QVBoxLayout ()
-ayout->addWidget (aplwin);
-this->setCentralWidget (outerGroupBox)
-
-      
- ****/
+void
+HelpWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
+{
+  mw->closeHW ();
+}
 
 HelpWindow::HelpWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
+  mw = parent;
   QWidget *hw = new QWidget ();
   QVBoxLayout *layout = new QVBoxLayout;
   this->setCentralWidget(hw);
@@ -80,12 +77,10 @@ HelpWindow::HelpWindow (MainWindow *parent)
 
 
   hw->setLayout(layout);
-  hw->show ();
+  this->show ();
 }
 
-
-
 HelpWindow::~HelpWindow()
-{
+{;
 }
 

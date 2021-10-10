@@ -10,6 +10,7 @@
 #include <QTextEdit>
 
 #include "history.h"
+#include "helpwindow.h"
 
 #define toCString(v)       ((v).toStdString ().c_str ())
 
@@ -50,6 +51,7 @@ typedef enum {
 } save_mode_e;
 
 class MainWindow;
+class HelpWindow;
 
 class InputLineFilter : public QObject
 {
@@ -85,6 +87,7 @@ public:
   QStringList parseCl (QString str);
   void printError (QString emsg, QString estr);
   void printError (QString emsg);
+  void closeHW () { HWopen = false; }
 
   QLineEdit *inputLine;
   QTextEdit *outputLog;
@@ -120,6 +123,7 @@ private:
   QString 	     libpath;
   save_mode_e        save_mode;                                                 
   QString    	     curFile;
+  bool		     HWopen;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

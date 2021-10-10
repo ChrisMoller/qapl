@@ -195,8 +195,10 @@ void MainWindow::inputLineReturn()
   inputLine->clear ();
 
   if (text.startsWith (QString ("]help"), Qt::CaseInsensitive)) {
-    /*HelpWindow *hw = new */HelpWindow ();
-    //    hw->show ();
+    if (!HWopen) {
+      new HelpWindow (this);
+      HWopen = true;
+    }
     return;
   }
 
@@ -227,8 +229,10 @@ MainWindow::aboutHelp ()
 void
 MainWindow::symbolsHelp ()
 {
-  /*HelpWindow *hw =*/ new  HelpWindow ();
-  // hw->show ();
+  if (!HWopen) {
+    new HelpWindow (this);
+    HWopen = true;
+  }
 }
 
 void
@@ -750,6 +754,7 @@ void MainWindow::createMenubar ()
 MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   : QMainWindow(parent)
 {
+  HWopen = false;
   tempdir.setAutoRemove (true);
   QString pfn = QString ("%1/.gnu-apl/preferences").arg (getenv ("HOME"));
   if (!QFile::exists (pfn))
