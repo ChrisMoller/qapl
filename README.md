@@ -217,6 +217,14 @@ editor.  Using as an example the lambda shown below:
 editing ∇sin will show only the "1○⍵".  When saved from the editor, gapl will
 generate all the stuff necessary to create the lambda.)
 
+Settings&rArr;Editor can be used to select an existing editor invocation or it
+can be used to enter a new one.  In the latter case, it, like several other
+settings will be saved in t Qt settings file.  (Saved settings are: the log
+window and input line foreground and background colours, the font family and
+point size, the editor string, and the qapl window height and width.  Except
+for the last two, these are all set in the Settings menu.  The width and height
+are the last size the qapl window was set to.)
+
 <h3>Initialisation</h3>
 
 <h4>Command line</h4>
