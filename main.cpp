@@ -20,8 +20,11 @@ int main(int argc, char *argv[])
   parser.addHelpOption();
   parser.addVersionOption();
 
-  QCommandLineOption noCONT (OPT_noCONT, "Skip CONTINUE workspace.");
+  QCommandLineOption noCONT  (OPT_noCONT, "Skip CONTINUE workspace.");
   parser.addOption(noCONT);
+
+  QCommandLineOption noSETUP (OPT_noSETUP, "Skip SETUP workspace.");
+  parser.addOption(noSETUP);
 
   QCommandLineOption noINIT (OPT_noINIT, "Skip initialisation script.");
   parser.addOption(noINIT);

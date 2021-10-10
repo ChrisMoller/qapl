@@ -626,7 +626,7 @@ MainWindow::setColours ()
   dialog.exec ();
 }
 
-void MainWindow::read_script (QString pfn) {
+void MainWindow::readScript (QString pfn, bool &noCONT, bool &noSETUP) {
   QFile pfile(pfn);
   if (pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
 #define BUFFER_SIZE 512
@@ -649,6 +649,14 @@ void MainWindow::read_script (QString pfn) {
 	      pbt = pbt.trimmed ();
 	      extraEditors.append (pbt);
 	    }
+#define OP_NOCONT "nocont"
+	    else if (pbt.startsWith (OP_NOCONT, Qt::CaseInsensitive)) {
+	      noCONT = true;
+	    }
+#define OP_NOSETUP "nosetup"
+	    else if (pbt.startsWith (OP_NOSETUP, Qt::CaseInsensitive)) {
+	      noSETUP = true;
+	    }
 	    else {
 	      // fixme unknown option
 	    }
@@ -666,6 +674,11 @@ void MainWindow::read_script (QString pfn) {
     }
     pfile.close ();
   }
+}
+
+void MainWindow::readScript (QString pfn) {
+  bool fake;
+  readScript (pfn, fake, fake);
 }
 
 void MainWindow::createMenubar ()
@@ -855,28 +868,43 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
 		   SLOT(inputLineReturn()));
 
   mainWidget->setLayout(layout);
-  
-  if (!parser.isSet (OPT_noCONT))
-    processLine (true, ")load CONTINUE");
-  
-  if (parser.isSet (OPT_L)) {
-    QString cmd = QString (")load %1").arg(parser.value (OPT_L));
-    processLine (false, cmd);
-  }
 
+  bool noCONT  = false;
+  bool noSETUP = false;
   if (!parser.isSet (OPT_noINIT)) {
     QString pfn = QString ("./%1init.txt").arg (APPLICATION_NAME);
     if (!QFile::exists (pfn))
       pfn = QString ("%1/%2init.txt")
 	.arg (getenv ("HOME"), APPLICATION_NAME);
     if (QFile::exists (pfn))
-      read_script (pfn);
+      readScript (pfn, noCONT, noSETUP);
+  }
+
+  bool contDone = false;
+  if (!parser.isSet (OPT_noCONT) && !noCONT) {
+    QString cf = QString ("%1/CONTINUE.xml").arg (libpath);
+    if (QFile::exists (cf)) {
+      processLine (false, ")load CONTINUE");
+      contDone = true;
+    }
+  }
+  
+  if (!parser.isSet (OPT_noSETUP) && !noSETUP && !contDone) {
+    QString cf = QString ("%1/SETUP.xml").arg (libpath);
+    if (QFile::exists (cf)) {
+      processLine (false, ")load SETUP");
+    }
+  }
+  
+  if (parser.isSet (OPT_L)) {
+    QString cmd = QString (")load %1").arg(parser.value (OPT_L));
+    processLine (false, cmd);
   }
 
   QStringList pargs = parser.positionalArguments();
   if (0 < pargs.size ()) {
     for (int i = 0; i <  pargs.size (); i++)
-      read_script (pargs[i]);
+      readScript (pargs[i]);
   }
 }
 

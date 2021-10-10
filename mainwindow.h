@@ -80,7 +80,8 @@ public:
   void createMenubar ();
   void update_screen (QString &errString, QString &outString);
   void processLine (bool suppressOppressOutput, QString text);
-  void read_script (QString pfn);
+  void readScript (QString pfn, bool &noCONT, bool &noSETUP);
+  void readScript (QString pfn);
   QStringList parseCl (QString str);
   void printError (QString emsg, QString estr);
   void printError (QString emsg);
@@ -119,7 +120,6 @@ private:
   QString 	     libpath;
   save_mode_e        save_mode;                                                 
   QString    	     curFile;
-
   
 protected:
   void closeEvent(QCloseEvent *event) override;

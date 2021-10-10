@@ -221,14 +221,19 @@ generate all the stuff necessary to create the lambda.)
 
 <h4>Command line</h4>
 
-qapl has three options:
+qapl has four options:
 
 * &ndash;&ndash;noCONT
    - suppress loading the CONTINUE workspace if it exists
-* &ndash;L ws
-   - load the specified workspace
+* &ndash;&ndash;noSETUP
+   - suppress loading the SETUP workspace if it exists
 * &ndash;&ndash;noINIT
    - suppress processing the qapl initialisation file
+* &ndash;L ws
+   - load the specified workspace
+
+Following these options, qapl will accept any number of arguments that will
+be interpreted as scripts of the format described below.
 
 <h4>Initialisation file</h4>
 
@@ -250,48 +255,67 @@ asinr ← {(¯1○⍵)÷(○1)}
 !'Hi there!  It''s', ⎕ts
 
 qapl editor+ emacs --geometry=40x20  -background '#ff0000' -font "Monospace"
+qapl nocont
+qapl nosetup
 ```
 ____________
 
-Aside from the last one, discussed below, these are all simpply passed to APL.
-(In this case, obviously, to create a number of lambdas.  I've been using APL
-for half a century and still can't remember which the circle-function number
-does what...)  By default, any output from these statements is suppressed, but
-if the statement is preceded by an exclamation point, like the "!'Hi
-there!...'", the output is shown.
+Aside from the last three, discussed below, these are all simpply passed to
+APL.  (In this case, obviously, to create a number of lambdas.  I've been
+using APL for half a century and still can't remember which the
+circle-function number does what...)  By default, any output from these
+statements is suppressed, but if the statement is preceded by an exclamation
+point, like the "!'Hi there!...'", the output is shown.
 
 Lines that start with the string "qapl" (case insensitive) are qapl
-directives.  At the moment, there's only one: "editor+" (also case
-insensitive).  When this directive is encountered, the remainder of the line
-following the directive (and any following whitespace) will be stored in a
+directives:
+
+* editor+
+  - When this directive is encountered, the remainder of the line following
+the directive (and any following immediately whitespace) will be stored in a
 list of additional editor invocations and made available as an optional editor
 selection in Settings&rArr;Editor.
+* nocont
+  - suppresses loading the CONTINUE workspace.
+* nosetup
+  - suppresses loading the SETUP workspace.
 
-Any line that starts with # is ignored.
+All of these are case-insensitive.
+
+Blank lines and any line that starts with # is ignored.
 
 See the sample qaplinit.txt file included with this package.
 
 
 <h1>Installation<h1>
 
+Step Zero, if you don't have Qt installed, is to install it.  I'm running
+Qt 5.15.2 so it's probably a good idea to have at least Qt 5 installed, but
+earlier versions might still work.
+
 The Qt equivalent of Makefile.am and configure.ac is a *.pro file that's
-processed by qmake to produce Makefiles.  qmake isn't as versatile as the
+processed by qmake to produce Makefiles.  Unless I'm missing
+something&mdash;easily possible&mdash;qmake isn't as versatile as the
 autoconf/automake tools and doesn't understand constructs like
 
 <p style="text-align: center;">INCLUDES += \`apl --show_src_dir\`</p>
 
-So the real Step One is to run:
+So Step One is to run:
 
 <p style="text-align: center;">./autogen.sh</p>
 
-which will build qapl.pro
+which will build a file called qapl.pro, which is necessary for...
 
 Step Two:
 
 <p style="text-align: center;">qmake</p>
 
-followed by the usual steps
+which will create Makefiles in several places.  And then, finally,
+the usual steps:
 
-<p style="text-align: center;">make</p>
+<p style="text-align: center;">make -j6 (or whatever)</p>
 <p style="text-align: center;">sudo make install</p>
+
+If you're of the sort who does such things, you can create a desktop or panel
+button to start qapl&mdash;I've included a logo PNG in images/qapl32logo.png
 
