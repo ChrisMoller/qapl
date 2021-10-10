@@ -6,9 +6,9 @@ capabilities:
 
 + Access to external editors such as emacs or gvim.
 + GUI-style access to APL )load, )save, )copy, etc., operations.
-+ &gt;&gt; function to export expression results to a file or >>> to
++ A &gt;&gt; function to export expression results to a file or a >>> to
 append to a file.
-+ |> function to call an external function with expression results
++ A |> function to call an external function, and capture the results.
 
 qapl offers two major capabilities, a terminal emulator for user interaction,
 and a means of using external editors like emacs and gvim to edit APL
@@ -39,7 +39,7 @@ will create file fubar containing:
 
 Files maybe appended with the >>> operator:
 
-<p style="text-align: center;">>⍳8>>fubar</p>
+<p style="text-align: center;">⍳8>>fubar</p>
 
 results in:
 <p style="text-align: center;">0 1 2 3 4 5 6 7<br>0 1 2 3 4 5 6 7</p>
@@ -68,7 +68,7 @@ Arguments may be provided as well:
 ```
 
 
-	wc -w -l
+	|>wc -w -l
 1       8
 ```
 
@@ -210,14 +210,14 @@ presently selected editor may be opened, as usual, by ∇_functionname_.  To
 edit a lambda, the editors can be opened using double ∇s: ∇∇_lambdaname_
 (Double ∇s are only necessary on the initial invocation; thereafter, qapl
 figures it out.)  (Note that only the lambda body can be specified in the
-editor.  Using as an exampl the lambda shown below:
+editor.  Using as an example the lambda shown below:
 
 <p style="text-align: center;">sin   ← {1○⍵}</p>
 
 editing ∇sin will show only the "1○⍵".  When saved from the editor, gapl will
 generate all the stuff necessary to create the lambda.)
 
-<h3>initialisation</h3>
+<h3>Initialisation</h3>
 
 <h4>Command line</h4>
 
