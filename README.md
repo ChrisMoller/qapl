@@ -317,5 +317,11 @@ the usual steps:
 <p style="text-align: center;">sudo make install</p>
 
 If you're of the sort who does such things, you can create a desktop or panel
-button to start qapl&mdash;I've included a logo PNG in images/qapl32logo.png
+button to start qapl&mdash;I've included a logo PNG in images/qapl32logo.png:
+
+<p style="text-align: center;">
+<img title="a title" alt="Alt text" src="./images/qapl32logo.png"></p>
+
+(Yes, I know&mdash;the Greek ⍴ doesn't correspond to the Roman p, but it
+looks right...)
 
