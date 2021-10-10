@@ -56,14 +56,18 @@ The piping function pipes the results of the left expression to the given
 external command and any standard output of that command will be captured.
 For example:
 
+____________
 ```
 	⍳8|>wc
 1       8      16
 ```
+____________
 
 Arguments may be provided as well:
 
 ```
+
+
 	wc -w -l
 1       8
 ```
@@ -71,6 +75,7 @@ Arguments may be provided as well:
 
 The output can be assigned to an APL variable:
 
+____________
 ```
 	⍳8|>z←wc -w -l
       z
@@ -79,26 +84,33 @@ The output can be assigned to an APL variable:
       ⍴z
 2
 ```
+____________
+
 
 If a command doesn't accept or doesn't need standard input, the left argument
 may be omitted:
 
+____________
 ```
       |>date
 Fri Oct  8 02:20:49 PM EDT 2021
 ```
+____________
 
 If the standard output of a command is a string, as in this case, the output
 may be assigned to a variable by enclosing the command in quotes:
 
+____________
 ```
       |>z←'date'
       z
 Fri Oct  8 02:23:34 PM EDT 2021
 ```
+____________
 
 (This also works with numeric output:
 
+____________
 ```
       ⍳8|>z←wc -w -l
       z
@@ -114,8 +126,12 @@ Fri Oct  8 02:23:34 PM EDT 2021
       ⍴z
 15
 )
+```
+____________
 
 The exit code of the given command can be captured by using a "←+" assignment:
+
+____________
 ```
       |>z←+'date'
       z
@@ -129,12 +145,13 @@ The exit code of the given command can be captured by using a "←+" assignment:
 
       1↓z		⍝ encapsulated result
  Sat Oct  9 09:15:08 AM EDT 2021
-
 ```
+____________
 
 Argument substitutions maybe made to piped commands through the use of
 backquotes:
 
+____________
 ```
       opta←'-w'
       optb←'-l'
@@ -148,9 +165,11 @@ backquotes:
       ⍳8|>wc `opta` `optb`
       8      16
 ```
+____________
 
 or
 
+____________
 ```
       arga←'this is a string'
       |>echo `arga`
@@ -160,13 +179,16 @@ or
       |>echo `arga`
 "this is a different string"
 ```
+____________
 
 or
 
+____________
 ```
       |>echo `'iota 8 equals '`  `⍳8`
  iota 8 equals   "0 1 2 3 4 5 6 7"
 ```
+____________
 
 <h3>Input line</h3>
 
@@ -184,9 +206,16 @@ editors like emacs, gvim, and probably other editors that open their own
 windows.  qapl uses emacs as its default editor, but it includes
 gvim&mdash;selectable under Settings&rArr;Editor menu option&mdash;and other
 editors can be set by hand or in an initialisation file.  (See below.) The
-presently selected, as usual, by ∇_functionname_.  The editors can be
-opened using double ∇s: ∇∇lambdaname  (Double ∇s are only necessary on the
-initial invocation; thereafter, qapl figures it out.)
+presently selected editor may be opened, as usual, by ∇_functionname_.  To
+edit a lambda, the editors can be opened using double ∇s: ∇∇_lambdaname_
+(Double ∇s are only necessary on the initial invocation; thereafter, qapl
+figures it out.)  (Note that only the lambda body can be specified in the
+editor.  Using as an exampl the lambda shown below:
+
+<p style="text-align: center;">sin   ← {1○⍵}</p>
+
+editing ∇sin will show only the "1○⍵".  When saved from the editor, gapl will
+generate all the stuff necessary to create the lambda.)
 
 <h3>initialisation</h3>
 
@@ -207,6 +236,7 @@ In addition to loading the SETUP or CONTINUE workspaces, qapl can be
 initialised with a human-readable text file containing a mix of APL
 expresssions and qapl settings and options.  For example:
 
+____________
 ```
 sin   ← {1○⍵}
 sind  ← {1○○⍵÷180}
@@ -221,6 +251,7 @@ asinr ← {(¯1○⍵)÷(○1)}
 
 qapl editor+ emacs --geometry=40x20  -background '#ff0000' -font "Monospace"
 ```
+____________
 
 Aside from the last one, discussed below, these are all simpply passed to APL.
 (In this case, obviously, to create a number of lambdas.  I've been using APL
@@ -229,12 +260,12 @@ does what...)  By default, any output from these statements is suppressed, but
 if the statement is preceded by an exclamation point, like the "!'Hi
 there!...'", the output is shown.
 
-Lines that start with the string "qapl" (case insensitive) are qapl directives.
-At the moment, there's only one:  "editor+"  (also case insensitive).  When
-this directive is encountered, the remainder of the line following the
-directive (and any following whitespace) will be stored in a list of
-additional available editor invocations and made available as an optional
-editor selection in Settings&rArr;Editor.
+Lines that start with the string "qapl" (case insensitive) are qapl
+directives.  At the moment, there's only one: "editor+" (also case
+insensitive).  When this directive is encountered, the remainder of the line
+following the directive (and any following whitespace) will be stored in a
+list of additional editor invocations and made available as an optional editor
+selection in Settings&rArr;Editor.
 
 Any line that starts with # is ignored.
 

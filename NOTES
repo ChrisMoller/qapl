@@ -1,5 +1,5 @@
 done:			`eval` in command args
-editors combo box
-set editors in qaplinit
+done:			editors combo box
+done:			set editors in qaplinit
 fix lambda initialisation
 load SETUP
