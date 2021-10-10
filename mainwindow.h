@@ -108,6 +108,7 @@ private:
   void               aboutHelp ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
+  int		     editorIndex;
   QTemporaryDir      tempdir;
   QFileSystemWatcher watcher;
   QSettings  	    *settings;

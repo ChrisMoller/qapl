@@ -401,32 +401,34 @@ MainWindow::setEditor ()
   dialog.setLayout (layout);
 
   int row = 0;
+
+  QLabel *currentLbl = new QLabel (tr ("Current selection:"));
+  layout->addWidget (currentLbl, row, 0);
+
+  row++;
   
   QLineEdit *editorLine = new QLineEdit (editor);
-  layout->addWidget (editorLine, row, 0);
+  layout->addWidget (editorLine, row, 0, 1, 2);
 
   row++;
 
-  QPushButton *defaultEditor = new QPushButton (tr ("Use default editor"));
-  connect (defaultEditor,
-           &QAbstractButton::clicked,
-           [=](){
-	     editorLine->setText (QString (DEFAULT_EDITOR));
-	   });  
-  layout->addWidget (defaultEditor, row, 0, 1, 2);
+  QLabel *predefLbl = new QLabel (tr ("Pre-defined editors:"));
+  layout->addWidget (predefLbl, row, 0);
 
   row++;
 
-  QPushButton *defaultGvimEditor
-    = new QPushButton (tr ("Use default gvim editor"));
-  connect (defaultGvimEditor,
-           &QAbstractButton::clicked,
-           [=](){
-	     editorLine->setText (QString (DEFAULT_GVIM_EDITOR));
-	   });  
-  layout->addWidget (defaultGvimEditor, row, 0, 1, 2);
-
-#if 0
+  QComboBox *editorCombo = new QComboBox ();
+  editorCombo->addItem (QString (DEFAULT_EDITOR));
+  editorCombo->addItem (QString (DEFAULT_GVIM_EDITOR));
+  if (editorIndex != -1) editorCombo->setCurrentIndex(editorIndex);
+  connect(editorCombo,
+	  QOverload<int>::of(&QComboBox::activated),
+	  [=](int index){
+	    editorIndex = index;
+	    editorLine->setText (editorCombo->currentText ());
+	  });
+  layout->addWidget (editorCombo, row, 0, 1, 2);
+  
   row++;
 
   QPushButton *defaultSlickEditor
@@ -437,6 +439,7 @@ MainWindow::setEditor ()
 	     editorLine->setText (QString (DEFAULT_SLICK_EDITOR));
 	   });  
   layout->addWidget (defaultSlickEditor, row, 0, 1, 2);
+#endif
 #endif
 
   row++;  
@@ -745,6 +748,7 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
     editor = QString (DEFAULT_EDITOR);
     settings->setValue (SETTINGS_EDITOR, QVariant (editor));
   }
+  editorIndex = -1;
 
   QString fontFamily = settings->value (SETTINGS_FONT_FAMILY).toString ();
   if (fontFamily.isEmpty ()) {

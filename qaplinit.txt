@@ -33,3 +33,5 @@ sqr   ← {⍵*2}
 sqrt  ← {⍵*.5}
 
 !'Hi there!'
+
+qapl editor+ emacs --geometry=40x20  -background '#ff0000' -font "DejaVu Sans Mono-10"

@@ -203,9 +203,9 @@ qapl has three options:
 
 <h4>Initialisation file</h4>
 
-In addition loading the SETUP or CONTINUE workspaces, qapl can read a
-human-readable text file containing a mix of APL expresssions and qapl
-setting and options.  For example:
+In addition to loading the SETUP or CONTINUE workspaces, qapl can be
+initialised with a human-readable text file containing a mix of APL
+expresssions and qapl settings and options.  For example:
 
 ```
 sin   ← {1○⍵}
@@ -214,6 +214,8 @@ sinr  ← {1○○⍵}
 asin  ← {¯1○⍵}
 asind ← {(¯1○⍵)÷(○÷180)}
 asinr ← {(¯1○⍵)÷(○1)}
+
+#etc
 
 !'Hi there!'
 
@@ -225,7 +227,9 @@ remember the circle-function numbers...)  By default, any output from these
 statements is suppressed, but if the statement is preceded by an exclamation
 point, the output is shown.
 
-@set
+gapl
+
+Any line that starts with # is ignored.
 
 
 <h1>Installation<h1>
