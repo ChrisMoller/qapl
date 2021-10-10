@@ -287,7 +287,7 @@ Blank lines and any line that starts with # is ignored.
 See the sample qaplinit.txt file included with this package.
 
 
-<h1>Installation<h1>
+<h1>Installation</h1>
 
 Step Zero, if you don't have Qt installed, is to install it.  I'm running
 Qt 5.15.2 so it's probably a good idea to have at least Qt 5 installed, but
