@@ -6,7 +6,8 @@ capabilities:
 
 + Access to external editors such as emacs or gvim.
 + GUI-style access to APL )load, )save, )copy, etc., operations.
-+ &gt;&gt; function to export expression results to a file or >>> to append to a file.
++ &gt;&gt; function to export expression results to a file or >>> to
+append to a file.
 + |> function to call an external function with expression results
 
 qapl offers two major capabilities, a terminal emulator for user interaction,
@@ -18,12 +19,14 @@ avoiding potential interactions with the standard APL CLI.  For the editor
 interface, qapl uses Qt processes rather than APL native functions and
 operating system processes.
 
-<h1>Output redirection and pipes</h1>
+<h1>Usage</h1>
+
+<h2>Output redirection and pipes</h2>
 
 qapl provides what look like two additional APL functions, though they're
 implemented in qapl rather than in the APL engine.
 
-<h2>File redirection:  >> and >>></h2>
+<h3>File redirection:  >> and >>></h3>
 
 The first of these functions, in dyadic operation, provides redirection of its
 left expression to an external file.  For example, 
@@ -47,7 +50,7 @@ The redirection function can also be used monadically:
 
 Which will leave the file in existence but will make it zero length.
 
-<h2>Piping:  |></h2>
+<h3>Piping:  |></h3>
 
 The piping function pipes the results of the left expression to the given
 external command and any standard output of that command will be captured.
@@ -164,8 +167,16 @@ or
  iota 8 equals   "0 1 2 3 4 5 6 7"
 ```
 
+<h3>Input line</h3>
 
-<h2>Installation</h2>
+
+up down mouse wheel
+
+]help
+
+<h4>Editors</h4>
+
+<h1>Installation<h1>
 
 The Qt equivalent of Makefile.am and configure.ac is a *.pro file that's
 processed by qmake to produce Makefiles.  qmake isn't as versatile as the
