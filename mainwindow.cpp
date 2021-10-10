@@ -71,6 +71,7 @@ void MainWindow::byebye ()
     kill (pid, SIGTERM);
   }
   tempdir.remove ();			// just in case
+  //  fprintf (stderr, "byebye removing %s\n", toCString (tempdir.path ()));
   QRect geo = this->geometry ();
   settings->setValue (SETTINGS_WIDTH,  geo.width ());
   settings->setValue (SETTINGS_HEIGHT, geo.height ());
@@ -736,6 +737,7 @@ void MainWindow::createMenubar ()
 MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
   : QMainWindow(parent)
 {
+  tempdir.setAutoRemove (true);
   QString pfn = QString ("%1/.gnu-apl/preferences").arg (getenv ("HOME"));
   if (!QFile::exists (pfn))
     pfn = QString ("%1/.config/gnu-apl/preferences")
@@ -881,6 +883,7 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
 MainWindow::~MainWindow()
 {
   delete history;
+  //  fprintf (stderr, "destructor removing %s\n", toCString (tempdir.path ()));
   tempdir.remove ();
 }
 
