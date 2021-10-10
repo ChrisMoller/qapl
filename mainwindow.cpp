@@ -226,8 +226,8 @@ MainWindow::aboutHelp ()
 void
 MainWindow::symbolsHelp ()
 {
-  HelpWindow *hw = new HelpWindow ();
-  hw->show ();
+  /*HelpWindow *hw =*/ new  HelpWindow ();
+  // hw->show ();
 }
 
 void

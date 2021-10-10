@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
   parser.addOption(noINIT);
 
   QCommandLineOption loadws(OPT_L, "Workspace to load.", "<ws>");
+  loadws.setFlags(QCommandLineOption::ShortOptionStyle);
   parser.addOption(loadws);
 
   parser.process(app);

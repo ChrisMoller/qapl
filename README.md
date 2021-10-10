@@ -124,11 +124,12 @@ The exit code of the given command can be captured by using a "←+" assignment:
       ⍴z
 2
 
-      1↑z
+      1↑z		⍝ exit code
 0
 
-      1↓z
+      1↓z		⍝ encapsulated result
  Sat Oct  9 09:15:08 AM EDT 2021
+
 ```
 
 Argument substitutions maybe made to piped commands through the use of
@@ -169,12 +170,63 @@ or
 
 <h3>Input line</h3>
 
+The input line keeps a history (of course) that can be accessed not only
+with the Up and Down arrows but with the mouse wheel as well.
 
-up down mouse wheel
-
-]help
+A number of GNU APL function are irrelevant in qapl, but ]help pops up
+a window containing information shamelessly stolen from the GNU APL source.
+Help&rArr;Symbols on the menu bar does the same thing.
 
 <h4>Editors</h4>
+
+The standard APL ∇ editor doesn't work under qapl, being replaced by external
+editors like emacs, gvim, and probably other editors that open their own
+windows.  qapl uses emacs as its default editor, but it includes
+gvim&mdash;selectable under Settings&rArr;Editor menu option&mdash;and other
+editors can be set by hand or in an initialisation file.  (See below.) The
+presently selected, as usual, by ∇_functionname_.  The editors can be
+opened using double ∇s: ∇∇lambdaname  (Double ∇s are only necessary on the
+initial invocation; thereafter, qapl figures it out.)
+
+<h3>initialisation</h3>
+
+<h4>Command line</h4>
+
+qapl has three options:
+
+* &ndash;&ndash;noCONT
+   - suppress loading the CONTINUE workspace if it exists
+* &ndash;L ws
+   - load the specified workspace
+* &ndash;&ndash;noINIT
+   - suppress processing the qapl initialisation file
+
+<h4>Initialisation file</h4>
+
+In addition loading the SETUP or CONTINUE workspaces, qapl can read a
+human-readable text file containing a mix of APL expresssions and qapl
+setting and options.  For example:
+
+```
+sin   ← {1○⍵}
+sind  ← {1○○⍵÷180}
+sinr  ← {1○○⍵}
+asin  ← {¯1○⍵}
+asind ← {(¯1○⍵)÷(○÷180)}
+asinr ← {(¯1○⍵)÷(○1)}
+
+!'Hi there!'
+
+```
+
+These are all simpply passed to APL.  (In this case, obviously, to create a
+number of lambdas.  I've been using APL for half a century and still can't
+remember the circle-function numbers...)  By default, any output from these
+statements is suppressed, but if the statement is preceded by an exclamation
+point, the output is shown.
+
+@set
+
 
 <h1>Installation<h1>
 
