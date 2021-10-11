@@ -19,6 +19,7 @@ SOURCES += \
     history.cpp \
     main.cpp \
     mainwindow.cpp \
+    menuops.cpp \
     processline.cpp
 
 HEADERS += \

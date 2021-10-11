@@ -2,3 +2,21 @@ done:			`eval` in command args
 done:			editors combo box
 done:			set editors in qaplinit
 done:			load SETUP
+
+⍴ = 1
+  real		2d parametric x vs y
+  imag		2d parametric x vs real y
+  		2d parametric x vs imag y
+  		2d parametric x vs mag y
+  		2d parametric x vs pha y
+  		2d real y vs imag y
+		3d parametric x vs real y on y, imag y on z
+
+⍴ = 2
+  real		2d [0] vs [1]
+  [0] r, [1] c	3d [0] vs real [1] on y, imag [1] on z
+  [0] c, [1] r  3d surface, real [0] on x, imag [0] on z, [1] on y
+  
+⍴ > 2
+  all real	2d parametric x vs multi y
+  

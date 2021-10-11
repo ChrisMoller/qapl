@@ -110,6 +110,7 @@ private:
   void               setColours ();
   void               symbolsHelp ();
   void               aboutHelp ();
+  void		     killTempdir ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
   int		     editorIndex;
