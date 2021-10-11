@@ -315,6 +315,7 @@ MainWindow::setFont ()
 void  MainWindow::setFGColour ()
 {
   QColorDialog *colourDialog = new QColorDialog (fg_colour);
+  colourDialog->setWindowFlags(Qt::WindowStaysOnTopHint);
   colourDialog->setCustomColor (0, QColor (DEFAULT_BG_COLOUR));
   colourDialog->setCustomColor (1, QColor (DEFAULT_FG_COLOUR));
   colourDialog->setWindowTitle (tr ("Select foreground colour"));
@@ -336,6 +337,7 @@ void  MainWindow::setFGColour ()
 void  MainWindow::setBGColour ()
 {
   QColorDialog *colourDialog = new QColorDialog (bg_colour);
+  colourDialog->setWindowFlags(Qt::WindowStaysOnTopHint);
   colourDialog->setCustomColor (0, QColor (DEFAULT_BG_COLOUR));
   colourDialog->setCustomColor (1, QColor (DEFAULT_FG_COLOUR));
   colourDialog->setWindowTitle (tr ("Select background colour"));

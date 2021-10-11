@@ -189,7 +189,7 @@ void MainWindow::processLine (bool suppressOppressOutput, QString text)
     else printError ("Invalid executable string.");
   }
   else if (outString.size () > 0) {
-    outputLog->setTextColor (black);
+    outputLog->setTextColor (fg_colour);
     outputLog->append (outString);		// not captured
   }
 

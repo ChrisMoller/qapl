@@ -23,14 +23,14 @@ void MainWindow::printError (QString emsg, QString estr)
   outputLog->append (emsg);
   if (estr.size () > 0)
     outputLog->append (estr);
-  outputLog->setTextColor (black);
+  outputLog->setTextColor (fg_colour);
 }
 
 void MainWindow::printError (QString emsg)
 {
   outputLog->setTextColor (red);
   outputLog->append (emsg);
-  outputLog->setTextColor (black);
+  outputLog->setTextColor (fg_colour);
 }
 
 static void
@@ -188,7 +188,7 @@ MainWindow::update_screen (QString &errString, QString &outString)
   if (!errString.isEmpty ()) {
     outputLog->setTextColor (red);
     outputLog->append (outString);
-    outputLog->setTextColor (black);
+    outputLog->setTextColor (fg_colour);
   }
   if (!outString.isEmpty ()) outputLog->append (outString);
   QScrollBar *sb = outputLog->verticalScrollBar();
