@@ -20,6 +20,14 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   int row = 0;
   
   ComplexSpinBox *rangeInit = new ComplexSpinBox ();
+  connect (rangeInit,
+           &ComplexSpinBox::valueChanged,
+          [=](){
+            double real = rangeInit->getReal ();
+            double imag = rangeInit->getImag ();
+	    fprintf (stderr, "init %g %g\n", real, imag);
+          });
+
   rangeInit->setComplex (-6000.0, -8000.0);
   layout->addWidget (rangeInit, row, 0);
   

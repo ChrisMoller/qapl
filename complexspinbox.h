@@ -24,22 +24,19 @@ public:
     void setComplex (std::complex<double> cv);
 
  Q_SIGNALS:
-#if 0
-  void valueChanged ();
-#endif
+    void valueChanged ();
 
 protected:
-  void keyPressEvent(QKeyEvent *event);
-  void mousePressEvent(QMouseEvent *event);
-  void wheelEvent(QWheelEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
-private slots:
 
 private:
-  void parseComplex (QString txt);
- void incdecValue (which_e which, double val);
+    void parseComplex (QString txt);
+    void incdecValue (which_e which, double val);
  
- QValidator  *validator;
- double real;
- double imag;
+    QValidator  *validator;
+    double real;
+    double imag;
 };

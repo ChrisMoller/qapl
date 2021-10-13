@@ -37,6 +37,7 @@ ComplexSpinBox::parseComplex (QString txt)
     //    QStringList list = rx.pattern();
     real = match.captured (1).toFloat ();
     imag = match.captured (8).toFloat ();
+    Q_EMIT valueChanged ();
   }
 }
 
@@ -66,6 +67,7 @@ ComplexSpinBox::setReal (double rv)
   real = rv;
   QString txt = QString ("%1l%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
+  Q_EMIT valueChanged ();
 }
 
 void
@@ -74,6 +76,7 @@ ComplexSpinBox::setImag (double iv)
   imag = iv;
   QString txt = QString ("%1l%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
+  Q_EMIT valueChanged ();
 }
 
 void
@@ -83,6 +86,7 @@ ComplexSpinBox::setComplex (double rv, double iv)
   imag = iv;
   QString txt = QString ("%1l%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
+  Q_EMIT valueChanged ();
 }
 
 void
@@ -92,6 +96,7 @@ ComplexSpinBox::setComplex (std::complex<double> cv)
   imag = cv.imag ();
   QString txt = QString ("%1l%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
+  Q_EMIT valueChanged ();
 }
 
 void ComplexSpinBox::incdecValue (which_e wch, double val)
@@ -102,6 +107,7 @@ void ComplexSpinBox::incdecValue (which_e wch, double val)
     imag += val;
   QString txt = QString ("%1l%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
+  Q_EMIT valueChanged ();
 }
 
 void ComplexSpinBox::keyPressEvent(QKeyEvent *keyEvent)
