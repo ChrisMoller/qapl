@@ -82,6 +82,6 @@ HelpWindow::HelpWindow (MainWindow *parent)
 }
 
 HelpWindow::~HelpWindow()
-{;
+{
 }
 

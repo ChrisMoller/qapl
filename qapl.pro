@@ -14,20 +14,24 @@ INCLUDEPATH += /home/moller/Downloads/apl-1486
 
 SOURCES += \
     aplexec.cpp \
+    complexspinbox.cpp \
     edif.cpp \
     helpwindow.cpp \
     history.cpp \
     main.cpp \
     mainwindow.cpp \
     menuops.cpp \
+    plot2dwindow.cpp \
     processline.cpp
 
 HEADERS += \
     aplexec.h \
+    complexspinbox.h \
     helpwindow.h \
     history.h \
     mainwindow.h \
     optionstrings.h \
+    plot2dwindow.h \
     processline.h
 
 PREFIX = /usr/local

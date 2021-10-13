@@ -3,7 +3,6 @@
 
 #include <QtWidgets>
 #include "mainwindow.h"
-//#include "helpwindow.h"
 
 class MainWindow;
 

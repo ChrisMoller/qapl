@@ -110,6 +110,7 @@ private:
   void               setColours ();
   void               symbolsHelp ();
   void               aboutHelp ();
+  void               plot2d ();
   void		     killTempdir ();
   InputLineFilter   *inputLineFilter;
   QString            editor;
