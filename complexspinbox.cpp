@@ -158,6 +158,11 @@ void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
   incdecValue (which, incr);
 }
   
+void ComplexSpinBox::  timerEvent(QTimerEvent *event) {
+  fprintf (stderr, "tock\n");
+  event->accept();
+}
+
 ComplexSpinBox::ComplexSpinBox (QWidget *parent)
   : QAbstractSpinBox (parent)
 {
