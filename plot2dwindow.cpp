@@ -18,6 +18,10 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   this->setCentralWidget(hw);
 
   int row = 0;
+
+  QLineEdit *indexVarName = new QLineEdit ();
+  indexVarName->setPlaceholderText ("Index");
+  layout->addWidget (indexVarName, row, 0);
   
   ComplexSpinBox *rangeInit = new ComplexSpinBox ();
   connect (rangeInit,
@@ -27,9 +31,19 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
             double imag = rangeInit->getImag ();
 	    fprintf (stderr, "init %g %g\n", real, imag);
           });
-
-  rangeInit->setComplex (-6000.0, -8000.0);
-  layout->addWidget (rangeInit, row, 0);
+  rangeInit->setComplex (0.0, 0.0);
+  layout->addWidget (rangeInit, row, 1);
+  
+  ComplexSpinBox *rangeFinal = new ComplexSpinBox ();
+  connect (rangeFinal,
+           &ComplexSpinBox::valueChanged,
+          [=](){
+            double real = rangeFinal->getReal ();
+            double imag = rangeFinal->getImag ();
+	    fprintf (stderr, "final %g %g\n", real, imag);
+          });
+  rangeFinal->setComplex (0.0, 0.0);
+  layout->addWidget (rangeFinal, row, 2);
   
   hw->setLayout(layout);
   this->show ();

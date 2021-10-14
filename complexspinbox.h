@@ -30,7 +30,8 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
-    void timerEvent(QTimerEvent *event);
+    //void timerEvent(QTimerEvent *event);
+    //    QValidator::State validate(QString &input, int &pos);
 
 
 private:

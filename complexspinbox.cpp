@@ -1,9 +1,15 @@
-
 #include <QtWidgets>
 
 #include "complexspinbox.h"
 
+#ifndef toCString
+#define toCString(v) ((v).toStdString ().c_str ())
+#endif
+
 #define RE_FP "([-+]?([0-9]+(\\.[0-9]+)?|\\.[0-9]+))([eE]([-+]?[0-9]+))?"
+//#define RE_FP "[^jJ]*"
+static QString cpxval = QString ("(%1)([jJ](%1))?").arg (RE_FP);
+static QRegularExpression rx(cpxval);
 
 /***
 list[0] = 7.6e9j77		// whole thing
@@ -22,19 +28,18 @@ list[12] =
 list[13] =			//imag exp
  ***/
 
-#ifndef toCString
-#define toCString(v) ((v).toStdString ().c_str ())
+#if 0
+QValidator::State validate(QString &input, int &pos)
+{
+  return QValidator::Acceptable;
+}
 #endif
 
-static QString cpxval = QString ("(%1)([jJ](%1))?").arg (RE_FP);
-static QRegularExpression rx(cpxval);
-
-void
+  void
 ComplexSpinBox::parseComplex (QString txt)
 {
   QRegularExpressionMatch match = rx.match (txt);
   if (match.hasMatch ()) {
-    //    QStringList list = rx.pattern();
     real = match.captured (1).toFloat ();
     imag = match.captured (8).toFloat ();
     Q_EMIT valueChanged ();
@@ -46,6 +51,7 @@ ComplexSpinBox::getReal ()
 {
   return real;
 }
+
 
 double
 ComplexSpinBox::getImag ()
@@ -65,7 +71,7 @@ void
 ComplexSpinBox::setReal (double rv)
 {
   real = rv;
-  QString txt = QString ("%1l%2").arg (real).arg (imag);
+  QString txt = QString ("%1j%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
   Q_EMIT valueChanged ();
 }
@@ -74,7 +80,7 @@ void
 ComplexSpinBox::setImag (double iv)
 {
   imag = iv;
-  QString txt = QString ("%1l%2").arg (real).arg (imag);
+  QString txt = QString ("%1j%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
   Q_EMIT valueChanged ();
 }
@@ -84,7 +90,7 @@ ComplexSpinBox::setComplex (double rv, double iv)
 {
   real = rv;
   imag = iv;
-  QString txt = QString ("%1l%2").arg (real).arg (imag);
+  QString txt = QString ("%1j%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
   Q_EMIT valueChanged ();
 }
@@ -94,7 +100,7 @@ ComplexSpinBox::setComplex (std::complex<double> cv)
 {
   real = cv.real ();
   imag = cv.imag ();
-  QString txt = QString ("%1l%2").arg (real).arg (imag);
+  QString txt = QString ("%1j%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
   Q_EMIT valueChanged ();
 }
@@ -105,34 +111,41 @@ void ComplexSpinBox::incdecValue (which_e wch, double val)
     real += val;
   else
     imag += val;
-  QString txt = QString ("%1l%2").arg (real).arg (imag);
+  QString txt = QString ("%1j%2").arg (real).arg (imag);
   this->lineEdit ()->setText (txt);
   Q_EMIT valueChanged ();
 }
 
 void ComplexSpinBox::keyPressEvent(QKeyEvent *keyEvent)
 {
+  bool handled = false;
   Qt::KeyboardModifiers mods = keyEvent->modifiers ();
   bool ctl = (0 == (mods & Qt::ControlModifier));
   which_e which = ctl ? WHICH_REAL : WHICH_IMAG;
   switch(keyEvent->key()) {
   case Qt::Key_PageUp:
     incdecValue (which, 10.0);
+    handled = true;
     break;
   case Qt::Key_PageDown:
     incdecValue (which, -10.0);
+    handled = true;
     break;
   case Qt::Key_Up:
     incdecValue (which, 1.0);
+    handled = true;
     break;
   case Qt::Key_Down:
     incdecValue (which, -1.0);
+    handled = true;
     break;
   }
+  if (!handled) QAbstractSpinBox::keyPressEvent(keyEvent);
 }
 
 void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
 {
+  bool handled = false;
   if (mouseEvent->button () == Qt::LeftButton) {
     Qt::KeyboardModifiers mods = mouseEvent->modifiers ();
     bool ctl = (0 == (mods & Qt::ControlModifier));
@@ -143,7 +156,9 @@ void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
     double incr = (y < hgt / 2) ? 1.0 : -1.0;
 
     incdecValue (which, incr);
+    handled = true;
   }
+  if (!handled) QAbstractSpinBox::mousePressEvent(mouseEvent);
 }
 
 void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
@@ -157,11 +172,13 @@ void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
 
   incdecValue (which, incr);
 }
-  
+
+#if 0
 void ComplexSpinBox::  timerEvent(QTimerEvent *event) {
   fprintf (stderr, "tock\n");
   event->accept();
 }
+#endif
 
 ComplexSpinBox::ComplexSpinBox (QWidget *parent)
   : QAbstractSpinBox (parent)
@@ -172,12 +189,17 @@ ComplexSpinBox::ComplexSpinBox (QWidget *parent)
   
   QLineEdit *line = new QLineEdit ();
   line->setValidator(validator);
-  QString txt = QString ("%1l%2").arg (real).arg (imag);
+  QString txt = QString ("%1j%2").arg (real).arg (imag);
   line->setText (txt);
   this->setLineEdit (line);
-  this->installEventFilter(this);
   this->setAccelerated (true);
   this->setAlignment (Qt::AlignHCenter);
+  this->setMinimumWidth (100);
+  connect (this, &QAbstractSpinBox::editingFinished,
+	   [=]() {
+	     QString txt = this->lineEdit ()->text ();
+	     parseComplex (txt);
+	   });
 }
 
 ComplexSpinBox::~ComplexSpinBox ()
