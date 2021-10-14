@@ -140,7 +140,8 @@ void ComplexSpinBox::keyPressEvent(QKeyEvent *keyEvent)
     handled = true;
     break;
   }
-  if (!handled) QAbstractSpinBox::keyPressEvent(keyEvent);
+  if (!handled)
+    QAbstractSpinBox::keyPressEvent(keyEvent);
 }
 
 void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
@@ -149,16 +150,19 @@ void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
   if (mouseEvent->button () == Qt::LeftButton) {
     Qt::KeyboardModifiers mods = mouseEvent->modifiers ();
     bool ctl = (0 == (mods & Qt::ControlModifier));
-    which_e which = ctl ? WHICH_REAL : WHICH_IMAG;
+    which = ctl ? WHICH_REAL : WHICH_IMAG;
 
     int y = mouseEvent->pos ().y ();
     int hgt = this->height ();
-    double incr = (y < hgt / 2) ? 1.0 : -1.0;
+    incr = (y < hgt / 2) ? 1.0 : -1.0;
 
     incdecValue (which, incr);
     handled = true;
   }
-  if (!handled) QAbstractSpinBox::mousePressEvent(mouseEvent);
+  if (handled)
+    timer->start (100);
+  else
+    QAbstractSpinBox::mousePressEvent(mouseEvent);
 }
 
 void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
@@ -173,18 +177,25 @@ void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
   incdecValue (which, incr);
 }
 
-#if 0
-void ComplexSpinBox::  timerEvent(QTimerEvent *event) {
-  fprintf (stderr, "tock\n");
-  event->accept();
+bool ComplexSpinBox::eventFilter(QObject *object, QEvent *event)
+{
+  if (object == this && event->type() == QEvent::MouseButtonRelease) {
+    //    QMouseEvent * mouseEvent = static_cast<QMouseEvent *>(event);
+    timer->stop ();
+  }
+  return false;
 }
-#endif
 
 ComplexSpinBox::ComplexSpinBox (QWidget *parent)
   : QAbstractSpinBox (parent)
 {
   real = 0.0;
   imag = 0.0;
+  timer = new QTimer(this);
+  connect (timer, &QTimer::timeout,
+	   [=]() {
+	     incdecValue (which, incr);
+	   });
   validator = new QRegularExpressionValidator(rx, this);
   
   QLineEdit *line = new QLineEdit ();
@@ -200,6 +211,7 @@ ComplexSpinBox::ComplexSpinBox (QWidget *parent)
 	     QString txt = this->lineEdit ()->text ();
 	     parseComplex (txt);
 	   });
+  this->installEventFilter(this);
 }
 
 ComplexSpinBox::~ComplexSpinBox ()

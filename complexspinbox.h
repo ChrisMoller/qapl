@@ -30,9 +30,7 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
-    //void timerEvent(QTimerEvent *event);
-    //    QValidator::State validate(QString &input, int &pos);
-
+    bool eventFilter(QObject *object, QEvent *event);
 
 private:
     void parseComplex (QString txt);
@@ -41,5 +39,7 @@ private:
     QValidator  *validator;
     double real;
     double imag;
-    
+    QTimer *timer;
+    which_e which;
+    double incr;
 };
