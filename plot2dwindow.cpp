@@ -1,4 +1,7 @@
 #include <QMenuBar>
+#include <complex>
+
+#include <apl/libapl.h>
 
 #include "mainwindow.h"
 #include "complexspinbox.h"
@@ -23,6 +26,48 @@ void Plot2DWindow::drawCurve ()
 	mw->processLine (false, cmd);
 	cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
 	mw->processLine (false, cmd);
+	QString pv (PLOTVAR);
+	APL_value result = get_var_value (pv.toUtf8 (), "drawCurve");
+	int resultRank		= get_rank (result);
+	int resultElementCount	= get_element_count (result);
+	fprintf (stderr, "rank = %d, count = %d\n",
+		 resultRank, resultElementCount);
+	std::vector<std::complex<double>> resultVector;
+	bool resultValid = true;
+	for (int i = 0; i < resultElementCount; i++) {
+	  int type = get_type (result, i);
+	  switch(type) {
+	  case CCT_CHAR:
+	  case CCT_POINTER:
+	    resultValid = false;
+	    break;
+	  case CCT_INT:
+	    {
+	      std::complex<double> val ((double)get_int (result, i), 0.0);
+	      resultVector.push_back (val);
+	    }
+	    break;
+	  case CCT_FLOAT:
+	    {
+	      std::complex<double> val (get_real (result, i), 0.0);
+	      resultVector.push_back (val);
+	    }
+	    break;
+	  case CCT_COMPLEX:
+	    {
+	      std::complex<double> val (get_real (result, i),
+					get_imag (result, i));
+	      resultVector.push_back (val);
+	    }
+	    break;
+	  }
+	}
+	if (resultValid) {
+	}
+	else
+	  mw->printError (tr ("Invalid vactor."));
+
+	
       }
       else
 	mw->printError (tr ("An APL expression must be specified."));
