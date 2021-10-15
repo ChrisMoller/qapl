@@ -192,7 +192,7 @@ void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
   which_e which = ctl ? WHICH_REAL : WHICH_IMAG;
 
   int y = wheelEvent->angleDelta().y();
-  double incr = (0 > y) ? 1.0 : -1.0;
+  double incr = (0 < y) ? 1.0 : -1.0;
 
   incdecValue (which, incr);
 }

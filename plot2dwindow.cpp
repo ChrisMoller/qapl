@@ -13,70 +13,80 @@ void Plot2DWindow::drawCurve ()
 {
   fprintf (stderr, "drawing curve\n");
 
-  double realIncr   = (realFinal - realInit) / (double)resolution;
-  double imagIncr   = (imagFinal - imagInit) / (double)resolution;
-  if (realIncr != 0.0 || imagIncr != 0.0) {
-    QString varName = indexVarName->text ();
-    if (!varName.isEmpty ()) {
-      QString aplExpr = aplExpression->text ();
-      if (!aplExpr.isEmpty ()) {
-	QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
-	  .arg (varName).arg (realInit).arg (imagInit).arg (resolution+1)
-	  .arg (realIncr).arg (imagIncr);
-	mw->processLine (false, cmd);
-	cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
-	mw->processLine (false, cmd);
-	QString pv (PLOTVAR);
-	APL_value result = get_var_value (pv.toUtf8 (), "drawCurve");
-	int resultRank		= get_rank (result);
-	int resultElementCount	= get_element_count (result);
-	fprintf (stderr, "rank = %d, count = %d\n",
-		 resultRank, resultElementCount);
-	std::vector<std::complex<double>> resultVector;
-	bool resultValid = true;
-	for (int i = 0; i < resultElementCount; i++) {
-	  int type = get_type (result, i);
-	  switch(type) {
-	  case CCT_CHAR:
-	  case CCT_POINTER:
-	    resultValid = false;
-	    break;
-	  case CCT_INT:
-	    {
-	      std::complex<double> val ((double)get_int (result, i), 0.0);
-	      resultVector.push_back (val);
-	    }
-	    break;
-	  case CCT_FLOAT:
-	    {
-	      std::complex<double> val (get_real (result, i), 0.0);
-	      resultVector.push_back (val);
-	    }
-	    break;
-	  case CCT_COMPLEX:
-	    {
-	      std::complex<double> val (get_real (result, i),
-					get_imag (result, i));
-	      resultVector.push_back (val);
-	    }
-	    break;
+  QString varName = indexVarName->text ();
+  if (!varName.isEmpty ()) {
+    QString aplExpr = aplExpression->text ();
+    if (!aplExpr.isEmpty ()) {
+      double realIncr   = (realFinal - realInit) / (double)resolution;
+      double imagIncr   = (imagFinal - imagInit) / (double)resolution;
+      QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
+	.arg (varName).arg (realInit).arg (imagInit).arg (resolution+1)
+	.arg (realIncr).arg (imagIncr);
+      mw->processLine (false, cmd);
+      cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
+      mw->processLine (false, cmd);
+      QString pv (PLOTVAR);
+      APL_value result = get_var_value (pv.toUtf8 (), "drawCurve");
+      int resultRank		= get_rank (result);
+      int resultElementCount	= get_element_count (result);
+      fprintf (stderr, "rank = %d, count = %d\n",
+	       resultRank, resultElementCount);
+      std::vector<std::complex<double>> resultVector;
+      bool resultValid = true;
+      bool isComplex   = false;
+      for (int i = 0; i < resultElementCount; i++) {
+	int type = get_type (result, i);
+	switch(type) {
+	case CCT_CHAR:
+	case CCT_POINTER:
+	  resultValid = false;
+	  break;
+	case CCT_INT:
+	  {
+	    std::complex<double> val ((double)get_int (result, i), 0.0);
+	    resultVector.push_back (val);
 	  }
+	  break;
+	case CCT_FLOAT:
+	  {
+	    std::complex<double> val (get_real (result, i), 0.0);
+	    resultVector.push_back (val);
+	  }
+	  break;
+	case CCT_COMPLEX:
+	  {
+	    std::complex<double> val (get_real (result, i),
+				      get_imag (result, i));
+	    resultVector.push_back (val);
+	    if (val.imag () != 0.0) isComplex   = true;
+	  }
+	  break;
 	}
-	if (resultValid) {
+      }
+      if (resultValid) {
+	if (isComplex) {
+	  for (int i = 0; i < (int)resultVector.size (); i++)
+	    fprintf (stderr, "%gj%g ",
+		     resultVector[i].real (),
+		     resultVector[i].imag ());
+	  fprintf (stderr, "\n");
 	}
-	else
-	  mw->printError (tr ("Invalid vactor."));
-
-	
+	else {
+	  for (int i = 0; i < (int)resultVector.size (); i++)
+	    fprintf (stderr, "%g ", resultVector[i].real ());
+	  fprintf (stderr, "\n");
+	}     
       }
       else
-	mw->printError (tr ("An APL expression must be specified."));
+	mw->printError (tr ("Invalid vactor."));
+      
+	
     }
     else
-      mw->printError (tr ("Index variable name must be specified."));
-  }
+      mw->printError (tr ("An APL expression must be specified."));
+  }	
   else
-    mw->printError (tr ("Index increment cannot be 0J0."));
+    mw->printError (tr ("Index variable name must be specified."));
 }
 
 void
