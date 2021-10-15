@@ -6,6 +6,8 @@
 #define toCString(v) ((v).toStdString ().c_str ())
 #endif
 
+#define MOUSE_BUTTON_DELAY 100
+
 #define RE_FP "([-+]?([0-9]+(\\.[0-9]+)?|\\.[0-9]+))([eE]([-+]?[0-9]+))?"
 //#define RE_FP "[^jJ]*"
 static QString cpxval = QString ("(%1)([jJ](%1))?").arg (RE_FP);
@@ -158,11 +160,29 @@ void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
 
     incdecValue (which, incr);
     handled = true;
+    mousePressActive = true;
   }
-  if (handled)
-    timer->start (100);
+  if (handled) {
+    // wait 1 sec.  if mouse button still active, repeat
+    QTime dieTime= QTime::currentTime().addSecs(1);
+    while (QTime::currentTime() < dieTime)
+      QCoreApplication::processEvents(QEventLoop::AllEvents,
+				      MOUSE_BUTTON_DELAY);
+    if (mousePressActive)
+      timer->start (MOUSE_BUTTON_DELAY);
+  }
   else
     QAbstractSpinBox::mousePressEvent(mouseEvent);
+}
+
+bool ComplexSpinBox::eventFilter(QObject *object, QEvent *event)
+{
+  if (object == this && event->type() == QEvent::MouseButtonRelease) {
+    //    QMouseEvent * mouseEvent = static_cast<QMouseEvent *>(event);
+    mousePressActive = false;
+    timer->stop ();
+  }
+  return false;
 }
 
 void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
@@ -177,18 +197,10 @@ void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
   incdecValue (which, incr);
 }
 
-bool ComplexSpinBox::eventFilter(QObject *object, QEvent *event)
-{
-  if (object == this && event->type() == QEvent::MouseButtonRelease) {
-    //    QMouseEvent * mouseEvent = static_cast<QMouseEvent *>(event);
-    timer->stop ();
-  }
-  return false;
-}
-
 ComplexSpinBox::ComplexSpinBox (QWidget *parent)
   : QAbstractSpinBox (parent)
 {
+  mousePressActive = false;
   real = 0.0;
   imag = 0.0;
   timer = new QTimer(this);

@@ -1,3 +1,5 @@
+#ifndef COMPLEXSPINBOX_H
+#define COMPLEXSPINBOX_H
 
 #include <QtWidgets>
 #include <complex>
@@ -42,4 +44,6 @@ private:
     QTimer *timer;
     which_e which;
     double incr;
+    bool mousePressActive;
 };
+#endif // COMPLEXSPINBOX_H

@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "mainwindow.h"
+#include "complexspinbox.h"
 
 class MainWindow;
 
@@ -13,9 +14,20 @@ class Plot2DWindow : public QMainWindow
 public:
   Plot2DWindow (MainWindow *parent = nullptr);
   ~Plot2DWindow ();
+  void drawCurve ();
+  void createMenubar ();
+  void setResolution ();
 
 private:
   MainWindow *mw;
+  QLineEdit *indexVarName;
+  QLineEdit *aplExpression;
+  int resolution;
+  double realInit;
+  double realFinal;
+  double imagInit;
+  double imagFinal;
+  bool setupComplete;
   
 protected:
   void closeEvent(QCloseEvent *event) override;
