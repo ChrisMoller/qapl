@@ -3,6 +3,10 @@ done:			editors combo box
 done:			set editors in qaplinit
 done:			load SETUP
 
+optional idx
+compute min/max
+xml
+
 ⍴ = 1
   real		2d parametric x vs y
   imag		2d parametric x vs real y

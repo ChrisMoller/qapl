@@ -24,12 +24,15 @@ private:
   QLineEdit *indexVarName;
 #endif
   QLineEdit *aplExpression;
+  QLineEdit *indexVariable;
   int resolution;
   double realInit;
   double realFinal;
   double imagInit;
   double imagFinal;
   bool setupComplete;
+  QChartView *chartView;
+  QChart *chart;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

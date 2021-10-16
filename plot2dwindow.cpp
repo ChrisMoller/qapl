@@ -1,9 +1,12 @@
 #include <QMenuBar>
 #include <QChart>
 #include <QChartView>
+#include <QValueAxis>
+#include <QXYSeries>
 
 #include <complex>
 
+#include <values.h>
 #include <apl/libapl.h>
 
 #include "mainwindow.h"
@@ -34,6 +37,10 @@ void Plot2DWindow::drawCurve ()
     std::vector<std::complex<double>> resultVector;
     bool resultValid = true;
     bool isComplex   = false;
+    double realMax = -MAXDOUBLE;
+    double realMin =  MAXDOUBLE;
+    double imagMax = -MAXDOUBLE;
+    double imagMin =  MAXDOUBLE;
     for (int i = 0; i < resultElementCount; i++) {
       int type = get_type (result, i);
       switch(type) {
@@ -45,12 +52,16 @@ void Plot2DWindow::drawCurve ()
 	{
 	  std::complex<double> val ((double)get_int (result, i), 0.0);
 	  resultVector.push_back (val);
+	  if (realMax < val.real ()) realMax = val.real ();
+	  if (realMin > val.real ()) realMin = val.real ();
 	}
 	break;
       case CCT_FLOAT:
 	{
 	  std::complex<double> val (get_real (result, i), 0.0);
 	  resultVector.push_back (val);
+	  if (realMax < val.real ()) realMax = val.real ();
+	  if (realMin > val.real ()) realMin = val.real ();
 	}
 	break;
       case CCT_COMPLEX:
@@ -59,6 +70,10 @@ void Plot2DWindow::drawCurve ()
 				    get_imag (result, i));
 	  resultVector.push_back (val);
 	  if (val.imag () != 0.0) isComplex   = true;
+	  if (realMax < val.real ()) realMax = val.real ();
+	  if (realMin > val.real ()) realMin = val.real ();
+	  if (imagMax < val.imag ()) imagMax = val.imag ();
+	  if (imagMin > val.imag ()) imagMin = val.imag ();
 	}
 	break;
       }
@@ -75,13 +90,20 @@ void Plot2DWindow::drawCurve ()
 	for (int i = 0; i < (int)resultVector.size (); i++)
 	  fprintf (stderr, "%g ", resultVector[i].real ());
 	fprintf (stderr, "\n");
-      }     
+      }
+
+      QXYSeries *series = new QXYSeries ();
+      QValueAxis *axisX =  QValueAxis ();
+
+      axisX->setRange(10, 20.5);
+      axisX->setTickCount(10);
+      axisX->setLabelFormat("%.2f");
+      chartView->chart()->setAxisX(axisX, series);
+      
     }
     else
       mw->printError (tr ("Invalid vactor."));
     cmd = QString (")erase %1 %2").arg (IDXVAR, PLOTVAR);
-      
-	
   }
   else
     mw->printError (tr ("An APL expression must be specified."));
@@ -166,12 +188,14 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 
   int row = 0;
 
-  QChartView *chartView = new QChartView (this);
-  QChart *chart = new QChart ();
+  chartView = new QChartView (this);
+  chart = new QChart ();
   chart->setTitle ("hhhhhhhhhhhhhh");
   chartView->setChart (chart);
-  layout->addWidget (chartView, row, 0, 1, 2);
+  layout->addWidget (chartView, row, 0, 1, 3);
 
+  row++;
+  
   aplExpression = new QLineEdit ();
   aplExpression->setPlaceholderText ("APL");
   connect (aplExpression,
@@ -179,11 +203,23 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
           [=](){
 	    if (setupComplete) drawCurve ();
           });
-  layout->addWidget (aplExpression, row, 0, 1, 2);
+  layout->addWidget (aplExpression, row, 0, 1, 3);
 
   row++;
 
   int col = 0;
+  
+  indexVariable = new QLineEdit ();
+  indexVariable->setPlaceholderText ("Index");
+#if 0
+  connect (indexVariable,
+           &QLineEdit::returnPressed,
+          [=](){
+	    if (setupComplete) drawCurve ();
+          });
+#endif
+  fprintf (stderr, "iv %d\n", col);
+  layout->addWidget (indexVariable, row, col++, 1, 2);
   
   ComplexSpinBox *rangeInit = new ComplexSpinBox ();
   connect (rangeInit,
@@ -194,6 +230,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurve ();
           });
   rangeInit->setComplex (0.0, 0.0);
+  fprintf (stderr, "ri %d\n", col);
   layout->addWidget (rangeInit, row, col++);
   
   ComplexSpinBox *rangeFinal = new ComplexSpinBox ();
@@ -205,6 +242,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurve ();
           });
   rangeFinal->setComplex (0.0, 0.0);
+  fprintf (stderr, "rf %d\n", col);
   layout->addWidget (rangeFinal, row, col++);
   
   setupComplete = true;
