@@ -1,4 +1,7 @@
 #include <QMenuBar>
+#include <QChart>
+#include <QChartView>
+
 #include <complex>
 
 #include <apl/libapl.h>
@@ -8,85 +11,80 @@
 #include "plot2dwindow.h"
 
 #define PLOTVAR "plotvarλ"
+#define IDXVAR  "idxvarλ"
 
 void Plot2DWindow::drawCurve ()
 {
-  fprintf (stderr, "drawing curve\n");
-
-  QString varName = indexVarName->text ();
-  if (!varName.isEmpty ()) {
-    QString aplExpr = aplExpression->text ();
-    if (!aplExpr.isEmpty ()) {
-      double realIncr   = (realFinal - realInit) / (double)resolution;
-      double imagIncr   = (imagFinal - imagInit) / (double)resolution;
-      QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
-	.arg (varName).arg (realInit).arg (imagInit).arg (resolution+1)
-	.arg (realIncr).arg (imagIncr);
-      mw->processLine (false, cmd);
-      cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
-      mw->processLine (false, cmd);
-      QString pv (PLOTVAR);
-      APL_value result = get_var_value (pv.toUtf8 (), "drawCurve");
-      int resultRank		= get_rank (result);
-      int resultElementCount	= get_element_count (result);
-      fprintf (stderr, "rank = %d, count = %d\n",
-	       resultRank, resultElementCount);
-      std::vector<std::complex<double>> resultVector;
-      bool resultValid = true;
-      bool isComplex   = false;
-      for (int i = 0; i < resultElementCount; i++) {
-	int type = get_type (result, i);
-	switch(type) {
-	case CCT_CHAR:
-	case CCT_POINTER:
-	  resultValid = false;
-	  break;
-	case CCT_INT:
-	  {
-	    std::complex<double> val ((double)get_int (result, i), 0.0);
-	    resultVector.push_back (val);
-	  }
-	  break;
-	case CCT_FLOAT:
-	  {
-	    std::complex<double> val (get_real (result, i), 0.0);
-	    resultVector.push_back (val);
-	  }
-	  break;
-	case CCT_COMPLEX:
-	  {
-	    std::complex<double> val (get_real (result, i),
-				      get_imag (result, i));
-	    resultVector.push_back (val);
-	    if (val.imag () != 0.0) isComplex   = true;
-	  }
-	  break;
+  QString aplExpr = aplExpression->text ();
+  if (!aplExpr.isEmpty ()) {
+    double realIncr   = (realFinal - realInit) / (double)resolution;
+    double imagIncr   = (imagFinal - imagInit) / (double)resolution;
+    QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
+      .arg (IDXVAR).arg (realInit).arg (imagInit).arg (resolution+1)
+      .arg (realIncr).arg (imagIncr);
+    mw->processLine (false, cmd);
+    aplExpr.replace (QString ("%1"), QString (IDXVAR));
+    cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
+    mw->processLine (false, cmd);
+    mw->processLine (false, cmd);
+    QString pv (PLOTVAR);
+    APL_value result = get_var_value (pv.toUtf8 (), "drawCurve");
+    int resultRank		= get_rank (result);
+    int resultElementCount	= get_element_count (result);
+    std::vector<std::complex<double>> resultVector;
+    bool resultValid = true;
+    bool isComplex   = false;
+    for (int i = 0; i < resultElementCount; i++) {
+      int type = get_type (result, i);
+      switch(type) {
+      case CCT_CHAR:
+      case CCT_POINTER:
+	resultValid = false;
+	break;
+      case CCT_INT:
+	{
+	  std::complex<double> val ((double)get_int (result, i), 0.0);
+	  resultVector.push_back (val);
 	}
-      }
-      if (resultValid) {
-	if (isComplex) {
-	  for (int i = 0; i < (int)resultVector.size (); i++)
-	    fprintf (stderr, "%gj%g ",
-		     resultVector[i].real (),
-		     resultVector[i].imag ());
-	  fprintf (stderr, "\n");
+	break;
+      case CCT_FLOAT:
+	{
+	  std::complex<double> val (get_real (result, i), 0.0);
+	  resultVector.push_back (val);
 	}
-	else {
-	  for (int i = 0; i < (int)resultVector.size (); i++)
-	    fprintf (stderr, "%g ", resultVector[i].real ());
-	  fprintf (stderr, "\n");
-	}     
+	break;
+      case CCT_COMPLEX:
+	{
+	  std::complex<double> val (get_real (result, i),
+				    get_imag (result, i));
+	  resultVector.push_back (val);
+	  if (val.imag () != 0.0) isComplex   = true;
+	}
+	break;
       }
-      else
-	mw->printError (tr ("Invalid vactor."));
-      
-	
+    }
+    if (resultValid) {
+      if (isComplex) {
+	for (int i = 0; i < (int)resultVector.size (); i++)
+	  fprintf (stderr, "%gj%g ",
+		   resultVector[i].real (),
+		   resultVector[i].imag ());
+	fprintf (stderr, "\n");
+      }
+      else {
+	for (int i = 0; i < (int)resultVector.size (); i++)
+	  fprintf (stderr, "%g ", resultVector[i].real ());
+	fprintf (stderr, "\n");
+      }     
     }
     else
-      mw->printError (tr ("An APL expression must be specified."));
-  }	
+      mw->printError (tr ("Invalid vactor."));
+    cmd = QString (")erase %1 %2").arg (IDXVAR, PLOTVAR);
+      
+	
+  }
   else
-    mw->printError (tr ("Index variable name must be specified."));
+    mw->printError (tr ("An APL expression must be specified."));
 }
 
 void
@@ -168,6 +166,12 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 
   int row = 0;
 
+  QChartView *chartView = new QChartView (this);
+  QChart *chart = new QChart ();
+  chart->setTitle ("hhhhhhhhhhhhhh");
+  chartView->setChart (chart);
+  layout->addWidget (chartView, row, 0, 1, 2);
+
   aplExpression = new QLineEdit ();
   aplExpression->setPlaceholderText ("APL");
   connect (aplExpression,
@@ -175,13 +179,11 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
           [=](){
 	    if (setupComplete) drawCurve ();
           });
-  layout->addWidget (aplExpression, row, 0);
+  layout->addWidget (aplExpression, row, 0, 1, 2);
 
   row++;
 
-  indexVarName = new QLineEdit ();
-  indexVarName->setPlaceholderText ("Index");
-  layout->addWidget (indexVarName, row, 0);
+  int col = 0;
   
   ComplexSpinBox *rangeInit = new ComplexSpinBox ();
   connect (rangeInit,
@@ -192,7 +194,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurve ();
           });
   rangeInit->setComplex (0.0, 0.0);
-  layout->addWidget (rangeInit, row, 1);
+  layout->addWidget (rangeInit, row, col++);
   
   ComplexSpinBox *rangeFinal = new ComplexSpinBox ();
   connect (rangeFinal,
@@ -203,7 +205,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurve ();
           });
   rangeFinal->setComplex (0.0, 0.0);
-  layout->addWidget (rangeFinal, row, 2);
+  layout->addWidget (rangeFinal, row, col++);
   
   setupComplete = true;
 

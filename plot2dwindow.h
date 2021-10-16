@@ -20,7 +20,9 @@ public:
 
 private:
   MainWindow *mw;
+#if 0
   QLineEdit *indexVarName;
+#endif
   QLineEdit *aplExpression;
   int resolution;
   double realInit;
