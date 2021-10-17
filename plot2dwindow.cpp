@@ -45,9 +45,8 @@ bool Plot2DWindow::appendSeries (double x, double y,
   return rc;
 }
 
-void Plot2DWindow::drawCurve ()
+void Plot2DWindow::drawCurve (QString aplExpr)
 {
-  QString aplExpr = aplExpression->text ();
   if (!aplExpr.isEmpty ()) {
     double realIncr   = (realFinal - realInit) / (double)resolution;
     double imagIncr   = (imagFinal - imagInit) / (double)resolution;
@@ -184,6 +183,13 @@ void Plot2DWindow::drawCurve ()
     mw->printError (tr ("An APL expression must be specified."));
 }
 
+
+void Plot2DWindow::drawCurves ()
+{
+  QString aplExpr = aplExpression->text ();
+  drawCurve (aplExpr);
+}
+
 void
 Plot2DWindow::setResolution ()
 {
@@ -204,7 +210,7 @@ Plot2DWindow::setResolution ()
            &QSpinBox::valueChanged,
           [=](){
 	    resolution = resolutionBox->value ();
-	    drawCurve ();
+	    drawCurves ();
           });
 
   row++;
@@ -262,6 +268,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   createMenubar ();
 
   int row = 0;
+  int col = 0;
 
   chartView = new QChartView (this);
   chartView->setMinimumWidth (360);
@@ -278,13 +285,26 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   connect (aplExpression,
            &QLineEdit::returnPressed,
           [=](){
-	    if (setupComplete) drawCurve ();
+	    if (setupComplete) drawCurves ();
           });
-  layout->addWidget (aplExpression, row, 0, 1, 3);
+  layout->addWidget (aplExpression, row, col, 1, 2);
+
+  col += 2;
+  
+  QPushButton *pushExpr = new QPushButton (QObject::tr ("Push"));
+  QObject::connect (pushExpr, &QPushButton::clicked,
+		    [=](){
+		      fprintf (stderr, "push\n");
+		    });
+  layout->addWidget (pushExpr, row, col++);
 
   row++;
+  col = 0;
 
-  int col = 0;
+
+
+
+
   
   indexVariable = new QLineEdit ();
   indexVariable->setPlaceholderText ("Index var");
@@ -293,7 +313,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   connect (indexVariable,
            &QLineEdit::returnPressed,
           [=](){
-	    if (setupComplete) drawCurve ();
+	    if (setupComplete) drawCurves ();
           });
 #endif
   layout->addWidget (indexVariable, row, col++, 1, 2);
@@ -304,7 +324,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
           [=](){
 	    realInit = rangeInit->getReal ();
 	    imagInit = rangeInit->getImag ();
-	    if (setupComplete) drawCurve ();
+	    if (setupComplete) drawCurves ();
           });
   rangeInit->setComplex (0.0, 0.0);
   layout->addWidget (rangeInit, row, col++);
@@ -315,7 +335,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
           [=](){
 	    realFinal = rangeFinal->getReal ();
 	    imagFinal = rangeFinal->getImag ();
-	    if (setupComplete) drawCurve ();
+	    if (setupComplete) drawCurves ();
           });
   rangeFinal->setComplex (0.0, 0.0);
   layout->addWidget (rangeFinal, row, col++);
@@ -330,7 +350,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	  [=](
 	      QAbstractButton *button __attribute__((unused))
 	      ){
-	    drawCurve ();
+	    drawCurves ();
 	  });
   modeGroup->setExclusive(true);
   QGridLayout *modeLayout = new QGridLayout;
@@ -383,7 +403,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	  [=](
 	      QAbstractButton *button __attribute__((unused))
 	      ){
-	    drawCurve ();
+	    drawCurves ();
 	  });
   aspectGroup->setExclusive(true);
   QHBoxLayout *aspectLayout = new QHBoxLayout;

@@ -35,7 +35,8 @@ class Plot2DWindow : public QMainWindow
 public:
   Plot2DWindow (MainWindow *parent = nullptr);
   ~Plot2DWindow ();
-  void drawCurve ();
+  void drawCurves ();
+  void drawCurve (QString aplExpr);
   void createMenubar ();
   void setResolution ();
   bool appendSeries (double x, double y,
