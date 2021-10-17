@@ -1,8 +1,9 @@
 #include <QMenuBar>
 #include <QChart>
 #include <QChartView>
+#include <QSplineSeries>
 #include <QValueAxis>
-#include <QXYSeries>
+//#include <QLineSeries>
 
 #include <complex>
 
@@ -16,32 +17,92 @@
 #define PLOTVAR "plotvarλ"
 #define IDXVAR  "idxvarλ"
 
+bool Plot2DWindow::appendSeries (double x, double y,
+				 double &realMax, double &realMin)
+{
+  bool rc = true;
+  if (realMax < y) realMax = y;
+  if (realMin > y) realMin = y;
+  switch (modeGroup->checkedId ()) {
+  case MODE_BUTTON_SPLINE:
+    if (series == nullptr) {
+      series = new QSplineSeries ();
+      seriesMode = MODE_BUTTON_SPLINE;
+    }
+    else {
+      if (seriesMode != MODE_BUTTON_SPLINE) rc = false;
+    }
+    static_cast<QSplineSeries*>(series)->append(x, y);
+    break;
+  case MODE_BUTTON_LINE:
+  case MODE_BUTTON_POLAR:
+  case MODE_BUTTON_PIE:
+  case MODE_BUTTON_SCATTER:
+  case MODE_BUTTON_AREA:
+  case MODE_BUTTON_BOX:
+    break;
+  }
+  return rc;
+}
+
 void Plot2DWindow::drawCurve ()
 {
   QString aplExpr = aplExpression->text ();
   if (!aplExpr.isEmpty ()) {
     double realIncr   = (realFinal - realInit) / (double)resolution;
     double imagIncr   = (imagFinal - imagInit) / (double)resolution;
+    QString idxvar = indexVariable->text ();
+    bool autoIdx = false;
+    if (idxvar.isEmpty ()) {
+      idxvar = QString (IDXVAR);
+      autoIdx = true;
+    }
     QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
-      .arg (IDXVAR).arg (realInit).arg (imagInit).arg (resolution+1)
+      .arg (idxvar).arg (realInit).arg (imagInit).arg (resolution+1)
       .arg (realIncr).arg (imagIncr);
     mw->processLine (false, cmd);
+    APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurve.idxVals");
+    int idxElementCount	= get_element_count (idxVals);
+    bool idxValid = true;
+    bool idxComplex   = false;
+    std::vector<double> idxVector;
+    for (int i = 0; i < idxElementCount; i++) {
+      int type = get_type (idxVals, i);
+      switch(type) {
+      case CCT_CHAR:
+      case CCT_POINTER:
+	idxValid = false;
+	break;
+      case CCT_INT:
+	idxVector.push_back ((double)get_int (idxVals, i));
+	break;
+      case CCT_FLOAT:
+	idxVector.push_back (get_real (idxVals, i));
+	break;
+      case CCT_COMPLEX:
+	if (get_imag (idxVals, i) != 0.0) idxComplex = true;
+	idxVector.push_back (get_real (idxVals, i));
+      }
+    }
+    if (idxComplex)		// fixme
+      mw->printError (tr ("Index contains imaginary components.  Using only the real components in the axis."));
+
     aplExpr.replace (QString ("%1"), QString (IDXVAR));
     cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
     mw->processLine (false, cmd);
     mw->processLine (false, cmd);
     QString pv (PLOTVAR);
-    APL_value result = get_var_value (pv.toUtf8 (), "drawCurve");
-    int resultRank		= get_rank (result);
+    APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
+    //    int resultRank		= get_rank (result);
     int resultElementCount	= get_element_count (result);
-    std::vector<std::complex<double>> resultVector;
     bool resultValid = true;
-    bool isComplex   = false;
+    //    bool isComplex   = false;
     double realMax = -MAXDOUBLE;
     double realMin =  MAXDOUBLE;
-    double imagMax = -MAXDOUBLE;
-    double imagMin =  MAXDOUBLE;
-    for (int i = 0; i < resultElementCount; i++) {
+    series = nullptr;
+    seriesMode = MODE_BUTTON_UNSET;
+    bool run = true;
+    for (int i = 0; run && i < resultElementCount; i++) {
       int type = get_type (result, i);
       switch(type) {
       case CCT_CHAR:
@@ -49,61 +110,75 @@ void Plot2DWindow::drawCurve ()
 	resultValid = false;
 	break;
       case CCT_INT:
-	{
-	  std::complex<double> val ((double)get_int (result, i), 0.0);
-	  resultVector.push_back (val);
-	  if (realMax < val.real ()) realMax = val.real ();
-	  if (realMin > val.real ()) realMin = val.real ();
-	}
+	if (!appendSeries (idxVector[i],
+			   (double)get_int (result, i), realMax, realMin))
+	  run = false;
 	break;
       case CCT_FLOAT:
-	{
-	  std::complex<double> val (get_real (result, i), 0.0);
-	  resultVector.push_back (val);
-	  if (realMax < val.real ()) realMax = val.real ();
-	  if (realMin > val.real ()) realMin = val.real ();
-	}
+	if (!appendSeries (idxVector[i],
+			   get_real (result, i), realMax, realMin))
+	  run = false;
 	break;
       case CCT_COMPLEX:
 	{
-	  std::complex<double> val (get_real (result, i),
-				    get_imag (result, i));
-	  resultVector.push_back (val);
-	  if (val.imag () != 0.0) isComplex   = true;
-	  if (realMax < val.real ()) realMax = val.real ();
-	  if (realMin > val.real ()) realMin = val.real ();
-	  if (imagMax < val.imag ()) imagMax = val.imag ();
-	  if (imagMin > val.imag ()) imagMin = val.imag ();
+	  switch (aspectGroup->checkedId ()) {
+	  case ASPECT_REAL:
+	    if (!appendSeries (idxVector[i],
+			       get_real (result, i), realMax, realMin))
+	  run = false;
+	    break;
+	  case ASPECT_IMAG:
+	    if (!appendSeries (idxVector[i],
+			       get_imag (result, i), realMax, realMin))
+	      run = false;
+	    break;
+	  case ASPECT_MAGNITUDE:
+	    {
+	      std::complex<double> val (get_real (result, i),
+					get_imag (result, i));
+	      if (!appendSeries (idxVector[i],
+				 std::abs (val), realMax, realMin))
+		run = false;
+	    }
+	    break;
+	  case ASPECT_PHASE:
+	      std::complex<double> val (get_real (result, i),
+					get_imag (result, i));
+	      if (!appendSeries (idxVector[i],
+				 std::arg (val), realMax, realMin))
+		run = false;
+	    break;
+	  }
 	}
 	break;
       }
     }
-    if (resultValid) {
-      if (isComplex) {
-	for (int i = 0; i < (int)resultVector.size (); i++)
-	  fprintf (stderr, "%gj%g ",
-		   resultVector[i].real (),
-		   resultVector[i].imag ());
-	fprintf (stderr, "\n");
-      }
-      else {
-	for (int i = 0; i < (int)resultVector.size (); i++)
-	  fprintf (stderr, "%g ", resultVector[i].real ());
-	fprintf (stderr, "\n");
-      }
+    if (!run)
+	mw->printError (tr ("Inconsistent series type."));
+    if (run && resultValid) {
+      if (idxElementCount == static_cast<QSplineSeries*>(series)->count ()) {
+	chartView->chart()->addSeries(series);
+	chart->createDefaultAxes ();
 
-      QXYSeries *series = new QXYSeries ();
+#if 0
       QValueAxis *axisX =  QValueAxis ();
 
       axisX->setRange(10, 20.5);
       axisX->setTickCount(10);
       axisX->setLabelFormat("%.2f");
       chartView->chart()->setAxisX(axisX, series);
+#endif
       
+      }
+      else
+	mw->printError (tr ("Index and result vectors are of different lengths."));
     }
     else
       mw->printError (tr ("Invalid vactor."));
-    cmd = QString (")erase %1 %2").arg (IDXVAR, PLOTVAR);
+    cmd = autoIdx 
+      ? QString (")erase %1 %2").arg (IDXVAR, PLOTVAR)
+      : QString (")erase %1").arg (PLOTVAR);
+    mw->processLine (false, cmd);
   }
   else
     mw->printError (tr ("An APL expression must be specified."));
@@ -189,6 +264,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   int row = 0;
 
   chartView = new QChartView (this);
+  chartView->setMinimumWidth (360);
+  chartView->setMinimumHeight (360);
   chart = new QChart ();
   chart->setTitle ("hhhhhhhhhhhhhh");
   chartView->setChart (chart);
@@ -197,7 +274,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   row++;
   
   aplExpression = new QLineEdit ();
-  aplExpression->setPlaceholderText ("APL");
+  aplExpression->setPlaceholderText ("APL expression");
   connect (aplExpression,
            &QLineEdit::returnPressed,
           [=](){
@@ -210,7 +287,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   int col = 0;
   
   indexVariable = new QLineEdit ();
-  indexVariable->setPlaceholderText ("Index");
+  indexVariable->setPlaceholderText ("Index var");
+  indexVariable->setMaximumWidth (100);
 #if 0
   connect (indexVariable,
            &QLineEdit::returnPressed,
@@ -218,7 +296,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurve ();
           });
 #endif
-  fprintf (stderr, "iv %d\n", col);
   layout->addWidget (indexVariable, row, col++, 1, 2);
   
   ComplexSpinBox *rangeInit = new ComplexSpinBox ();
@@ -230,7 +307,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurve ();
           });
   rangeInit->setComplex (0.0, 0.0);
-  fprintf (stderr, "ri %d\n", col);
   layout->addWidget (rangeInit, row, col++);
   
   ComplexSpinBox *rangeFinal = new ComplexSpinBox ();
@@ -242,9 +318,96 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurve ();
           });
   rangeFinal->setComplex (0.0, 0.0);
-  fprintf (stderr, "rf %d\n", col);
   layout->addWidget (rangeFinal, row, col++);
-  
+
+  row++;
+  col = 0;
+
+  QGroupBox *modeBox = new QGroupBox (tr ("Presentation"));
+  modeGroup = new QButtonGroup ();
+  connect(modeGroup,
+	  QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
+	  [=](
+	      QAbstractButton *button __attribute__((unused))
+	      ){
+	    drawCurve ();
+	  });
+  modeGroup->setExclusive(true);
+  QGridLayout *modeLayout = new QGridLayout;
+  modeBox->setLayout (modeLayout);
+
+  int modeRow = 0;
+  int modeCol = 0;
+
+  QRadioButton *splineButton = new QRadioButton(tr ("Spines"), modeBox);
+  splineButton->setChecked (true);
+  modeGroup->addButton (splineButton,  MODE_BUTTON_SPLINE);
+  modeLayout->addWidget (splineButton, modeRow, modeCol++);
+
+  QRadioButton *lineButton = new QRadioButton(tr ("Lines"), modeBox);
+  modeGroup->addButton (lineButton,  MODE_BUTTON_LINE);
+  modeLayout->addWidget (lineButton, modeRow, modeCol++);
+
+  QRadioButton *polarButton = new QRadioButton(tr ("Polar"), modeBox);
+  modeGroup->addButton (polarButton,  MODE_BUTTON_POLAR);
+  modeLayout->addWidget (polarButton, modeRow, modeCol++);
+
+  QRadioButton *pieButton = new QRadioButton(tr ("Pie"), modeBox);
+  modeGroup->addButton (pieButton,  MODE_BUTTON_PIE);
+  modeLayout->addWidget (pieButton, modeRow, modeCol++);
+
+  modeRow++;
+  modeCol = 0;  
+
+  QRadioButton *scatterButton = new QRadioButton(tr ("Scatter"), modeBox);
+  modeGroup->addButton (scatterButton,  MODE_BUTTON_SCATTER);
+  modeLayout->addWidget (scatterButton, modeRow, modeCol++);
+
+  QRadioButton *areaButton = new QRadioButton(tr ("Area"), modeBox);
+  modeGroup->addButton (areaButton,  MODE_BUTTON_AREA);
+  modeLayout->addWidget (areaButton, modeRow, modeCol++);
+
+  QRadioButton *boxButton = new QRadioButton(tr ("Box"), modeBox);
+  modeGroup->addButton (boxButton,  MODE_BUTTON_BOX);
+  modeLayout->addWidget (boxButton, modeRow, modeCol++);
+
+  layout->addWidget (modeBox, row, col++, 1, 3);
+
+  row++;
+  col = 0;
+
+  QGroupBox *aspectBox = new QGroupBox (tr ("Aspect"));
+  aspectGroup = new QButtonGroup ();
+  connect(aspectGroup,
+	  QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
+	  [=](
+	      QAbstractButton *button __attribute__((unused))
+	      ){
+	    drawCurve ();
+	  });
+  aspectGroup->setExclusive(true);
+  QHBoxLayout *aspectLayout = new QHBoxLayout;
+  aspectBox->setLayout (aspectLayout);
+
+  QRadioButton *realButton = new QRadioButton(tr ("Real"), aspectBox);
+  realButton->setChecked (true);
+  aspectGroup->addButton (realButton,  ASPECT_REAL);
+  aspectLayout->addWidget (realButton);
+
+  QRadioButton *imagButton = new QRadioButton(tr ("Imaginary"), aspectBox);
+  aspectGroup->addButton (imagButton,  ASPECT_IMAG);
+  aspectLayout->addWidget (imagButton);
+
+  QRadioButton *magButton = new QRadioButton(tr ("Magnitude"), aspectBox);
+  aspectGroup->addButton (magButton,  ASPECT_MAGNITUDE);
+  aspectLayout->addWidget (magButton);
+
+  QRadioButton *phaseButton = new QRadioButton(tr ("Phase"), aspectBox);
+  aspectGroup->addButton (phaseButton,  ASPECT_PHASE);
+  aspectLayout->addWidget (phaseButton);
+
+  layout->addWidget (aspectBox, row, col++, 1, 3);
+    
   setupComplete = true;
 
   hw->setLayout(layout);
