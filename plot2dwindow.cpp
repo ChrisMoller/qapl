@@ -69,123 +69,128 @@ void Plot2DWindow::drawCurve (QString aplExpr, aspect_e aspect)
       .arg (resolution+1).arg (realIncrString).arg (imagIncrString);
     mw->processLine (false, cmd);
     APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurve.idxVals");
-    int idxElementCount	= get_element_count (idxVals);
-    bool idxValid = true;
-    bool idxComplex   = false;
-    std::vector<double> idxVector;
-    for (int i = 0; i < idxElementCount; i++) {
-      int type = get_type (idxVals, i);
-      switch(type) {
-      case CCT_CHAR:
-      case CCT_POINTER:
-	idxValid = false;
-	break;
-      case CCT_INT:
-	idxVector.push_back ((double)get_int (idxVals, i));
-	break;
-      case CCT_FLOAT:
-	idxVector.push_back (get_real (idxVals, i));
-	break;
-      case CCT_COMPLEX:
-	if (get_imag (idxVals, i) != 0.0) idxComplex = true;
-	idxVector.push_back (get_real (idxVals, i));
-      }
-    }
-    if (idxComplex)		// fixme
-      mw->printError (tr ("Index contains imaginary components.  Using only the real components in the axis."));
-
-    aplExpr.replace (QString ("%1"), QString (IDXVAR));
-    cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
-    mw->processLine (false, cmd);
-    mw->processLine (false, cmd);
-    QString pv (PLOTVAR);
-    APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
-    if (result != nullptr) {
-      //    int resultRank		= get_rank (result);
-      int resultElementCount	= get_element_count (result);
-      bool resultValid = true;
-      //    bool isComplex   = false;
-      double realMax = -MAXDOUBLE;
-      double realMin =  MAXDOUBLE;
-      series = nullptr;
-      seriesMode = MODE_BUTTON_UNSET;
-      bool run = true;
-      for (int i = 0; run && i < resultElementCount; i++) {
-	int type = get_type (result, i);
+    if (idxVals != nullptr) {
+      int idxElementCount	= get_element_count (idxVals);
+      bool idxValid = true;
+      bool idxComplex   = false;
+      std::vector<double> idxVector;
+      for (int i = 0; i < idxElementCount; i++) {
+	int type = get_type (idxVals, i);
 	switch(type) {
 	case CCT_CHAR:
 	case CCT_POINTER:
-	  resultValid = false;
+	  idxValid = false;
 	  break;
 	case CCT_INT:
-	  if (!appendSeries (idxVector[i],
-			     (double)get_int (result, i), realMax, realMin))
-	    run = false;
+	  idxVector.push_back ((double)get_int (idxVals, i));	
 	  break;
-	case CCT_FLOAT:
-	  if (!appendSeries (idxVector[i],
-			     get_real (result, i), realMax, realMin))
-	    run = false;
+	case CCT_FLOAT:	
+	  idxVector.push_back (get_real (idxVals, i));
 	  break;
 	case CCT_COMPLEX:
-	  {
-	    switch (aspect) {
-	    case ASPECT_REAL:
-	      if (!appendSeries (idxVector[i],
-				 get_real (result, i), realMax, realMin))
-		run = false;
-	      break;
-	    case ASPECT_IMAG:
-	      if (!appendSeries (idxVector[i],
-				 get_imag (result, i), realMax, realMin))
-		run = false;
-	      break;
-	    case ASPECT_MAGNITUDE:
-	      {
+	  if (get_imag (idxVals, i) != 0.0) idxComplex = true;
+	  idxVector.push_back (get_real (idxVals, i));
+	}
+      }
+      if (idxComplex)		// fixme
+	mw->printError (tr ("Index contains imaginary components.  Using only the real components in the axis."));
+
+      aplExpr.replace (QString ("%1"), QString (IDXVAR));
+      cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
+      mw->processLine (false, cmd);
+      mw->processLine (false, cmd);
+      QString pv (PLOTVAR);
+      APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
+      if (result != nullptr) {
+	//    int resultRank		= get_rank (result);
+	int resultElementCount	= get_element_count (result);
+	bool resultValid = true;
+	//    bool isComplex   = false;
+	double realMax = -MAXDOUBLE;
+	double realMin =  MAXDOUBLE;
+	series = nullptr;
+	seriesMode = MODE_BUTTON_UNSET;
+	bool run = true;
+	for (int i = 0; run && i < resultElementCount; i++) {
+	  int type = get_type (result, i);
+	  switch(type) {
+	  case CCT_CHAR:
+	  case CCT_POINTER:
+	    resultValid = false;
+	    break;
+	  case CCT_INT:
+	    if (!appendSeries (idxVector[i],
+			       (double)get_int (result, i), realMax, realMin))
+	      run = false;
+	    break;
+	  case CCT_FLOAT:
+	    if (!appendSeries (idxVector[i],
+			       get_real (result, i), realMax, realMin))
+	      run = false;
+	    break;
+	  case CCT_COMPLEX:
+	    {
+	      switch (aspect) {
+		case ASPECT_REAL:
+		  if (!appendSeries (idxVector[i],
+				     get_real (result, i), realMax, realMin))
+		    run = false;
+		  break;
+	      case ASPECT_IMAG:
+		if (!appendSeries (idxVector[i],
+				   get_imag (result, i), realMax, realMin))
+		  run = false;
+		break;
+	      case ASPECT_MAGNITUDE:
+		{
+		  std::complex<double> val (get_real (result, i),
+					    get_imag (result, i));
+		  if (!appendSeries (idxVector[i],
+				     std::abs (val), realMax, realMin))
+		    run = false;
+		}
+		break;
+	      case ASPECT_PHASE:
 		std::complex<double> val (get_real (result, i),
 					  get_imag (result, i));
 		if (!appendSeries (idxVector[i],
-				   std::abs (val), realMax, realMin))
+				   std::arg (val), realMax, realMin))
 		  run = false;
+		break;
 	      }
-	      break;
-	    case ASPECT_PHASE:
-	      std::complex<double> val (get_real (result, i),
-					get_imag (result, i));
-	      if (!appendSeries (idxVector[i],
-				 std::arg (val), realMax, realMin))
-		run = false;
-	      break;
 	    }
+	    break;
 	  }
-	  break;
 	}
-      }
-      if (!run)
-	mw->printError (tr ("Inconsistent series type."));
-      if (run && resultValid) {
-	if (idxElementCount == static_cast<QSplineSeries*>(series)->count ()) {
-	  chartView->chart()->addSeries(series);
-	  chart->createDefaultAxes ();
+	if (!run)
+	  mw->printError (tr ("Inconsistent series type."));
+	if (run && resultValid) {
+	  if (idxElementCount ==
+	      static_cast<QSplineSeries*>(series)->count ()) {
+	    chartView->chart()->addSeries(series);
+	    chart->createDefaultAxes ();
 
 #if 0
-	  QValueAxis *axisX =  QValueAxis ();
+	    QValueAxis *axisX =  QValueAxis ();
 
-	  axisX->setRange(10, 20.5);
-	  axisX->setTickCount(10);
-	  axisX->setLabelFormat("%.2f");
-	  chartView->chart()->setAxisX(axisX, series);
+	    axisX->setRange(10, 20.5);
+	    axisX->setTickCount(10);
+	    axisX->setLabelFormat("%.2f");
+	    chartView->chart()->setAxisX(axisX, series);
 #endif
       
+	  }
+	  else
+  mw->printError (tr ("Index and result vectors are of different lengths."));
 	}
 	else
-  mw->printError (tr ("Index and result vectors are of different lengths."));
+	  mw->printError (tr ("Invalid vector."));
       }
       else
-	mw->printError (tr ("Invalid vector."));
+	mw->printError (tr ("Expression evaluation error."));
     }
     else
-      mw->printError (tr ("Expression evaluation error."));
+      mw->printError (tr ("Index evaluation error."));
     cmd = autoIdx 
       ? QString (")erase %1 %2").arg (IDXVAR, PLOTVAR)
       : QString (")erase %1").arg (PLOTVAR);
@@ -201,8 +206,12 @@ void Plot2DWindow::drawCurves ()
   chartView->setChart (chart);
   if (oldChart != nullptr)
     delete oldChart;
-  
-  chart->setTitle ("hhhhhhhhhhhhhh");
+
+  chart->setTitle (chartTitle);
+  chart->setTheme ((QChart::ChartTheme)theme);
+  QList<QAbstractAxis *>axes = chart->axes (Qt::Horizontal);
+  if (axes.size () > 0) 
+    axes[0]->setTitleText (xTitle);
   
   QString aplExpr = aplExpression->text ();
   aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
@@ -220,6 +229,82 @@ void Plot2DWindow::pushExpression ()
   PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect);
   plotCurves.append (plotCurve);
   aplExpression->clear ();
+}
+
+void
+Plot2DWindow::setDecorations ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  
+  QLabel chartTitileLbl ("Title");
+  layout->addWidget (&chartTitileLbl, row, 0);
+
+  QLineEdit *chartTitleBox = new QLineEdit ();
+  chartTitleBox->setText (chartTitle);
+  connect (chartTitleBox,
+           &QLineEdit::returnPressed,
+          [=](){
+	    chartTitle = chartTitleBox->text ();
+	    drawCurves ();
+          });
+  chartTitleBox->setPlaceholderText ("ChartTitle");
+  layout->addWidget (chartTitleBox, row, 1, 1, 2);
+
+  row++;
+  
+  QLabel xLbl ("X Label");
+  layout->addWidget (&xLbl, row, 0);
+
+  QLineEdit *xTitleBox = new QLineEdit ();
+  xTitleBox->setText (xTitle);
+  connect (xTitleBox,
+           &QLineEdit::returnPressed,
+          [=](){
+	    xTitle = xTitleBox->text ();
+	    drawCurves ();
+          });
+  chartTitleBox->setPlaceholderText ("ChartTitle");
+  layout->addWidget (xTitleBox, row, 1, 1, 2);
+
+  row++;
+
+  QLabel themeLbl ("Theme");
+  layout->addWidget (&themeLbl, row, 0);
+  
+  QComboBox *themebox = new QComboBox ();
+  themebox->addItem ("Light", QChart::ChartThemeLight);
+  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+  themebox->addItem ("Dark", QChart::ChartThemeDark);
+  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
+  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
+  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
+  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
+  themebox->addItem ("Qt", QChart::ChartThemeQt);
+  themebox->setCurrentIndex ((int)theme);
+  connect (themebox, QOverload<int>::of(&QComboBox::activated),
+          [=](int index)
+          {
+	    QVariant sel = themebox->itemData (index);
+	    theme = sel.toInt ();
+	    drawCurves ();
+	  });
+  layout->addWidget(themebox, row, 1);
+
+  row++;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+
+
+  dialog.exec ();
 }
 
 void
@@ -270,6 +355,11 @@ void Plot2DWindow::createMenubar ()
     settingsMenu->addAction(tr("&Resolution"), this,
 			    & Plot2DWindow::setResolution);
   resolutionAct->setStatusTip(tr("Set resolution"));
+
+  QAction *decorationsAct =
+    settingsMenu->addAction(tr("&Decor"), this,
+			    & Plot2DWindow::setDecorations);
+  decorationsAct->setStatusTip(tr("Set plot decorations"));
 
 }
 

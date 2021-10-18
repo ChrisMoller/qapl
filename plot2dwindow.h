@@ -58,6 +58,7 @@ private:
   void drawCurve (QString aplExpr, aspect_e aspect);
   void createMenubar ();
   void setResolution ();
+  void setDecorations ();
   bool appendSeries (double x, double y,
 		     double &realMax, double &realMin);
   void pushExpression ();
@@ -77,6 +78,10 @@ private:
   QAbstractSeries *series;
   series_mode_e seriesMode;
   QList<PlotCurve *> plotCurves;
+  QString chartTitle;
+  QString xTitle;
+  QString yTitle;
+  int theme;
   
 protected:
   void closeEvent(QCloseEvent *event) override;
