@@ -294,6 +294,9 @@ Blank lines and any line that starts with # is ignored.
 
 See the sample qaplinit.txt file included with this package.
 
+<h1>Plotting</h1>
+
+ctl-u/d, ctl-wheel, ctl-arrow
 
 <h1>Installation</h1>
 

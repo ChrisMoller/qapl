@@ -45,7 +45,7 @@ bool Plot2DWindow::appendSeries (double x, double y,
   return rc;
 }
 
-void Plot2DWindow::drawCurve (QString aplExpr)
+void Plot2DWindow::drawCurve (QString aplExpr, aspect_e aspect)
 {
 #if 0
   if (!aplExpr.isEmpty ()) {
@@ -122,7 +122,7 @@ void Plot2DWindow::drawCurve (QString aplExpr)
 	break;
       case CCT_COMPLEX:
 	{
-	  switch (aspectGroup->checkedId ()) {
+	  switch (aspect) {
 	  case ASPECT_REAL:
 	    if (!appendSeries (idxVector[i],
 			       get_real (result, i), realMax, realMin))
@@ -191,13 +191,21 @@ void Plot2DWindow::drawCurve (QString aplExpr)
 void Plot2DWindow::drawCurves ()
 {
   QString aplExpr = aplExpression->text ();
-  drawCurve (aplExpr);
+  aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
+  drawCurve (aplExpr, aspect);
+  for (int i = 0; i < plotCurves.size (); i++) {
+    drawCurve (plotCurves[i]->expression (), ASPECT_REAL);
+    //    drawCurve (plotCurves[i]->expression (), plotCurves[i]->aspect);
+  }
 }
 
 void Plot2DWindow::pushExpression ()
 {
   QString aplExpr = aplExpression->text ();
-  
+  aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
+  PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect);
+  plotCurves.append (plotCurve);
+  aplExpression->clear ();
 }
 
 void

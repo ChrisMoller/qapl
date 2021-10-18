@@ -5,6 +5,7 @@
 #include <QAbstractSeries>
 #include <QChart>
 #include <QChartView>
+
 #include "mainwindow.h"
 #include "complexspinbox.h"
 
@@ -19,16 +20,26 @@ typedef enum {
   MODE_BUTTON_BOX
 } series_mode_e;
 
-enum {
+typedef enum {
   ASPECT_REAL,
   ASPECT_IMAG,
   ASPECT_MAGNITUDE,
   ASPECT_PHASE
-};
+} aspect_e;
 
 class MainWindow;
 
-class 
+class PlotCurve {
+public:
+  PlotCurve (QString &e,  aspect_e &a) { a_expression = e; a_aspect = a; }
+  QString expression () { return a_expression; }
+  aspect_e aspect () { return a_aspect; }
+  
+private:
+  QString	a_expression;
+  aspect_e	a_aspect;
+  QPen		a_pen;
+};
 
 class Plot2DWindow : public QMainWindow
 {
@@ -44,7 +55,7 @@ private:
   QLineEdit *indexVarName;
 #endif
   void drawCurves ();
-  void drawCurve (QString aplExpr);
+  void drawCurve (QString aplExpr, aspect_e aspect);
   void createMenubar ();
   void setResolution ();
   bool appendSeries (double x, double y,
@@ -65,7 +76,7 @@ private:
   QButtonGroup *aspectGroup;
   QAbstractSeries *series;
   series_mode_e seriesMode;
-  
+  QList<PlotCurve *> plotCurves;
   
 protected:
   void closeEvent(QCloseEvent *event) override;
