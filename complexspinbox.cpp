@@ -66,36 +66,40 @@ void ComplexSpinBox::parseComplex (QString txt)
 {
   QRegularExpressionMatch match = rx.match (txt);
   if (match.hasMatch ()) {
-    if (match.lastCapturedIndex() >= 5) {
+    if (match.lastCapturedIndex() >= 2) {
       real = match.captured (MATCH_REAL).toFloat ();
-      imag = match.captured (MATCH_IMAG).toFloat ();
-      if (0 !=
-	  match.captured (MATCH_SEPARATOR)
-	  .compare ("j", Qt::CaseInsensitive)) {
-	// not j, therefore must be polar coord
-	double phase = imag;
-	if (match.lastCapturedIndex() >= 6) {
-	  if (0 ==
-	      match.captured (MATCH_COORD)
-	      .compare ("d", Qt::CaseInsensitive)) {
-	    phase *= M_PI/180.0;		// d for degrees
-	    coord_type = COORD_POLAR_DEGREES;
+      imag = 0.0;
+      coord_type = COORD_RECTANGULAR;
+      if (match.lastCapturedIndex() >= 5) {
+	imag = match.captured (MATCH_IMAG).toFloat ();
+	if (0 !=
+	    match.captured (MATCH_SEPARATOR)
+	    .compare ("j", Qt::CaseInsensitive)) {
+	  // not j, therefore must be polar coord
+	  double phase = imag;
+	  if (match.lastCapturedIndex() >= 6) {
+	    if (0 ==
+		match.captured (MATCH_COORD)
+		.compare ("d", Qt::CaseInsensitive)) {
+	      phase *= M_PI/180.0;		// d for degrees
+	      coord_type = COORD_POLAR_DEGREES;
+	    }
+	    else if (0 !=
+		     match.captured (MATCH_COORD) 
+		     .compare ("r", Qt::CaseInsensitive)) {
+	      phase *= M_PI;		// not r so must be pi
+	      coord_type = COORD_POLAR_PI;
+	    }
+	    else
+	      coord_type = COORD_POLAR;
 	  }
-	  else if (0 !=
-		   match.captured (MATCH_COORD) 
-		   .compare ("r", Qt::CaseInsensitive)) {
-	    phase *= M_PI;		// not r so must be pi
-	    coord_type = COORD_POLAR_PI;
-	  }
-	  else
-	    coord_type = COORD_POLAR;
+	  double mag = real;
+	  real = mag * cos (phase);
+	  imag = mag * sin (phase);
 	}
-	double mag = real;
-	real = mag * cos (phase);
-	imag = mag * sin (phase);
-      }
-      else
+	else
 	coord_type = COORD_RECTANGULAR;
+      }
       Q_EMIT valueChanged ();
     }
   }
