@@ -227,8 +227,7 @@ void Plot2DWindow::drawCurves ()
   aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
   drawCurve (aplExpr, aspect);
   for (int i = 0; i < plotCurves.size (); i++) {
-    drawCurve (plotCurves[i]->expression (), ASPECT_REAL);
-    //    drawCurve (plotCurves[i]->expression (), plotCurves[i]->aspect);
+    drawCurve (plotCurves[i]->expression (), plotCurves[i]->aspect ());
   }
 }
 
@@ -293,6 +292,36 @@ Plot2DWindow::setDecorations ()
   yTitleBox->setPlaceholderText ("Y Label");
   layout->addWidget (yTitleBox, row, col++);
 
+  row++;
+  col = 0;
+#if 0
+  QLabel curvesLbl ("Axes Labels");
+  layout->addWidget (&curvesLbl, row, col++);
+#endif
+
+  QTableWidget *curvesTable = new QTableWidget (plotCurves.size (), 4, this);
+  QStringList headers = {"Expression", "Aspect", "Pen", "Delete"};
+  curvesTable->setHorizontalHeaderLabels (headers);
+  
+  for (int i = 0; i < plotCurves.size (); i++) {
+    int tableCol = 0;
+    
+    QTableWidgetItem *labelItem
+      = new QTableWidgetItem (plotCurves[i]->label ());
+    //    QTableWidgetItem *labelItem = new QTableWidgetItem (QString ("kkk"));
+#if 1
+    curvesTable->setVerticalHeaderItem (i, labelItem);
+#else
+    curvesTable->setItem (i, tableCol++, labelItem);
+#endif
+    
+    QTableWidgetItem *exprItem
+      = new QTableWidgetItem (plotCurves[i]->expression ());
+    curvesTable->setItem (i, tableCol++, exprItem);
+  }
+  layout->addWidget (curvesTable, row, col++, 1, 3);
+
+  
   row++;
   col = 0;
 

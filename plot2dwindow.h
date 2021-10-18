@@ -32,14 +32,15 @@ class MainWindow;
 class PlotCurve {
 public:
   PlotCurve (QString &e,  aspect_e &a) { a_expression = e; a_aspect = a; }
+  QString label () { return a_label; }
   QString expression () { return a_expression; }
   aspect_e aspect () { return a_aspect; }
   
 private:
+  QString	a_label;
   QString	a_expression;
   aspect_e	a_aspect;
   QPen		a_pen;
-  QString	a_label;
 };
 
 class Plot2DWindow : public QMainWindow
