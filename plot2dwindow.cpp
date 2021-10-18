@@ -169,6 +169,22 @@ void Plot2DWindow::drawCurve (QString aplExpr, aspect_e aspect)
 	      static_cast<QSplineSeries*>(series)->count ()) {
 	    chartView->chart()->addSeries(series);
 	    chart->createDefaultAxes ();
+	    QList<QAbstractAxis *>haxes = chart->axes (Qt::Horizontal);
+	    if (haxes.size () > 0)
+	      haxes.first ()->setTitleText (xTitle);
+	    QList<QAbstractAxis *>vaxes = chart->axes (Qt::Vertical);
+	    if (vaxes.size () > 0)
+	      vaxes.first ()->setTitleText (yTitle);
+	    chart->setTitle (chartTitle);
+	    chart->setTheme ((QChart::ChartTheme)theme);
+
+	    // fixme -- assumes left/down are min
+	    double dx = 0.075 * (idxVector.back () - idxVector.front ());
+	    double dy = 0.075 * (realMax - realMin);
+	    chart->axes (Qt::Vertical).first()
+	      ->setRange(realMin - dy, realMax + dy);
+	    chart->axes (Qt::Horizontal).first()
+	      ->setRange(idxVector.front () - dx, idxVector.back () + dx);
 
 #if 0
 	    QValueAxis *axisX =  QValueAxis ();
@@ -206,12 +222,6 @@ void Plot2DWindow::drawCurves ()
   chartView->setChart (chart);
   if (oldChart != nullptr)
     delete oldChart;
-
-  chart->setTitle (chartTitle);
-  chart->setTheme ((QChart::ChartTheme)theme);
-  QList<QAbstractAxis *>axes = chart->axes (Qt::Horizontal);
-  if (axes.size () > 0) 
-    axes[0]->setTitleText (xTitle);
   
   QString aplExpr = aplExpression->text ();
   aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
@@ -239,38 +249,52 @@ Plot2DWindow::setDecorations ()
   dialog.setLayout (layout);
 
   int row = 0;
+  int col = 0;
   
   QLabel chartTitileLbl ("Title");
-  layout->addWidget (&chartTitileLbl, row, 0);
+  layout->addWidget (&chartTitileLbl, row, col++);
 
   QLineEdit *chartTitleBox = new QLineEdit ();
   chartTitleBox->setText (chartTitle);
   connect (chartTitleBox,
-           &QLineEdit::returnPressed,
+           &QLineEdit::editingFinished,
           [=](){
 	    chartTitle = chartTitleBox->text ();
 	    drawCurves ();
           });
   chartTitleBox->setPlaceholderText ("ChartTitle");
-  layout->addWidget (chartTitleBox, row, 1, 1, 2);
+  layout->addWidget (chartTitleBox, row, col++, 1, 2);
 
   row++;
+  col = 0;
   
-  QLabel xLbl ("X Label");
-  layout->addWidget (&xLbl, row, 0);
+  QLabel xLbl ("Axes Labels");
+  layout->addWidget (&xLbl, row, col++);
 
   QLineEdit *xTitleBox = new QLineEdit ();
   xTitleBox->setText (xTitle);
   connect (xTitleBox,
-           &QLineEdit::returnPressed,
+           &QLineEdit::editingFinished,
           [=](){
 	    xTitle = xTitleBox->text ();
 	    drawCurves ();
           });
-  chartTitleBox->setPlaceholderText ("ChartTitle");
-  layout->addWidget (xTitleBox, row, 1, 1, 2);
+  xTitleBox->setPlaceholderText ("X label");
+  layout->addWidget (xTitleBox, row, col++);
+
+  QLineEdit *yTitleBox = new QLineEdit ();
+  yTitleBox->setText (yTitle);
+  connect (yTitleBox,
+           &QLineEdit::editingFinished,
+          [=](){
+	    yTitle = yTitleBox->text ();
+	    drawCurves ();
+          });
+  yTitleBox->setPlaceholderText ("Y Label");
+  layout->addWidget (yTitleBox, row, col++);
 
   row++;
+  col = 0;
 
   QLabel themeLbl ("Theme");
   layout->addWidget (&themeLbl, row, 0);

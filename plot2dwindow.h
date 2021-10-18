@@ -39,6 +39,7 @@ private:
   QString	a_expression;
   aspect_e	a_aspect;
   QPen		a_pen;
+  QString	a_label;
 };
 
 class Plot2DWindow : public QMainWindow
