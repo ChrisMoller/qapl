@@ -47,7 +47,9 @@ bool Plot2DWindow::appendSeries (double x, double y,
 
 void Plot2DWindow::drawCurve (QString aplExpr)
 {
+#if 0
   if (!aplExpr.isEmpty ()) {
+#endif
     double realIncr   = (realFinal - realInit) / (double)resolution;
     double imagIncr   = (imagFinal - imagInit) / (double)resolution;
     QString idxvar = indexVariable->text ();
@@ -178,9 +180,11 @@ void Plot2DWindow::drawCurve (QString aplExpr)
       ? QString (")erase %1 %2").arg (IDXVAR, PLOTVAR)
       : QString (")erase %1").arg (PLOTVAR);
     mw->processLine (false, cmd);
+#if 0
   }
   else
     mw->printError (tr ("An APL expression must be specified."));
+#endif
 }
 
 
@@ -188,6 +192,12 @@ void Plot2DWindow::drawCurves ()
 {
   QString aplExpr = aplExpression->text ();
   drawCurve (aplExpr);
+}
+
+void Plot2DWindow::pushExpression ()
+{
+  QString aplExpr = aplExpression->text ();
+  
 }
 
 void
@@ -294,17 +304,13 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   QPushButton *pushExpr = new QPushButton (QObject::tr ("Push"));
   QObject::connect (pushExpr, &QPushButton::clicked,
 		    [=](){
-		      fprintf (stderr, "push\n");
+		      pushExpression ();
+		      drawCurves ();
 		    });
   layout->addWidget (pushExpr, row, col++);
 
   row++;
   col = 0;
-
-
-
-
-
   
   indexVariable = new QLineEdit ();
   indexVariable->setPlaceholderText ("Index var");

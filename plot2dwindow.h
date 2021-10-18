@@ -28,6 +28,8 @@ enum {
 
 class MainWindow;
 
+class 
+
 class Plot2DWindow : public QMainWindow
 {
   Q_OBJECT
@@ -35,18 +37,20 @@ class Plot2DWindow : public QMainWindow
 public:
   Plot2DWindow (MainWindow *parent = nullptr);
   ~Plot2DWindow ();
-  void drawCurves ();
-  void drawCurve (QString aplExpr);
-  void createMenubar ();
-  void setResolution ();
-  bool appendSeries (double x, double y,
-		     double &realMax, double &realMin);
 
 private:
   MainWindow *mw;
 #if 0
   QLineEdit *indexVarName;
 #endif
+  void drawCurves ();
+  void drawCurve (QString aplExpr);
+  void createMenubar ();
+  void setResolution ();
+  bool appendSeries (double x, double y,
+		     double &realMax, double &realMin);
+  void pushExpression ();
+
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;
   int resolution;
