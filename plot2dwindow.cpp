@@ -47,9 +47,7 @@ bool Plot2DWindow::appendSeries (double x, double y,
 
 void Plot2DWindow::drawCurve (QString aplExpr, aspect_e aspect)
 {
-#if 0
   if (!aplExpr.isEmpty ()) {
-#endif
     double realIncr   = (realFinal - realInit) / (double)resolution;
     double imagIncr   = (imagFinal - imagInit) / (double)resolution;
     QString idxvar = indexVariable->text ();
@@ -94,102 +92,110 @@ void Plot2DWindow::drawCurve (QString aplExpr, aspect_e aspect)
     mw->processLine (false, cmd);
     QString pv (PLOTVAR);
     APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
-    //    int resultRank		= get_rank (result);
-    int resultElementCount	= get_element_count (result);
-    bool resultValid = true;
-    //    bool isComplex   = false;
-    double realMax = -MAXDOUBLE;
-    double realMin =  MAXDOUBLE;
-    series = nullptr;
-    seriesMode = MODE_BUTTON_UNSET;
-    bool run = true;
-    for (int i = 0; run && i < resultElementCount; i++) {
-      int type = get_type (result, i);
-      switch(type) {
-      case CCT_CHAR:
-      case CCT_POINTER:
-	resultValid = false;
-	break;
-      case CCT_INT:
-	if (!appendSeries (idxVector[i],
-			   (double)get_int (result, i), realMax, realMin))
-	  run = false;
-	break;
-      case CCT_FLOAT:
-	if (!appendSeries (idxVector[i],
-			   get_real (result, i), realMax, realMin))
-	  run = false;
-	break;
-      case CCT_COMPLEX:
-	{
-	  switch (aspect) {
-	  case ASPECT_REAL:
-	    if (!appendSeries (idxVector[i],
-			       get_real (result, i), realMax, realMin))
-	  run = false;
-	    break;
-	  case ASPECT_IMAG:
-	    if (!appendSeries (idxVector[i],
-			       get_imag (result, i), realMax, realMin))
-	      run = false;
-	    break;
-	  case ASPECT_MAGNITUDE:
-	    {
-	      std::complex<double> val (get_real (result, i),
-					get_imag (result, i));
+    if (result != nullptr) {
+      //    int resultRank		= get_rank (result);
+      int resultElementCount	= get_element_count (result);
+      bool resultValid = true;
+      //    bool isComplex   = false;
+      double realMax = -MAXDOUBLE;
+      double realMin =  MAXDOUBLE;
+      series = nullptr;
+      seriesMode = MODE_BUTTON_UNSET;
+      bool run = true;
+      for (int i = 0; run && i < resultElementCount; i++) {
+	int type = get_type (result, i);
+	switch(type) {
+	case CCT_CHAR:
+	case CCT_POINTER:
+	  resultValid = false;
+	  break;
+	case CCT_INT:
+	  if (!appendSeries (idxVector[i],
+			     (double)get_int (result, i), realMax, realMin))
+	    run = false;
+	  break;
+	case CCT_FLOAT:
+	  if (!appendSeries (idxVector[i],
+			     get_real (result, i), realMax, realMin))
+	    run = false;
+	  break;
+	case CCT_COMPLEX:
+	  {
+	    switch (aspect) {
+	    case ASPECT_REAL:
 	      if (!appendSeries (idxVector[i],
-				 std::abs (val), realMax, realMin))
+				 get_real (result, i), realMax, realMin))
 		run = false;
-	    }
-	    break;
-	  case ASPECT_PHASE:
+	      break;
+	    case ASPECT_IMAG:
+	      if (!appendSeries (idxVector[i],
+				 get_imag (result, i), realMax, realMin))
+		run = false;
+	      break;
+	    case ASPECT_MAGNITUDE:
+	      {
+		std::complex<double> val (get_real (result, i),
+					  get_imag (result, i));
+		if (!appendSeries (idxVector[i],
+				   std::abs (val), realMax, realMin))
+		  run = false;
+	      }
+	      break;
+	    case ASPECT_PHASE:
 	      std::complex<double> val (get_real (result, i),
 					get_imag (result, i));
 	      if (!appendSeries (idxVector[i],
 				 std::arg (val), realMax, realMin))
 		run = false;
-	    break;
+	      break;
+	    }
 	  }
+	  break;
 	}
-	break;
       }
-    }
-    if (!run)
+      if (!run)
 	mw->printError (tr ("Inconsistent series type."));
-    if (run && resultValid) {
-      if (idxElementCount == static_cast<QSplineSeries*>(series)->count ()) {
-	chartView->chart()->addSeries(series);
-	chart->createDefaultAxes ();
+      if (run && resultValid) {
+	if (idxElementCount == static_cast<QSplineSeries*>(series)->count ()) {
+	  chartView->chart()->addSeries(series);
+	  chart->createDefaultAxes ();
 
 #if 0
-      QValueAxis *axisX =  QValueAxis ();
+	  QValueAxis *axisX =  QValueAxis ();
 
-      axisX->setRange(10, 20.5);
-      axisX->setTickCount(10);
-      axisX->setLabelFormat("%.2f");
-      chartView->chart()->setAxisX(axisX, series);
+	  axisX->setRange(10, 20.5);
+	  axisX->setTickCount(10);
+	  axisX->setLabelFormat("%.2f");
+	  chartView->chart()->setAxisX(axisX, series);
 #endif
       
+	}
+	else
+  mw->printError (tr ("Index and result vectors are of different lengths."));
       }
       else
-	mw->printError (tr ("Index and result vectors are of different lengths."));
+	mw->printError (tr ("Invalid vector."));
     }
     else
-      mw->printError (tr ("Invalid vactor."));
+      mw->printError (tr ("Expression evaluation error."));
     cmd = autoIdx 
       ? QString (")erase %1 %2").arg (IDXVAR, PLOTVAR)
       : QString (")erase %1").arg (PLOTVAR);
     mw->processLine (false, cmd);
-#if 0
   }
-  else
-    mw->printError (tr ("An APL expression must be specified."));
-#endif
 }
 
 
 void Plot2DWindow::drawCurves ()
 {
+  QChart *oldChart = chartView->chart ();
+  chart = new QChart ();
+  chartView->setChart (chart);
+  if (oldChart != nullptr)
+    delete oldChart;
+  
+  chart->setTitle ("hhhhhhhhhhhhhh");
+  
   QString aplExpr = aplExpression->text ();
   aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
   drawCurve (aplExpr, aspect);
@@ -276,6 +282,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   realFinal	= 1.0;
   imagInit	= 0.0;
   imagFinal	= 0.0;
+  chart 	= nullptr;
 
   setupComplete = false;
     
@@ -291,9 +298,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   chartView = new QChartView (this);
   chartView->setMinimumWidth (360);
   chartView->setMinimumHeight (360);
-  chart = new QChart ();
-  chart->setTitle ("hhhhhhhhhhhhhh");
-  chartView->setChart (chart);
   layout->addWidget (chartView, row, 0, 1, 3);
 
   row++;
