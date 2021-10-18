@@ -9,6 +9,13 @@ typedef enum {
   WHICH_IMAG
 } which_e;
 
+typedef enum {
+  COORD_RECTANGULAR,
+  COORD_POLAR,
+  COORD_POLAR_DEGREES,
+  COORD_POLAR_PI
+} coord_e;
+
 class
 ComplexSpinBox : public QAbstractSpinBox
 {
@@ -37,6 +44,7 @@ protected:
 private:
     void parseComplex (QString txt);
     void incdecValue (which_e which, double val);
+    void formatValue ();
  
     QValidator  *validator;
     double real;
@@ -45,5 +53,6 @@ private:
     which_e which;
     double incr;
     bool mousePressActive;
+    coord_e coord_type;
 };
 #endif // COMPLEXSPINBOX_H

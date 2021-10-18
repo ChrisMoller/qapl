@@ -50,6 +50,14 @@ void Plot2DWindow::drawCurve (QString aplExpr, aspect_e aspect)
   if (!aplExpr.isEmpty ()) {
     double realIncr   = (realFinal - realInit) / (double)resolution;
     double imagIncr   = (imagFinal - imagInit) / (double)resolution;
+    QString realIncrString =
+      QString::number (realIncr).replace (QString ("-"), QString ("¯"));
+    QString imagIncrString =
+      QString::number (imagIncr).replace (QString ("-"), QString ("¯"));
+    QString realInitString =
+      QString::number (realInit).replace (QString ("-"), QString ("¯"));
+    QString imagInitString =
+      QString::number (imagInit).replace (QString ("-"), QString ("¯"));
     QString idxvar = indexVariable->text ();
     bool autoIdx = false;
     if (idxvar.isEmpty ()) {
@@ -57,8 +65,8 @@ void Plot2DWindow::drawCurve (QString aplExpr, aspect_e aspect)
       autoIdx = true;
     }
     QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
-      .arg (idxvar).arg (realInit).arg (imagInit).arg (resolution+1)
-      .arg (realIncr).arg (imagIncr);
+      .arg (idxvar).arg (realInitString).arg (imagInitString)
+      .arg (resolution+1).arg (realIncrString).arg (imagIncrString);
     mw->processLine (false, cmd);
     APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurve.idxVals");
     int idxElementCount	= get_element_count (idxVals);
