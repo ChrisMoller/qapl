@@ -299,29 +299,77 @@ Plot2DWindow::setDecorations ()
   layout->addWidget (&curvesLbl, row, col++);
 #endif
 
+  enum {
+    CURVES_COLUMN_LABEL,
+    CURVES_COLUMN_EXPRESSION,
+    CURVES_COLUMN_ASPECT,
+    CURVES_COLUMN_PEN
+  };
+
   QTableWidget *curvesTable = new QTableWidget (plotCurves.size (), 4, this);
-  QStringList headers = {"Expression", "Aspect", "Pen", "Delete"};
+  connect (curvesTable,
+	   QOverload<int, int>::of(&QTableWidget::cellChanged),
+	   [=](int row, int column)
+	   {
+	     if (column == CURVES_COLUMN_LABEL) {
+	       QTableWidgetItem *labelItem = curvesTable->item (row, column);
+	       QString newLabel = labelItem->text ();
+	       plotCurves[row]->setLabel (newLabel);
+	       drawCurves ();
+	     }
+	     else if (column == CURVES_COLUMN_EXPRESSION) {
+	       QTableWidgetItem *expItem = curvesTable->item (row, column);
+	       QString newExp = expItem->text ();
+	       plotCurves[row]->setExpression (newExp);
+	       drawCurves ();
+	     }
+	   });
+  connect (curvesTable,
+	   QOverload<int, int>::of(&QTableWidget::cellDoubleClicked),
+	   [=](int row, int column)
+	   {
+	     if (column == CURVES_COLUMN_ASPECT) {
+	       fprintf (stderr, "dc%d\n", row);
+	     }
+	   });
+
+  QStringList headers = {"Label", "Expression", "Aspect", "Pen"};
   curvesTable->setHorizontalHeaderLabels (headers);
   
   for (int i = 0; i < plotCurves.size (); i++) {
-    int tableCol = 0;
-    
-    QTableWidgetItem *labelItem
-      = new QTableWidgetItem (plotCurves[i]->label ());
-    //    QTableWidgetItem *labelItem = new QTableWidgetItem (QString ("kkk"));
-#if 1
-    curvesTable->setVerticalHeaderItem (i, labelItem);
-#else
-    curvesTable->setItem (i, tableCol++, labelItem);
-#endif
+    QString labelString = plotCurves[i]->label ().isEmpty () ?
+      QString ("---") : plotCurves[i]->label ();
+    QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
+    curvesTable->setItem (i, CURVES_COLUMN_LABEL, labelItem);
     
     QTableWidgetItem *exprItem
       = new QTableWidgetItem (plotCurves[i]->expression ());
-    curvesTable->setItem (i, tableCol++, exprItem);
-  }
-  layout->addWidget (curvesTable, row, col++, 1, 3);
+    curvesTable->setItem (i, CURVES_COLUMN_EXPRESSION, exprItem);
 
-  
+    QString aspectString;
+    switch(plotCurves[i]->aspect ()) {
+    case ASPECT_REAL:
+      aspectString = QString ("Real");
+      break;
+    case ASPECT_IMAG:
+      aspectString = QString ("Imaginary");
+      break;
+    case ASPECT_MAGNITUDE:
+      aspectString = QString ("Magnitude");
+      break;
+    case ASPECT_PHASE:
+      aspectString = QString ("Phase");
+      break;
+    }
+    QTableWidgetItem *aspectItem = new QTableWidgetItem (aspectString);
+    Qt::ItemFlags aspectFlags = aspectItem->flags ();
+    aspectFlags &= ~Qt::ItemIsEditable;
+    aspectItem->setFlags (aspectFlags);
+    curvesTable->setItem (i, CURVES_COLUMN_ASPECT, aspectItem);
+  }
+
+  layout->addWidget (curvesTable, row, col++, 1, 4);
+
   row++;
   col = 0;
 

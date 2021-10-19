@@ -33,8 +33,11 @@ class PlotCurve {
 public:
   PlotCurve (QString &e,  aspect_e &a) { a_expression = e; a_aspect = a; }
   QString label () { return a_label; }
+  void setLabel (QString label) { a_label = label; }
   QString expression () { return a_expression; }
+  void setExpression (QString expression) { a_expression = expression; }
   aspect_e aspect () { return a_aspect; }
+  void setAspect (aspect_e aspect) { a_aspect = aspect; }
   
 private:
   QString	a_label;
