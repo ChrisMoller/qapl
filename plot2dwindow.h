@@ -7,25 +7,12 @@
 #include <QChartView>
 
 #include "mainwindow.h"
+#include "chart2dwindow.h"
 #include "complexspinbox.h"
 
-typedef enum {
-  MODE_BUTTON_UNSET,
-  MODE_BUTTON_SPLINE,
-  MODE_BUTTON_LINE,
-  MODE_BUTTON_POLAR,
-  MODE_BUTTON_PIE,
-  MODE_BUTTON_SCATTER,
-  MODE_BUTTON_AREA,
-  MODE_BUTTON_BOX
-} series_mode_e;
+class Chart2DWindow;
 
-typedef enum {
-  ASPECT_REAL,
-  ASPECT_IMAG,
-  ASPECT_MAGNITUDE,
-  ASPECT_PHASE
-} aspect_e;
+#include "enums.h"
 
 class MainWindow;
 
@@ -53,19 +40,27 @@ class Plot2DWindow : public QMainWindow
 public:
   Plot2DWindow (MainWindow *parent = nullptr);
   ~Plot2DWindow ();
+  QString  getAplExpression () { return aplExpression->text (); }
+  aspect_e getAspect () {return (aspect_e) aspectGroup->checkedId (); }
+  series_mode_e getMode () {return (series_mode_e) modeGroup->checkedId (); }
+  double   getRealFinal () { return realFinal; }
+  double   getRealInit  () { return realInit; }
+  double   getImagFinal () { return imagFinal; }
+  double   getImagInit  () { return imagInit; }
+  int      getResolution () {return resolution; }
+  QString  getIndexVariable () { return indexVariable->text (); }
+  QString  getXTitle () { return xTitle; }
+  QString  getYTitle () { return yTitle; }
+  QString  getChartTitle () { return chartTitle; }
+  QChart::ChartTheme getTheme () { return (QChart::ChartTheme)theme; }
+  QList<PlotCurve *> getPlotCurves () { return plotCurves; }
 
 private:
   MainWindow *mw;
-#if 0
-  QLineEdit *indexVarName;
-#endif
   void drawCurves ();
-  void drawCurve (QString aplExpr, aspect_e aspect);
   void createMenubar ();
   void setResolution ();
   void setDecorations ();
-  bool appendSeries (double x, double y,
-		     double &realMax, double &realMin);
   void pushExpression ();
 
   QLineEdit *aplExpression;
@@ -80,13 +75,12 @@ private:
   QChart *chart;
   QButtonGroup *modeGroup;
   QButtonGroup *aspectGroup;
-  QAbstractSeries *series;
-  series_mode_e seriesMode;
   QList<PlotCurve *> plotCurves;
   QString chartTitle;
   QString xTitle;
   QString yTitle;
   int theme;
+  Chart2DWindow *chart2DWindow;
   
 protected:
   void closeEvent(QCloseEvent *event) override;
