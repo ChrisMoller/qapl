@@ -18,10 +18,15 @@ class MainWindow;
 
 class PlotCurve {
 public:
-  PlotCurve (QString &e,  aspect_e &a) { a_expression = e; a_aspect = a; }
+  PlotCurve (QString &e,  aspect_e &a, QPen p) {
+    a_expression = e;
+    a_aspect = a;
+    a_pen = p;
+  }
   QString label () { return a_label; }
   void setLabel (QString label) { a_label = label; }
   QString expression () { return a_expression; }
+  QPen pen () { return a_pen; }
   void setExpression (QString expression) { a_expression = expression; }
   aspect_e aspect () { return a_aspect; }
   void setAspect (aspect_e aspect) { a_aspect = aspect; }
@@ -52,6 +57,7 @@ public:
   QString  getXTitle () { return xTitle; }
   QString  getYTitle () { return yTitle; }
   QString  getChartTitle () { return chartTitle; }
+  QPen     getPen () { return activePen; }
   QString  getCurveTitle () { return curveTitle->text (); }
   QChart::ChartTheme getTheme () { return (QChart::ChartTheme)theme; }
   QList<PlotCurve *> getPlotCurves () { return plotCurves; }

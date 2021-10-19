@@ -29,7 +29,7 @@ void Plot2DWindow::pushExpression ()
 {
   QString aplExpr = aplExpression->text ();
   aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
-  PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect);
+  PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect, activePen);
   plotCurves.append (plotCurve);
   aplExpression->clear ();
 }
@@ -56,7 +56,7 @@ lineStyleCombo (Qt::PenStyle sel)
 }
 
 /***
-    these next two things are here because c++ was giving me
+    These next two things are here because c++ was giving me
     mysterious errors about consts.  I don't know what they
     were all about or why this works.
 ***/
