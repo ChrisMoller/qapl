@@ -52,6 +52,7 @@ public:
   QString  getXTitle () { return xTitle; }
   QString  getYTitle () { return yTitle; }
   QString  getChartTitle () { return chartTitle; }
+  QString  getCurveTitle () { return curveTitle->text (); }
   QChart::ChartTheme getTheme () { return (QChart::ChartTheme)theme; }
   QList<PlotCurve *> getPlotCurves () { return plotCurves; }
 
@@ -62,9 +63,11 @@ private:
   void setResolution ();
   void setDecorations ();
   void pushExpression ();
+  void setPen ();
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;
+  QLineEdit *curveTitle;
   int resolution;
   double realInit;
   double realFinal;

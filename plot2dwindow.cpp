@@ -35,6 +35,28 @@ void Plot2DWindow::pushExpression ()
 }
 
 void
+Plot2DWindow::setPen ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  int col = 0;
+  
+  QPushButton *setColourButton = new QPushButton (QObject::tr ("Pen colour"));
+  QObject::connect (setColourButton, &QPushButton::clicked,
+		    [=](){
+		      QColor colour = QColorDialog::getColor ();
+		    });
+  layout->addWidget (setColourButton, row, col++);
+
+
+  dialog.exec ();
+}
+
+
+void
 Plot2DWindow::setDecorations ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -289,26 +311,35 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 
   int row = 0;
   int col = 0;
-
-#if 0
-  chartView = new QChartView (this);
-  chartView->setMinimumWidth (360);
-  chartView->setMinimumHeight (360);
-  layout->addWidget (chartView, row, 0, 1, 3);
-
-  row++;
-#endif
   
   aplExpression = new QLineEdit ();
-  aplExpression->setPlaceholderText ("APL expression");
+  aplExpression->setPlaceholderText (tr ("APL expression"));
   connect (aplExpression,
            &QLineEdit::returnPressed,
           [=](){
 	    if (setupComplete) drawCurves ();
           });
-  layout->addWidget (aplExpression, row, col, 1, 2);
+  layout->addWidget (aplExpression, row, col, 1, 3);
 
-  col += 2;
+  row++;
+  col = 0;
+
+  curveTitle = new QLineEdit ();
+  curveTitle->setPlaceholderText (tr ("Curve title"));
+  connect (curveTitle,
+           &QLineEdit::returnPressed,
+          [=](){
+	    if (setupComplete) drawCurves ();
+          });
+  layout->addWidget (curveTitle, row, col++);
+  
+  QPushButton *setPenButton = new QPushButton (QObject::tr ("Pen"));
+  QObject::connect (setPenButton, &QPushButton::clicked,
+		    [=](){
+		      setPen ();
+		      drawCurves ();
+		    });
+  layout->addWidget (setPenButton, row, col++);
   
   QPushButton *pushExpr = new QPushButton (QObject::tr ("Push"));
   QObject::connect (pushExpr, &QPushButton::clicked,
@@ -354,6 +385,50 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
           });
   rangeFinal->setComplex (0.0, 0.0);
   layout->addWidget (rangeFinal, row, col++);
+
+
+
+
+  row++;
+  col = 0;
+
+  QGroupBox *aspectBox = new QGroupBox (tr ("Aspect"));
+  aspectGroup = new QButtonGroup ();
+  connect(aspectGroup,
+	  QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
+	  [=](
+	      QAbstractButton *button __attribute__((unused))
+	      ){
+	    drawCurves ();
+	  });
+  aspectGroup->setExclusive(true);
+  QHBoxLayout *aspectLayout = new QHBoxLayout;
+  aspectBox->setLayout (aspectLayout);
+
+  QRadioButton *realButton = new QRadioButton(tr ("Real"), aspectBox);
+  realButton->setChecked (true);
+  aspectGroup->addButton (realButton,  ASPECT_REAL);
+  aspectLayout->addWidget (realButton);
+
+  QRadioButton *imagButton = new QRadioButton(tr ("Imaginary"), aspectBox);
+  aspectGroup->addButton (imagButton,  ASPECT_IMAG);
+  aspectLayout->addWidget (imagButton);
+
+  QRadioButton *magButton = new QRadioButton(tr ("Magnitude"), aspectBox);
+  aspectGroup->addButton (magButton,  ASPECT_MAGNITUDE);
+  aspectLayout->addWidget (magButton);
+
+  QRadioButton *phaseButton = new QRadioButton(tr ("Phase"), aspectBox);
+  aspectGroup->addButton (phaseButton,  ASPECT_PHASE);
+  aspectLayout->addWidget (phaseButton);
+
+  layout->addWidget (aspectBox, row, col++, 1, 3);
+
+
+
+
+
+  
 
   row++;
   col = 0;
@@ -407,41 +482,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   modeLayout->addWidget (boxButton, modeRow, modeCol++);
 
   layout->addWidget (modeBox, row, col++, 1, 3);
-
-  row++;
-  col = 0;
-
-  QGroupBox *aspectBox = new QGroupBox (tr ("Aspect"));
-  aspectGroup = new QButtonGroup ();
-  connect(aspectGroup,
-	  QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
-	  [=](
-	      QAbstractButton *button __attribute__((unused))
-	      ){
-	    drawCurves ();
-	  });
-  aspectGroup->setExclusive(true);
-  QHBoxLayout *aspectLayout = new QHBoxLayout;
-  aspectBox->setLayout (aspectLayout);
-
-  QRadioButton *realButton = new QRadioButton(tr ("Real"), aspectBox);
-  realButton->setChecked (true);
-  aspectGroup->addButton (realButton,  ASPECT_REAL);
-  aspectLayout->addWidget (realButton);
-
-  QRadioButton *imagButton = new QRadioButton(tr ("Imaginary"), aspectBox);
-  aspectGroup->addButton (imagButton,  ASPECT_IMAG);
-  aspectLayout->addWidget (imagButton);
-
-  QRadioButton *magButton = new QRadioButton(tr ("Magnitude"), aspectBox);
-  aspectGroup->addButton (magButton,  ASPECT_MAGNITUDE);
-  aspectLayout->addWidget (magButton);
-
-  QRadioButton *phaseButton = new QRadioButton(tr ("Phase"), aspectBox);
-  aspectGroup->addButton (phaseButton,  ASPECT_PHASE);
-  aspectLayout->addWidget (phaseButton);
-
-  layout->addWidget (aspectBox, row, col++, 1, 3);
     
   setupComplete = true;
 
