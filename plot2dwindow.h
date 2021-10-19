@@ -63,7 +63,7 @@ private:
   void setResolution ();
   void setDecorations ();
   void pushExpression ();
-  void setPen ();
+  void setPen (QPen *pen);
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;
@@ -84,6 +84,7 @@ private:
   QString yTitle;
   int theme;
   Chart2DWindow *chart2DWindow;
+  QPen activePen;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

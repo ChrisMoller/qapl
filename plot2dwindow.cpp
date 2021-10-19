@@ -1,9 +1,9 @@
 #include <QMenuBar>
 #include <QChart>
 #include <QChartView>
+#include <QColorDialog>
 #include <QSplineSeries>
 #include <QValueAxis>
-//#include <QLineSeries>
 
 #include <complex>
 
@@ -34,8 +34,47 @@ void Plot2DWindow::pushExpression ()
   aplExpression->clear ();
 }
 
+static QComboBox *
+lineStyleCombo (Qt::PenStyle sel)
+{
+  QComboBox *linestyle_combo = new QComboBox ();
+  linestyle_combo->addItem ("Solid Line",
+                            QVariant((int)Qt::SolidLine));
+  linestyle_combo->addItem ("Dash Line,",
+                            QVariant((int)Qt::DashLine));
+  linestyle_combo->addItem ("Dot Line,",
+                            QVariant((int)Qt::DotLine));
+  linestyle_combo->addItem ("Dash Dot Line,",
+                            QVariant((int)Qt::DashDotLine));
+  linestyle_combo->addItem ("Dash Dot Dot Line",
+                            QVariant((int)Qt::DashDotDotLine));
+  int found = linestyle_combo->findData (QVariant ((int)sel));
+  if (found != -1)
+    linestyle_combo->setCurrentIndex (found);
+
+  return linestyle_combo;
+}
+
+/***
+    these next two things are here because c++ was giving me
+    mysterious errors about consts.  I don't know what they
+    were all about or why this works.
+***/
+
+static void
+doColour (QColor colour, QPen *pen)
+{
+  pen->setColor (colour);
+}
+
+static void
+doStyle (int style, QPen *pen)
+{
+  pen->setStyle (static_cast<Qt::PenStyle>(style));
+}
+
 void
-Plot2DWindow::setPen ()
+Plot2DWindow::setPen (QPen *pen)
 {
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *layout = new QGridLayout;
@@ -43,13 +82,41 @@ Plot2DWindow::setPen ()
 
   int row = 0;
   int col = 0;
-  
+
   QPushButton *setColourButton = new QPushButton (QObject::tr ("Pen colour"));
-  QObject::connect (setColourButton, &QPushButton::clicked,
-		    [=](){
-		      QColor colour = QColorDialog::getColor ();
-		    });
+  connect (setColourButton, &QPushButton::clicked,
+	   [=](){
+	     doColour (QColorDialog::getColor(pen->color (), nullptr), pen);
+	     // colour = QColorDialog::getColor(Qt::black, nullptr);
+	     //pen.setColor()
+	   });
   layout->addWidget (setColourButton, row, col++);
+
+  row++;
+  col = 0;
+
+  QLabel lbll ("Linestyle");
+  layout->addWidget (&lbll, row, col++);
+
+  QComboBox *lineStyle =  lineStyleCombo (pen->style ());
+  connect (lineStyle, QOverload<int>::of(&QComboBox::activated),
+          [=](int index)
+          {
+	    QVariant sel = lineStyle->itemData (index);
+	    doStyle (sel.toInt (), pen);
+	    //	    style = static_cast<Qt::PenStyle>(sel.toInt ());
+            //pen.setStyle ((Qt::PenStyle)sel.toInt ());
+	  });
+  layout->addWidget (lineStyle, row, col++);
+  
+  row++;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
 
 
   dialog.exec ();
@@ -332,11 +399,12 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 	    if (setupComplete) drawCurves ();
           });
   layout->addWidget (curveTitle, row, col++);
-  
+
+  activePen.setColor (QColor ("red"));
   QPushButton *setPenButton = new QPushButton (QObject::tr ("Pen"));
   QObject::connect (setPenButton, &QPushButton::clicked,
 		    [=](){
-		      setPen ();
+		      setPen (&activePen);
 		      drawCurves ();
 		    });
   layout->addWidget (setPenButton, row, col++);
