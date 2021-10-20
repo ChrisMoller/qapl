@@ -233,9 +233,47 @@ void Chart2DWindow::drawCurves ()
   }
 }
 
+void
+Chart2DWindow::exportImage ()
+{
+  // https://forum.qt.io/topic/76684/qpaintdevice-cannot-destroy-paint-device-that-is-being-painted/3
+#if 0
+  const auto dpr = chartView->devicePixelRatioF();
+  QPixmap buffer(chartView->width() * dpr, chartView->height() * dpr);
+  buffer.setDevicePixelRatio(dpr);
+  buffer.fill(Qt::transparent);
+#else
+  int cvw = chartView->width ();
+  int cvh = chartView->height ();
+  chartView->setMinimumSize (1000, 1000);
+  QPixmap buffer(chartView->width(), chartView->height());
+  buffer.fill(Qt::white);
+#endif
+
+  QPainter *paint = new QPainter(&buffer);
+  // see void QPainter::setBackgroundMode(Qt::BGMode mode)
+  //  paint->setPen(*(new QColor(255,34,255,255)));
+  QColor colour(255,34,255,255);
+  chartView->render(paint);
+  drawCurves ();
+  paint->end ();
+  QFile file("image.png");
+  file.open(QIODevice::WriteOnly);
+  // bool QPixmap::save(const QString &fileName, const char *format = nullptr, int quality = -1) const
+  //https://doc.qt.io/qt-5/qtimageformats-index.html
+  buffer.save(&file, "PNG");
+  file.close ();
+  chartView->setMinimumSize (cvw, cvh);
+}
+
 void Chart2DWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+  
+  QAction *exportAct =
+    fileMenu->addAction(tr("&Export..."), this,
+			    &Chart2DWindow::exportImage);
+  exportAct->setStatusTip(tr("Export chart"));
 }
 
 Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
@@ -254,6 +292,7 @@ Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
   chartView = new QChartView (this);
   chartView->setMinimumWidth (360);
   chartView->setMinimumHeight (360);
+
   layout->addWidget (chartView, 0, 0, 1, 3);
 
 

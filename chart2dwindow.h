@@ -25,6 +25,7 @@ public:
   void drawCurves ();
   void drawCurve (QString aplExpr, aspect_e aspect,
 		  QString label, QPen pen);
+  void exportImage ();
   
  private:
 
