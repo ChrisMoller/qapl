@@ -72,6 +72,8 @@ private:
   void setDecorations ();
   void pushExpression ();
   void updatePen (QPen *pen);
+  void updateAspect (PlotCurve *pc);
+  QString getAspectString (int idx);
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;

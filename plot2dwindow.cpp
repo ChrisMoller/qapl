@@ -124,8 +124,6 @@ Plot2DWindow::updatePen (QPen *pen)
           {
 	    QVariant sel = lineStyle->itemData (index);
 	    doStyle (sel.toInt (), pen);
-	    //	    style = static_cast<Qt::PenStyle>(sel.toInt ());
-            //pen.setStyle ((Qt::PenStyle)sel.toInt ());
 	  });
   layout->addWidget (lineStyle, row, col++);
   
@@ -137,14 +135,74 @@ Plot2DWindow::updatePen (QPen *pen)
   layout->addWidget (closeButton, row, 1);
   QObject::connect (closeButton, &QPushButton::clicked,
                     &dialog, &QDialog::accept);
-
-
+  
   dialog.exec ();
 }
 
-
 void
-Plot2DWindow::setDecorations ()
+Plot2DWindow::updateAspect (PlotCurve *pc)
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  int col = 0;
+  
+  QLabel lbla ("Aspect");
+  layout->addWidget (&lbla, row, col++);
+  
+  row++;
+  
+  QComboBox *aspectCombo = new QComboBox ();
+  connect(aspectCombo,
+	  QOverload<int>::of(&QComboBox::activated),
+	  [=](int index){
+	    QVariant sel = aspectCombo->itemData (index);
+	    pc->setAspect ((aspect_e)sel.toInt ());
+	  });
+  aspectCombo->addItem ("Real",      QVariant(ASPECT_REAL));
+  aspectCombo->addItem ("Imaginary", QVariant(ASPECT_IMAG));
+  aspectCombo->addItem ("Magnitude", QVariant(ASPECT_MAGNITUDE));
+  aspectCombo->addItem ("Phase",     QVariant(ASPECT_PHASE));
+  int ap = (int)pc->aspect ();
+  aspectCombo->setCurrentIndex (ap);
+  layout->addWidget (aspectCombo, row, col++);
+
+  row++;
+  col = 0;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+  
+  dialog.exec ();
+}
+
+QString Plot2DWindow::getAspectString (int idx)
+{
+  QString aspectString;
+  switch(plotCurves[idx]->aspect ()) {
+  case ASPECT_REAL:
+    aspectString = QString ("Real");
+    break;
+  case ASPECT_IMAG:
+    aspectString = QString ("Imaginary");
+    break;
+  case ASPECT_MAGNITUDE:
+    aspectString = QString ("Magnitude");
+    break;
+  case ASPECT_PHASE:
+    aspectString = QString ("Phase");
+    break;
+  }
+  return aspectString;
+}
+
+void Plot2DWindow::setDecorations ()
 {
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *layout = new QGridLayout;
@@ -232,7 +290,11 @@ Plot2DWindow::setDecorations ()
 	   [=](int row, int column)
 	   {
 	     if (column == CURVES_COLUMN_ASPECT) {
-	       fprintf (stderr, "dc%d\n", row);
+	       updateAspect (plotCurves[row]);
+	       QString aspectString = getAspectString (row);
+	       QTableWidgetItem *aspectItem = curvesTable->item (row, column);
+	       aspectItem->setText (aspectString);
+	       drawCurves ();
 	     }
 	     else if (column == CURVES_COLUMN_PEN) {
 	       QPen pen = plotCurves[row]->pen ();
@@ -263,21 +325,7 @@ Plot2DWindow::setDecorations ()
       = new QTableWidgetItem (plotCurves[i]->expression ());
     curvesTable->setItem (i, CURVES_COLUMN_EXPRESSION, exprItem);
 
-    QString aspectString;
-    switch(plotCurves[i]->aspect ()) {
-    case ASPECT_REAL:
-      aspectString = QString ("Real");
-      break;
-    case ASPECT_IMAG:
-      aspectString = QString ("Imaginary");
-      break;
-    case ASPECT_MAGNITUDE:
-      aspectString = QString ("Magnitude");
-      break;
-    case ASPECT_PHASE:
-      aspectString = QString ("Phase");
-      break;
-    }
+    QString aspectString = getAspectString (i);
     QTableWidgetItem *aspectItem = new QTableWidgetItem (aspectString);
     Qt::ItemFlags aspectFlags = aspectItem->flags ();
     aspectFlags &= ~Qt::ItemIsEditable;
@@ -400,7 +448,7 @@ Plot2DWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 Plot2DWindow::Plot2DWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
-  this->setWindowTitle ("qapl 2D Plot");
+  this->setWindowTitle ("qapl 2D Plot Controls");
   mw = parent;
 
   resolution	= 16.0;
