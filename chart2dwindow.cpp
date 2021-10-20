@@ -268,6 +268,7 @@ Chart2DWindow::exportImage ()
   btnlayout->addWidget (&widthLbl, row, col++);
 
   QDoubleSpinBox *widthBox = new QDoubleSpinBox ();
+  widthBox->setDecimals (6);
   widthBox->setMinimum (16.0);
   widthBox->setMaximum (512.0);
   btnlayout->addWidget (widthBox, row, col++);
@@ -282,6 +283,7 @@ Chart2DWindow::exportImage ()
   btnlayout->addWidget (&heightLbl, row, col++);
 
   QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
+  heightBox->setDecimals (6);
   heightBox->setMinimum (16.0);
   heightBox->setMaximum (512.0);
   btnlayout->addWidget (heightBox, row, col++);
