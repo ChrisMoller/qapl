@@ -252,6 +252,18 @@ Plot2DWindow::setDecorations ()
     aspectFlags &= ~Qt::ItemIsEditable;
     aspectItem->setFlags (aspectFlags);
     curvesTable->setItem (i, CURVES_COLUMN_ASPECT, aspectItem);
+
+    QString lbl ("Pen");
+    QTableWidgetItem *lblItem = new QTableWidgetItem (lbl);
+#if 1
+    QBrush lblBrush (plotCurves[i]->pen ().color());
+    lblItem->setBackground (lblBrush);
+#else
+    QString cmd = QString("background-color: %1;")
+      .arg(plotCurves[i]->pen ().color().name());
+    lbl.setStyleSheet(cmd);
+#endif
+    curvesTable->setItem (i, CURVES_COLUMN_PEN, lblItem);
   }
 
   layout->addWidget (curvesTable, row, col++, 1, 4);
@@ -286,7 +298,7 @@ Plot2DWindow::setDecorations ()
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   closeButton->setAutoDefault (true);
   closeButton->setDefault (true);
-  layout->addWidget (closeButton, row, 1);
+  layout->addWidget (closeButton, row, 3);
   QObject::connect (closeButton, &QPushButton::clicked,
                     &dialog, &QDialog::accept);
 
