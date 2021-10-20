@@ -20,6 +20,22 @@
 #define IDXVAR  "idxvarλ"
 #endif
 
+#define STYLE_NO_PEN		""
+#define STYLE_SOLID_LINE	"Solid Line"
+#define STYLE_DASH_LINE		"Dash Line"
+#define STYLE_DOT_LINE		"Dot Line"
+#define STYLE_DASH_DOT_LINE	"Dash Dot Line"
+#define STYLE_DASH_DOT_DOT_LINE "Dash Dot Dot Line"
+
+const char *styleStrings[] = {
+  STYLE_NO_PEN,
+  STYLE_SOLID_LINE,
+  STYLE_DASH_LINE,
+  STYLE_DOT_LINE,
+  STYLE_DASH_DOT_LINE,
+  STYLE_DASH_DOT_DOT_LINE
+};
+
 void Plot2DWindow::drawCurves ()
 {
   chart2DWindow->drawCurves ();
@@ -38,15 +54,15 @@ static QComboBox *
 lineStyleCombo (Qt::PenStyle sel)
 {
   QComboBox *linestyle_combo = new QComboBox ();
-  linestyle_combo->addItem ("Solid Line",
+  linestyle_combo->addItem (STYLE_SOLID_LINE,
                             QVariant((int)Qt::SolidLine));
-  linestyle_combo->addItem ("Dash Line,",
+  linestyle_combo->addItem (STYLE_DASH_LINE,
                             QVariant((int)Qt::DashLine));
-  linestyle_combo->addItem ("Dot Line,",
+  linestyle_combo->addItem (STYLE_DOT_LINE,
                             QVariant((int)Qt::DotLine));
-  linestyle_combo->addItem ("Dash Dot Line,",
+  linestyle_combo->addItem (STYLE_DASH_DOT_LINE,
                             QVariant((int)Qt::DashDotLine));
-  linestyle_combo->addItem ("Dash Dot Dot Line",
+  linestyle_combo->addItem (STYLE_DASH_DOT_DOT_LINE,
                             QVariant((int)Qt::DashDotDotLine));
   int found = linestyle_combo->findData (QVariant ((int)sel));
   if (found != -1)
@@ -76,7 +92,7 @@ doStyle (int style, QPen *pen)
 }
 
 void
-Plot2DWindow::setPen (QPen *pen)
+Plot2DWindow::updatePen (QPen *pen)
 {
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *layout = new QGridLayout;
@@ -217,6 +233,20 @@ Plot2DWindow::setDecorations ()
 	     if (column == CURVES_COLUMN_ASPECT) {
 	       fprintf (stderr, "dc%d\n", row);
 	     }
+	     else if (column == CURVES_COLUMN_PEN) {
+	       QPen pen = plotCurves[row]->pen ();
+	       updatePen (&pen);
+	       plotCurves[row]->setPen (pen);
+	       QTableWidgetItem *penItem = curvesTable->item (row, column);
+	       unsigned long int ls = (unsigned long int)pen.style();
+	       QString lbl;
+	       if (ls < sizeof(styleStrings)/sizeof(char *))
+		 lbl = QString (styleStrings[ls]);
+	       penItem->setText (lbl);
+	       QBrush penBrush (pen.color());
+	       penItem->setBackground (penBrush);
+	       drawCurves ();
+	     }
 	   });
 
   QStringList headers = {"Label", "Expression", "Aspect", "Pen"};
@@ -253,17 +283,14 @@ Plot2DWindow::setDecorations ()
     aspectItem->setFlags (aspectFlags);
     curvesTable->setItem (i, CURVES_COLUMN_ASPECT, aspectItem);
 
-    QString lbl ("Pen");
-    QTableWidgetItem *lblItem = new QTableWidgetItem (lbl);
-#if 1
-    QBrush lblBrush (plotCurves[i]->pen ().color());
-    lblItem->setBackground (lblBrush);
-#else
-    QString cmd = QString("background-color: %1;")
-      .arg(plotCurves[i]->pen ().color().name());
-    lbl.setStyleSheet(cmd);
-#endif
-    curvesTable->setItem (i, CURVES_COLUMN_PEN, lblItem);
+    unsigned long int ls = plotCurves[i]->pen ().style();
+    QString lbl;
+    if (ls < sizeof(styleStrings)/sizeof(char *))
+      lbl = QString (styleStrings[ls]);
+    QTableWidgetItem *penItem = new QTableWidgetItem (lbl);
+    QBrush penBrush (plotCurves[i]->pen ().color());
+    penItem->setBackground (penBrush);
+    curvesTable->setItem (i, CURVES_COLUMN_PEN, penItem);
   }
 
   layout->addWidget (curvesTable, row, col++, 1, 4);
@@ -419,7 +446,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   QPushButton *setPenButton = new QPushButton (QObject::tr ("Pen"));
   QObject::connect (setPenButton, &QPushButton::clicked,
 		    [=](){
-		      setPen (&activePen);
+		      updatePen (&activePen);
 		      drawCurves ();
 		    });
   layout->addWidget (setPenButton, row, col++);

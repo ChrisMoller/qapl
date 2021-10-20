@@ -27,6 +27,7 @@ public:
   void setLabel (QString label) { a_label = label; }
   QString expression () { return a_expression; }
   QPen pen () { return a_pen; }
+  void setPen (QPen pen) { a_pen = pen; }
   void setExpression (QString expression) { a_expression = expression; }
   aspect_e aspect () { return a_aspect; }
   void setAspect (aspect_e aspect) { a_aspect = aspect; }
@@ -69,7 +70,7 @@ private:
   void setResolution ();
   void setDecorations ();
   void pushExpression ();
-  void setPen (QPen *pen);
+  void updatePen (QPen *pen);
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;
