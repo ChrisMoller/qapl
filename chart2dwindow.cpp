@@ -233,37 +233,156 @@ void Chart2DWindow::drawCurves ()
   }
 }
 
+enum {
+  UNITS_PIXELS,
+  UNITS_CM,
+  UNITS_INCHES
+};
+
+static QComboBox *
+unitsComboBox ()
+{
+  QComboBox *unitsCombo = new QComboBox ();
+  unitsCombo->addItem ("Pixels",	QVariant(UNITS_PIXELS));
+  unitsCombo->addItem ("Centimetres",	QVariant(UNITS_CM));
+  unitsCombo->addItem ("Inches",	QVariant(UNITS_INCHES));
+  return unitsCombo;
+}
+
 void
 Chart2DWindow::exportImage ()
 {
-  // https://forum.qt.io/topic/76684/qpaintdevice-cannot-destroy-paint-device-that-is-being-painted/3
+  QFileDialog dialog (this, "Export As...", ".",
+		      tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
+  
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+  QLayout *layout = dialog.layout ();
+  QGroupBox *gbox = new QGroupBox ();
+  QGridLayout *btnlayout = new QGridLayout ();
+  gbox->setLayout (btnlayout);
+
+  int row = 0;
+  int col = 0;
+
+  QLabel widthLbl(tr ("Width"));
+  btnlayout->addWidget (&widthLbl, row, col++);
+
+  QDoubleSpinBox *widthBox = new QDoubleSpinBox ();
+  widthBox->setMinimum (16.0);
+  widthBox->setMaximum (512.0);
+  btnlayout->addWidget (widthBox, row, col++);
+
+  QComboBox *widthUnits = unitsComboBox ();
+  btnlayout->addWidget (widthUnits, row, col++);
+
+  row++;
+  col = 0;
+
+  QLabel heightLbl(tr ("Height"));
+  btnlayout->addWidget (&heightLbl, row, col++);
+
+  QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
+  heightBox->setMinimum (16.0);
+  heightBox->setMaximum (512.0);
+  btnlayout->addWidget (heightBox, row, col++);
+
+  QComboBox *heightUnits = unitsComboBox ();
+  btnlayout->addWidget (heightUnits, row, col++);
+
+
+  row++;
+  col = 0;  
+
+  QLabel ppuLbl(tr ("Pixels per unit"));
+  btnlayout->addWidget (&ppuLbl, row, col++);
+
+  QDoubleSpinBox *ppuBox = new QDoubleSpinBox ();
+  ppuBox->setMinimum (16.0);
+  btnlayout->addWidget (ppuBox, row, col++);
+
+
+  layout->addWidget (gbox);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+
+  int drc = dialog.exec();
+  
+  if (drc == QDialog::Accepted) {
+
+    double ppu = ppuBox->value ();
+
+    QVariant widthSel = widthUnits->currentData ();
+    int widthUnits = widthSel.toInt ();
+    double widthDim = widthBox->value ();
+    switch(widthUnits) {	// fixme
+    case UNITS_PIXELS:
+      break;
+    case UNITS_CM:
+      widthDim *= ppu;
+      break;
+    case UNITS_INCHES:
+      widthDim *= ppu;
+      break;
+    }
+
+    QVariant heightSel = heightUnits->currentData ();
+    int heightUnits = heightSel.toInt ();
+    double heightDim = heightBox->value ();
+    switch(heightUnits) {	// fixme
+    case UNITS_PIXELS:
+      break;
+    case UNITS_CM:
+      heightDim *= ppu;
+      break;
+    case UNITS_INCHES:
+      heightDim *= ppu;
+      break;
+    }
+
+    currentFile = dialog.selectedFiles().first();
+    
+    // https://forum.qt.io/topic/76684/qpaintdevice-cannot-destroy-paint-device-that-is-being-painted/3
 #if 0
-  const auto dpr = chartView->devicePixelRatioF();
-  QPixmap buffer(chartView->width() * dpr, chartView->height() * dpr);
-  buffer.setDevicePixelRatio(dpr);
-  buffer.fill(Qt::transparent);
+    const auto dpr = chartView->devicePixelRatioF();
+    QPixmap buffer(chartView->width() * dpr, chartView->height() * dpr);
+    buffer.setDevicePixelRatio(dpr);
+    buffer.fill(Qt::transparent);
 #else
-  int cvw = chartView->width ();
-  int cvh = chartView->height ();
-  chartView->setMinimumSize (1000, 1000);
-  QPixmap buffer(chartView->width(), chartView->height());
-  buffer.fill(Qt::white);
+    int cvw = chartView->width ();
+    int cvh = chartView->height ();
+    chartView->setMinimumSize ((int)widthDim, (int)heightDim);
+    QPixmap buffer(chartView->width(), chartView->height());
+    buffer.fill(Qt::white);
 #endif
 
-  QPainter *paint = new QPainter(&buffer);
-  // see void QPainter::setBackgroundMode(Qt::BGMode mode)
-  //  paint->setPen(*(new QColor(255,34,255,255)));
-  QColor colour(255,34,255,255);
-  chartView->render(paint);
-  drawCurves ();
-  paint->end ();
-  QFile file("image.png");
-  file.open(QIODevice::WriteOnly);
-  // bool QPixmap::save(const QString &fileName, const char *format = nullptr, int quality = -1) const
-  //https://doc.qt.io/qt-5/qtimageformats-index.html
-  buffer.save(&file, "PNG");
-  file.close ();
-  chartView->setMinimumSize (cvw, cvh);
+    QPainter *paint = new QPainter(&buffer);
+    // see void QPainter::setBackgroundMode(Qt::BGMode mode)
+    //  paint->setPen(*(new QColor(255,34,255,255)));
+    QColor colour(255,34,255,255);
+    chartView->render(paint);
+
+    drawCurves ();
+
+    paint->end ();
+    QFile file(currentFile);
+    file.open(QIODevice::WriteOnly);
+    // bool QPixmap::save(const QString &fileName, const char *format = nullptr, int quality = -1) const
+    //https://doc.qt.io/qt-5/qtimageformats-index.html
+    /****
+	 BMP	Windows Bitmap				Read/write
+	 JPG	Joint Photographic Experts Group	Read/write
+	 JPEG	Joint Photographic Experts Group	Read/write
+	 PNG	Portable Network Graphics		Read/write
+	 PPM	Portable Pixmap				Read/write
+	 XBM	X11 Bitmap				Read/write
+	 XPM	X11 Pixmap				Read/write
+    ****/
+    buffer.save(&file);
+    //  buffer.save(&file, "PNG");
+
+    file.close ();
+    chartView->setMinimumSize (cvw, cvh);
+  }
 }
 
 void Chart2DWindow::createMenubar ()

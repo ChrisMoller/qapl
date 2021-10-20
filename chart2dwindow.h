@@ -38,6 +38,7 @@ public:
   series_mode_e seriesMode;
   bool appendSeries (double x, double y,
 		     double &realMax, double &realMin);
+  QString currentFile;
 
 };
 
