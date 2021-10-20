@@ -241,6 +241,7 @@ void Chart2DWindow::createMenubar ()
 Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
   : QMainWindow(parent)
 {
+  this->setWindowTitle ("qapl 2D Plot");
   pw = parent;
   mw = mainWin;
 

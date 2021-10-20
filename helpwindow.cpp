@@ -28,6 +28,7 @@ HelpWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 HelpWindow::HelpWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
+  this->setWindowTitle ("qapl Help");
   mw = parent;
   QWidget *hw = new QWidget ();
   QVBoxLayout *layout = new QVBoxLayout;

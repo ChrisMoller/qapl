@@ -400,6 +400,7 @@ Plot2DWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 Plot2DWindow::Plot2DWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
+  this->setWindowTitle ("qapl 2D Plot");
   mw = parent;
 
   resolution	= 16.0;
