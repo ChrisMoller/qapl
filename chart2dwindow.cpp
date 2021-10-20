@@ -36,7 +36,8 @@ bool Chart2DWindow::appendSeries (double x, double y,
   return rc;
 }
 
-void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect, QPen pen)
+void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
+			       QString label, QPen pen)
 {
   if (!aplExpr.isEmpty ()) {
     double realIncr   = (pw->getRealFinal () - pw->getRealInit ()) /
@@ -163,6 +164,7 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect, QPen pen)
 	  if (idxElementCount ==
 	      static_cast<QSplineSeries*>(series)->count ()) {
 	    static_cast<QSplineSeries*>(series)->setPen (pen);
+	    series->setName (label);
 	    chartView->chart()->addSeries(series);
 	    chart->createDefaultAxes ();
 	    QList<QAbstractAxis *>haxes = chart->axes (Qt::Horizontal);
@@ -221,10 +223,12 @@ void Chart2DWindow::drawCurves ()
   QString aplExpr = pw->getAplExpression ();
   aspect_e aspect = pw->getAspect ();
   QPen pen = pw->getPen ();
-  drawCurve (aplExpr, aspect, pen);
+  QString label = pw->getCurveTitle ();
+  drawCurve (aplExpr, aspect, label, pen);
   for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
     drawCurve (pw->getPlotCurves ()[i]->expression (),
 	       pw->getPlotCurves ()[i]->aspect (),
+	       pw->getPlotCurves ()[i]->label (),
 	       pw->getPlotCurves ()[i]->pen ());
   }
 }

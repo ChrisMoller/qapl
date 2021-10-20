@@ -18,10 +18,11 @@ class MainWindow;
 
 class PlotCurve {
 public:
-  PlotCurve (QString &e,  aspect_e &a, QPen p) {
+  PlotCurve (QString &e,  aspect_e &a, QString l, QPen p) {
     a_expression = e;
     a_aspect = a;
     a_pen = p;
+    a_label = l;
   }
   QString label () { return a_label; }
   void setLabel (QString label) { a_label = label; }

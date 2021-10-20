@@ -44,8 +44,9 @@ void Plot2DWindow::drawCurves ()
 void Plot2DWindow::pushExpression ()
 {
   QString aplExpr = aplExpression->text ();
+  QString label = curveTitle->text ();
   aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
-  PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect, activePen);
+  PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect, label, activePen);
   plotCurves.append (plotCurve);
   aplExpression->clear ();
 }
@@ -434,7 +435,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   col = 0;
 
   curveTitle = new QLineEdit ();
-  curveTitle->setPlaceholderText (tr ("Curve title"));
+  curveTitle->setPlaceholderText (tr ("Curve label"));
   connect (curveTitle,
            &QLineEdit::returnPressed,
           [=](){

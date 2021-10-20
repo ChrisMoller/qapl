@@ -23,7 +23,8 @@ public:
   Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin);
   ~Chart2DWindow ();
   void drawCurves ();
-  void drawCurve (QString aplExpr, aspect_e aspect, QPen pen);
+  void drawCurve (QString aplExpr, aspect_e aspect,
+		  QString label, QPen pen);
   
  private:
 
