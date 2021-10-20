@@ -62,9 +62,11 @@ lineStyleCombo (Qt::PenStyle sel)
 ***/
 
 static void
-doColour (QColor colour, QPen *pen)
+doColour (QColor colour, QPen *pen, QPushButton *setColourButton)
 {
   pen->setColor (colour);
+  QString cmd = QString("background-color: %1;").arg(pen->color().name());
+  setColourButton->setStyleSheet(cmd);
 }
 
 static void
@@ -84,13 +86,14 @@ Plot2DWindow::setPen (QPen *pen)
   int col = 0;
 
   QPushButton *setColourButton = new QPushButton (QObject::tr ("Pen colour"));
+  QString cmd = QString("background-color: %1;").arg(pen->color().name());
+  setColourButton->setStyleSheet(cmd);
   connect (setColourButton, &QPushButton::clicked,
 	   [=](){
-	     doColour (QColorDialog::getColor(pen->color (), nullptr), pen);
-	     // colour = QColorDialog::getColor(Qt::black, nullptr);
-	     //pen.setColor()
+	     doColour (QColorDialog::getColor(pen->color (), nullptr),
+		       pen, setColourButton);
 	   });
-  layout->addWidget (setColourButton, row, col++);
+  layout->addWidget (setColourButton, row, 1);
 
   row++;
   col = 0;

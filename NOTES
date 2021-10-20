@@ -3,9 +3,10 @@ done:			editors combo box
 done:			set editors in qaplinit
 done:			load SETUP
 
-optional idx
-compute min/max
+done:			optional idx
+done:			compute min/max
 xml
+scale resulution to screen size.  chart scale to print resolution?
 
 ⍴ = 1
   real		2d parametric x vs y
