@@ -584,12 +584,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 
   layout->addWidget (aspectBox, row, col++, 1, 3);
 
-
-
-
-
-  
-
   row++;
   col = 0;
 
@@ -615,14 +609,17 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   modeLayout->addWidget (splineButton, modeRow, modeCol++);
 
   QRadioButton *lineButton = new QRadioButton(tr ("Lines"), modeBox);
+  lineButton->setEnabled (false);
   modeGroup->addButton (lineButton,  MODE_BUTTON_LINE);
   modeLayout->addWidget (lineButton, modeRow, modeCol++);
 
   QRadioButton *polarButton = new QRadioButton(tr ("Polar"), modeBox);
+  polarButton->setEnabled (false);
   modeGroup->addButton (polarButton,  MODE_BUTTON_POLAR);
   modeLayout->addWidget (polarButton, modeRow, modeCol++);
 
   QRadioButton *pieButton = new QRadioButton(tr ("Pie"), modeBox);
+  pieButton->setEnabled (false);
   modeGroup->addButton (pieButton,  MODE_BUTTON_PIE);
   modeLayout->addWidget (pieButton, modeRow, modeCol++);
 
@@ -630,14 +627,17 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   modeCol = 0;  
 
   QRadioButton *scatterButton = new QRadioButton(tr ("Scatter"), modeBox);
+  scatterButton->setEnabled (false);
   modeGroup->addButton (scatterButton,  MODE_BUTTON_SCATTER);
   modeLayout->addWidget (scatterButton, modeRow, modeCol++);
 
   QRadioButton *areaButton = new QRadioButton(tr ("Area"), modeBox);
+  areaButton->setEnabled (false);
   modeGroup->addButton (areaButton,  MODE_BUTTON_AREA);
   modeLayout->addWidget (areaButton, modeRow, modeCol++);
 
   QRadioButton *boxButton = new QRadioButton(tr ("Box"), modeBox);
+  boxButton->setEnabled (false);
   modeGroup->addButton (boxButton,  MODE_BUTTON_BOX);
   modeLayout->addWidget (boxButton, modeRow, modeCol++);
 
