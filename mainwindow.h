@@ -11,20 +11,13 @@
 
 #include "history.h"
 #include "helpwindow.h"
+#include "enums.h"
 
 #define toCString(v)       ((v).toStdString ().c_str ())
 
 #define APPLICATION_ORGANISATION   "qapl"
 #define APPLICATION_NAME	   "qapl"
 #define APPLICATION_VERSION	   "1.0"
-
-#define SETTINGS_EDITOR            "Editor"
-#define SETTINGS_FONT_FAMILY       "FontFamily"
-#define SETTINGS_FONT_SIZE         "FontSize"
-#define SETTINGS_HEIGHT            "Height"
-#define SETTINGS_WIDTH             "Width"
-#define SETTINGS_BG_COLOUR         "BG_Colour"
-#define SETTINGS_FG_COLOUR         "FG_COLOUR"
 
 #define DEFAULT_EDITOR \
    "emacs --geometry=40x20  -background '#ffffcc' -font \"DejaVu Sans Mono-10\""
@@ -88,6 +81,7 @@ public:
   void printError (QString emsg, QString estr);
   void printError (QString emsg);
   void closeHW () { HWopen = false; }
+  QSettings *getSettings () { return settings; }
 
   QLineEdit *inputLine;
   QTextEdit *outputLog;

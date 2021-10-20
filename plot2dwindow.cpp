@@ -365,6 +365,7 @@ void Plot2DWindow::setDecorations ()
           {
 	    QVariant sel = themebox->itemData (index);
 	    theme = sel.toInt ();
+	    mw->getSettings ()->setValue (SETTINGS_PLOT_THEME, theme);
 	    drawCurves ();
 	  });
   layout->addWidget(themebox, row, 1);
@@ -451,6 +452,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   this->setWindowTitle ("qapl 2D Plot Controls");
   mw = parent;
 
+  theme = mw->getSettings ()->value (SETTINGS_PLOT_THEME).toInt ();
+  
   resolution	= 16.0;
   realInit	= 0.0;
   realFinal	= 1.0;
