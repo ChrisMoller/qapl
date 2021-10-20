@@ -1,0 +1,22 @@
+#ifndef ENUMS_H
+#define ENUMS_H
+
+typedef enum {
+  MODE_BUTTON_UNSET,
+  MODE_BUTTON_SPLINE,
+  MODE_BUTTON_LINE,
+  MODE_BUTTON_POLAR,
+  MODE_BUTTON_PIE,
+  MODE_BUTTON_SCATTER,
+  MODE_BUTTON_AREA,
+  MODE_BUTTON_BOX
+} series_mode_e;
+
+typedef enum {
+  ASPECT_REAL,
+  ASPECT_IMAG,
+  ASPECT_MAGNITUDE,
+  ASPECT_PHASE
+} aspect_e;
+
+#endif // ENUMS_H
