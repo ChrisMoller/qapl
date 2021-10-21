@@ -238,6 +238,19 @@ Plot2DWindow::updateMode (PlotCurve *pc)
   dialog.exec ();
 }
 
+void Plot2DWindow:: deleteStackEntry (int row)
+{
+  QMessageBox msgBox;
+  msgBox.setText(tr ("Are you sure?"));
+  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+  msgBox.setDefaultButton(QMessageBox::Cancel);
+  int ret = msgBox.exec();
+  if (ret == QMessageBox::Yes) {
+    if (row >= 0 && row < plotCurves.size ())
+      plotCurves.removeAt (row);
+  }
+}
+
 QString Plot2DWindow::getModeString (int idx)
 {
   QString modeString;
@@ -275,6 +288,61 @@ QString Plot2DWindow::getAspectString (int idx)
     break;
   }
   return aspectString;
+}
+
+enum {
+  CURVES_COLUMN_LABEL,
+  CURVES_COLUMN_EXPRESSION,
+  CURVES_COLUMN_ASPECT,
+  CURVES_COLUMN_PEN,
+  CURVES_COLUMN_MODE,
+  CURVES_COLUMN_DELETE,
+  CURVES_COLUMN_LAST
+};
+
+void Plot2DWindow::fillTable ( QTableWidget *curvesTable)
+{
+  for (int i = 0; i < plotCurves.size (); i++) {
+    QString labelString = plotCurves[i]->label ().isEmpty () ?
+      QString ("---") : plotCurves[i]->label ();
+    QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
+    curvesTable->setItem (i, CURVES_COLUMN_LABEL, labelItem);
+    
+    QTableWidgetItem *exprItem
+      = new QTableWidgetItem (plotCurves[i]->expression ());
+    curvesTable->setItem (i, CURVES_COLUMN_EXPRESSION, exprItem);
+
+    QString aspectString = getAspectString (i);
+    QTableWidgetItem *aspectItem = new QTableWidgetItem (aspectString);
+    Qt::ItemFlags aspectFlags = aspectItem->flags ();
+    aspectFlags &= ~Qt::ItemIsEditable;
+    aspectItem->setFlags (aspectFlags);
+    curvesTable->setItem (i, CURVES_COLUMN_ASPECT, aspectItem);
+
+    unsigned long int ls = plotCurves[i]->pen ().style();
+    QString lbl;
+    if (ls < sizeof(styleStrings)/sizeof(char *))
+      lbl = QString (styleStrings[ls]);
+    QTableWidgetItem *penItem = new QTableWidgetItem (lbl);
+    QBrush penBrush (plotCurves[i]->pen ().color());
+    penItem->setBackground (penBrush);
+    curvesTable->setItem (i, CURVES_COLUMN_PEN, penItem);
+
+    QString modeString = getModeString (i);
+    QTableWidgetItem *modeItem = new QTableWidgetItem (modeString);
+    Qt::ItemFlags modeFlags = modeItem->flags ();
+    modeFlags &= ~Qt::ItemIsEditable;
+    modeItem->setFlags (modeFlags);
+    curvesTable->setItem (i, CURVES_COLUMN_MODE, modeItem);
+
+    QTableWidgetItem *deleteItem = new QTableWidgetItem ("Delete");
+    Qt::ItemFlags deleteFlags = deleteItem->flags ();
+    deleteFlags &= ~Qt::ItemIsEditable;
+    deleteItem->setFlags (deleteFlags);
+    QBrush deleteBrush ("red");
+    deleteItem->setBackground (deleteBrush);
+    curvesTable->setItem (i, CURVES_COLUMN_DELETE, deleteItem);
+  }
 }
 
 void Plot2DWindow::setDecorations ()
@@ -363,17 +431,21 @@ void Plot2DWindow::setDecorations ()
   layout->addWidget (&curvesLbl, row, col++);
 #endif
 
-  enum {
-    CURVES_COLUMN_LABEL,
-    CURVES_COLUMN_EXPRESSION,
-    CURVES_COLUMN_ASPECT,
-    CURVES_COLUMN_PEN,
-    CURVES_COLUMN_MODE,
-    CURVES_COLUMN_LAST
-  };
-
   QTableWidget *curvesTable = new QTableWidget (plotCurves.size (),
 						CURVES_COLUMN_LAST, this);
+  connect (curvesTable,
+	   QOverload<int, int>::of(&QTableWidget::cellDoubleClicked),
+	   [=](int row, int column)
+	   {
+	     if (column == CURVES_COLUMN_DELETE) {
+	       deleteStackEntry (row);
+	       int rc = curvesTable->rowCount ();
+	       curvesTable->setRowCount (0);
+	       curvesTable->setRowCount (rc - 1);
+	       fillTable (curvesTable);
+	       drawCurves ();
+	     }
+	   });
   connect (curvesTable,
 	   QOverload<int, int>::of(&QTableWidget::cellChanged),
 	   [=](int row, int column)
@@ -392,7 +464,7 @@ void Plot2DWindow::setDecorations ()
 	     }
 	   });
   connect (curvesTable,
-	   QOverload<int, int>::of(&QTableWidget::cellDoubleClicked),
+	   QOverload<int, int>::of(&QTableWidget::cellClicked),
 	   [=](int row, int column)
 	   {
 	     if (column == CURVES_COLUMN_ASPECT) {
@@ -432,40 +504,8 @@ void Plot2DWindow::setDecorations ()
     "Pen",
     "Mode"};
   curvesTable->setHorizontalHeaderLabels (headers);
-  
-  for (int i = 0; i < plotCurves.size (); i++) {
-    QString labelString = plotCurves[i]->label ().isEmpty () ?
-      QString ("---") : plotCurves[i]->label ();
-    QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
-    curvesTable->setItem (i, CURVES_COLUMN_LABEL, labelItem);
-    
-    QTableWidgetItem *exprItem
-      = new QTableWidgetItem (plotCurves[i]->expression ());
-    curvesTable->setItem (i, CURVES_COLUMN_EXPRESSION, exprItem);
 
-    QString aspectString = getAspectString (i);
-    QTableWidgetItem *aspectItem = new QTableWidgetItem (aspectString);
-    Qt::ItemFlags aspectFlags = aspectItem->flags ();
-    aspectFlags &= ~Qt::ItemIsEditable;
-    aspectItem->setFlags (aspectFlags);
-    curvesTable->setItem (i, CURVES_COLUMN_ASPECT, aspectItem);
-
-    unsigned long int ls = plotCurves[i]->pen ().style();
-    QString lbl;
-    if (ls < sizeof(styleStrings)/sizeof(char *))
-      lbl = QString (styleStrings[ls]);
-    QTableWidgetItem *penItem = new QTableWidgetItem (lbl);
-    QBrush penBrush (plotCurves[i]->pen ().color());
-    penItem->setBackground (penBrush);
-    curvesTable->setItem (i, CURVES_COLUMN_PEN, penItem);
-
-    QString modeString = getModeString (i);
-    QTableWidgetItem *modeItem = new QTableWidgetItem (modeString);
-    Qt::ItemFlags modeFlags = modeItem->flags ();
-    modeFlags &= ~Qt::ItemIsEditable;
-    modeItem->setFlags (modeFlags);
-    curvesTable->setItem (i, CURVES_COLUMN_MODE, modeItem);
-  }
+  fillTable (curvesTable);
 
   layout->addWidget (curvesTable, row, col++, 1, 4);
 

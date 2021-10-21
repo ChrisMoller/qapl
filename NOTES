@@ -5,14 +5,16 @@ done:			load SETUP
 
 done:			optional idx
 done:			compute min/max
-doneL			dump image
+done:			dump image
+done:			attach mode to curve
 
 xml
 scale resulution to screen size.
 scale fonts when exporting
 delete curve
-attach mode to curve
 add preview to export
+setect plot area and zoom in
+set optional x/y limits
 
 ⍴ = 1
   real		2d parametric x vs y

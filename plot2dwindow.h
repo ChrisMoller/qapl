@@ -86,6 +86,8 @@ private:
   void updateMode (PlotCurve *pc);
   QString getAspectString (int idx);
   QString getModeString (int idx);
+  void deleteStackEntry (int row);
+  void fillTable ( QTableWidget *curvesTable);
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;
