@@ -32,6 +32,10 @@
 #define STRING_MAGNITUDE	tr ("Magnitude")
 #define STRING_PHASE		tr ("Phase")
 
+#define STRING_SPLINES		tr ("Splines")
+#define STRING_LINES		tr ("Lines")
+#define STRING_SCATTER		tr ("Scatter")
+
 const char *styleStrings[] = {
   STYLE_NO_PEN,
   STYLE_SOLID_LINE,
@@ -575,66 +579,19 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   layout->addWidget (aspectCombo, row, col++);
   
   
-  
-  row++;
-  col = 0;
-
-  QGroupBox *modeBox = new QGroupBox (tr ("Presentation"));
-  modeGroup = new QButtonGroup ();
-  connect(modeGroup,
-	  QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
-	  [=](
-	      QAbstractButton *button __attribute__((unused))
-	      ){
+  modeCombo = new QComboBox ();
+  connect (modeCombo,
+	   QOverload<int>::of(&QComboBox::activated),
+          [=](int index __attribute__((unused)))
+          {
 	    drawCurves ();
 	  });
-  modeGroup->setExclusive(true);
-  QGridLayout *modeLayout = new QGridLayout;
-  modeBox->setLayout (modeLayout);
+  modeCombo->addItem (STRING_SPLINES,	QVariant(MODE_BUTTON_SPLINE));
+  modeCombo->addItem (STRING_LINES,	QVariant(MODE_BUTTON_LINE));
+  modeCombo->addItem (STRING_SCATTER,	QVariant(MODE_BUTTON_SCATTER));
 
-  int modeRow = 0;
-  int modeCol = 0;
-
-  QRadioButton *splineButton = new QRadioButton(tr ("Spines"), modeBox);
-  splineButton->setChecked (true);
-  modeGroup->addButton (splineButton,  MODE_BUTTON_SPLINE);
-  modeLayout->addWidget (splineButton, modeRow, modeCol++);
-
-  QRadioButton *lineButton = new QRadioButton(tr ("Lines"), modeBox);
-  modeGroup->addButton (lineButton,  MODE_BUTTON_LINE);
-  modeLayout->addWidget (lineButton, modeRow, modeCol++);
-
-  QRadioButton *scatterButton = new QRadioButton(tr ("Scatter"), modeBox);
-  modeGroup->addButton (scatterButton,  MODE_BUTTON_SCATTER);
-  modeLayout->addWidget (scatterButton, modeRow, modeCol++);
-
-#if 0
-  QRadioButton *polarButton = new QRadioButton(tr ("Polar"), modeBox);
-  polarButton->setEnabled (false);
-  modeGroup->addButton (polarButton,  MODE_BUTTON_POLAR);
-  modeLayout->addWidget (polarButton, modeRow, modeCol++);
-
-  QRadioButton *pieButton = new QRadioButton(tr ("Pie"), modeBox);
-  pieButton->setEnabled (false);
-  modeGroup->addButton (pieButton,  MODE_BUTTON_PIE);
-  modeLayout->addWidget (pieButton, modeRow, modeCol++);
-
-  modeRow++;
-  modeCol = 0;  
-
-  QRadioButton *areaButton = new QRadioButton(tr ("Area"), modeBox);
-  areaButton->setEnabled (false);
-  modeGroup->addButton (areaButton,  MODE_BUTTON_AREA);
-  modeLayout->addWidget (areaButton, modeRow, modeCol++);
-
-  QRadioButton *boxButton = new QRadioButton(tr ("Box"), modeBox);
-  boxButton->setEnabled (false);
-  modeGroup->addButton (boxButton,  MODE_BUTTON_BOX);
-  modeLayout->addWidget (boxButton, modeRow, modeCol++);
-#endif
-
-  layout->addWidget (modeBox, row, col++, 1, 3);
-    
+  layout->addWidget (modeCombo, row, col++);
+  
   setupComplete = true;
 
   hw->setLayout(layout);

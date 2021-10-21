@@ -52,7 +52,10 @@ public:
     QVariant sel = aspectCombo->currentData ();
     return (aspect_e)sel.toInt ();
   }
-  series_mode_e getMode () {return (series_mode_e) modeGroup->checkedId (); }
+  series_mode_e getMode () {
+    QVariant sel = modeCombo->currentData ();
+    return (series_mode_e)sel.toInt ();
+  }
   double   getRealFinal () { return realFinal; }
   double   getRealInit  () { return realInit; }
   double   getImagFinal () { return imagFinal; }
@@ -89,7 +92,7 @@ private:
   bool setupComplete;
   QChartView *chartView;
   QChart *chart;
-  QButtonGroup *modeGroup;
+  QComboBox *modeCombo;
   QComboBox *aspectCombo;
   QList<PlotCurve *> plotCurves;
   QString chartTitle;
