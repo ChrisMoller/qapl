@@ -35,6 +35,45 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
   return rc;
 }
 
+void Chart2DWindow::setAxesFont (QAbstractAxis *axis)
+{
+  QFont font = axis->labelsFont ();
+  double psf = font.pointSizeF ();
+  if (psf < 0.0) {
+    psf = (double) font.pixelSize ();
+    if (psf > 0.0) {
+      psf *= fontScale;
+      QFont newFont = QFont (font);
+      newFont.setPointSizeF (psf);
+      axis->setLabelsFont (newFont);
+    }
+  }
+  else {
+    psf *= fontScale;
+    QFont newFont = QFont (font);
+    newFont.setPointSizeF (psf);
+    axis->setLabelsFont (newFont);
+  }
+
+  font = axis->titleFont ();
+  psf = font.pointSizeF ();
+  if (psf < 0.0) {
+    psf = (double) font.pixelSize ();
+    if (psf > 0.0) {
+      psf *= fontScale;
+      QFont newFont = QFont (font);
+      newFont.setPointSizeF (psf);
+      axis->setTitleFont (newFont);
+    }
+  }
+  else {
+    psf *= fontScale;
+    QFont newFont = QFont (font);
+    newFont.setPointSizeF (psf);
+    axis->setTitleFont (newFont);
+  }
+}
+
 void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 			       QString label, QPen pen, series_mode_e mode)
 {
@@ -210,10 +249,14 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	    // fixme -- assumes left/down are min
 	    double dx = 0.075 * (idxVector.back () - idxVector.front ());
 	    double dy = 0.075 * (realMax - realMin);
-	    chart->axes (Qt::Vertical).first()
-	      ->setRange(realMin - dy, realMax + dy);
-	    chart->axes (Qt::Horizontal).first()
-	      ->setRange(idxVector.front () - dx, idxVector.back () + dx);
+	    QAbstractAxis *axisX = chart->axes (Qt::Horizontal).first();
+	    QAbstractAxis *axisY = chart->axes (Qt::Vertical).first();
+	    axisY->setRange(realMin - dy, realMax + dy);
+	    axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
+	    if (fontScale > 1.0) {
+	      setAxesFont (axisX);
+	      setAxesFont (axisY);
+	    }
 
 #if 0
 	    QValueAxis *axisX =  QValueAxis ();
@@ -460,7 +503,7 @@ Chart2DWindow::exportImage ()
     QLegend *legend = chart->legend ();
     QFont legendFont = legend->font ();
     psf = font.pointSizeF ();
-    bool legendFontChanged = false;
+    //    bool legendFontChanged = false;
     if (psf < 0.0) {
       psf = (double) font.pixelSize ();
       if (psf > 0.0) {
@@ -468,7 +511,7 @@ Chart2DWindow::exportImage ()
 	QFont newFont = QFont (font);
 	newFont.setPointSizeF (psf);
 	legend->setFont (newFont);
-	legendFontChanged = true;
+	//	legendFontChanged = true;
       }
     }
     else {
@@ -476,7 +519,7 @@ Chart2DWindow::exportImage ()
       QFont newFont = QFont (font);
       newFont.setPointSizeF (psf);
       legend->setFont (newFont);
-      legendFontChanged = true;
+      //      legendFontChanged = true;
     }
 
     chartView->setMinimumSize ((int)widthDim, (int)heightDim);
@@ -501,7 +544,8 @@ Chart2DWindow::exportImage ()
       currentFile = dialog.selectedFiles().first();
       QFile file(currentFile);
       file.open(QIODevice::WriteOnly);
-      // bool QPixmap::save(const QString &fileName, const char *format = nullptr, int quality = -1) const
+      // bool QPixmap::save(const QString &fileName,
+      //   const char *format = nullptr, int quality = -1) const
       //https://doc.qt.io/qt-5/qtimageformats-index.html
       /****
 	   BMP	Windows Bitmap				Read/write
@@ -529,8 +573,8 @@ Chart2DWindow::exportImage ()
 
     if (fontChanged)
       chart->setTitleFont (font);
-    if (legendFontChanged)
-      legend->setFont (legendFont);
+    //    if (legendFontChanged)
+    //      legend->setFont (legendFont);
     drawCurves ();
 
   }
