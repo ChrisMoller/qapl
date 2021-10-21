@@ -38,6 +38,7 @@ public:
   bool appendSeries (double x, double y, series_mode_e mode,
 		     double &realMax, double &realMin);
   QString currentFile;
+  bool showPreview (QPixmap plotPixmap);
 
 };
 

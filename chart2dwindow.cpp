@@ -282,6 +282,41 @@ unitsComboBox ()
   return unitsCombo;
 }
 
+bool Chart2DWindow::showPreview (QPixmap plotPixmap)
+{
+  QDialog dialog (this, Qt::Dialog);
+  dialog.setWindowTitle ("qapl preview");
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  QLabel *image = new QLabel();
+  image->setPixmap (plotPixmap);
+
+  int row = 0;
+  int col = 0;
+  
+  layout->addWidget (image, row, col++, 1, 2);
+
+  row++;
+  col = 0;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  layout->addWidget (closeButton, row, col++);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::reject);
+
+  QPushButton *exportButton = new QPushButton (QObject::tr ("Export"));
+  exportButton->setAutoDefault (true);
+  exportButton->setDefault (true);
+  layout->addWidget (exportButton, row, col++);
+  QObject::connect (exportButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+  bool rc = true;
+  int res = dialog.exec ();
+  if (res != QDialog::Accepted) rc = false;
+  return rc;
+}
+
 void
 Chart2DWindow::exportImage ()
 {
@@ -301,13 +336,18 @@ Chart2DWindow::exportImage ()
   btnlayout->addWidget (&widthLbl, row, col++);
 
   QDoubleSpinBox *widthBox = new QDoubleSpinBox ();
-  widthBox->setDecimals (6);
+  widthBox->setDecimals (4);
   widthBox->setMinimum (16.0);
   widthBox->setMaximum (512.0);
+  widthBox->setValue (512.0);
   btnlayout->addWidget (widthBox, row, col++);
 
   QComboBox *widthUnits = unitsComboBox ();
   btnlayout->addWidget (widthUnits, row, col++);
+  
+  QCheckBox *previewButton = new QCheckBox (tr ("Preview"));
+  previewButton->setCheckState (Qt::Unchecked);
+  btnlayout->addWidget (previewButton, row, col++);
 
   row++;
   col = 0;
@@ -316,9 +356,10 @@ Chart2DWindow::exportImage ()
   btnlayout->addWidget (&heightLbl, row, col++);
 
   QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
-  heightBox->setDecimals (6);
+  heightBox->setDecimals (4);
   heightBox->setMinimum (16.0);
   heightBox->setMaximum (512.0);
+  heightBox->setValue (512.0);
   btnlayout->addWidget (heightBox, row, col++);
 
   QComboBox *heightUnits = unitsComboBox ();
@@ -337,6 +378,7 @@ Chart2DWindow::exportImage ()
 
 
   layout->addWidget (gbox);
+  
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
 
@@ -373,24 +415,15 @@ Chart2DWindow::exportImage ()
       heightDim *= ppu;
       break;
     }
-
-    currentFile = dialog.selectedFiles().first();
     
     // https://forum.qt.io/topic/76684/qpaintdevice-cannot-destroy-paint-device-that-is-being-painted/3
-#if 0
-    const auto dpr = chartView->devicePixelRatioF();
-    QPixmap buffer(chartView->width() * dpr, chartView->height() * dpr);
-    buffer.setDevicePixelRatio(dpr);
-    buffer.fill(Qt::transparent);
-#else
     int cvw = chartView->width ();
     int cvh = chartView->height ();
     chartView->setMinimumSize ((int)widthDim, (int)heightDim);
-    QPixmap buffer(chartView->width(), chartView->height());
-    buffer.fill(Qt::white);
-#endif
+    QPixmap plotPixmap (chartView->width(), chartView->height());
+    plotPixmap.fill(Qt::white);
 
-    QPainter *paint = new QPainter(&buffer);
+    QPainter *paint = new QPainter(&plotPixmap);
     // see void QPainter::setBackgroundMode(Qt::BGMode mode)
     //  paint->setPen(*(new QColor(255,34,255,255)));
     QColor colour(255,34,255,255);
@@ -399,23 +432,37 @@ Chart2DWindow::exportImage ()
     drawCurves ();
 
     paint->end ();
-    QFile file(currentFile);
-    file.open(QIODevice::WriteOnly);
-    // bool QPixmap::save(const QString &fileName, const char *format = nullptr, int quality = -1) const
-    //https://doc.qt.io/qt-5/qtimageformats-index.html
-    /****
-	 BMP	Windows Bitmap				Read/write
-	 JPG	Joint Photographic Experts Group	Read/write
-	 JPEG	Joint Photographic Experts Group	Read/write
-	 PNG	Portable Network Graphics		Read/write
-	 PPM	Portable Pixmap				Read/write
-	 XBM	X11 Bitmap				Read/write
-	 XPM	X11 Pixmap				Read/write
-    ****/
-    buffer.save(&file);
-    //  buffer.save(&file, "PNG");
 
-    file.close ();
+    bool doit = true;
+    if (Qt::Checked == previewButton->checkState ())
+      doit = showPreview (plotPixmap);
+
+    if (doit) {
+      currentFile = dialog.selectedFiles().first();
+      QFile file(currentFile);
+      file.open(QIODevice::WriteOnly);
+      // bool QPixmap::save(const QString &fileName, const char *format = nullptr, int quality = -1) const
+      //https://doc.qt.io/qt-5/qtimageformats-index.html
+      /****
+	   BMP	Windows Bitmap				Read/write
+	   JPG	Joint Photographic Experts Group	Read/write
+	   JPEG	Joint Photographic Experts Group	Read/write
+	   PNG	Portable Network Graphics		Read/write
+	   PPM	Portable Pixmap				Read/write
+	   XBM	X11 Bitmap				Read/write
+	   XPM	X11 Pixmap				Read/write
+    ****/
+      bool rc = plotPixmap.save(&file);
+      file.close ();
+
+      if (!rc) {
+	QMessageBox msgBox;
+	msgBox.setIcon (QMessageBox::Critical);
+	msgBox.setText (tr ("Export failed."));
+	msgBox.setInformativeText(tr ("Might be due to an unsupport format"));
+	msgBox.exec();
+      }
+    }
     chartView->setMinimumSize (cvw, cvh);
   }
 }
