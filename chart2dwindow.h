@@ -39,6 +39,7 @@ public:
 		     double &realMax, double &realMin);
   QString currentFile;
   bool showPreview (QPixmap plotPixmap);
+  double fontScale;
 
 };
 

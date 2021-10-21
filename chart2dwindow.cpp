@@ -256,6 +256,7 @@ void Chart2DWindow::drawCurves ()
   QPen pen = pw->getPen ();
   QString label = pw->getCurveTitle ();
   series_mode_e mode = pw->getMode ();
+  
   drawCurve (aplExpr, aspect, label, pen, mode);
   for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
     drawCurve (pw->getPlotCurves ()[i]->expression (),
@@ -264,6 +265,11 @@ void Chart2DWindow::drawCurves ()
 	       pw->getPlotCurves ()[i]->pen (),
 	       pw->getPlotCurves ()[i]->mode ());
   }
+
+#if 0
+  if (fontChanged)
+    chart->setTitleFont (newFont);
+#endif
 }
 
 enum {
@@ -338,7 +344,7 @@ Chart2DWindow::exportImage ()
   QDoubleSpinBox *widthBox = new QDoubleSpinBox ();
   widthBox->setDecimals (4);
   widthBox->setMinimum (16.0);
-  widthBox->setMaximum (512.0);
+  widthBox->setMaximum (5000.0);
   widthBox->setValue (512.0);
   btnlayout->addWidget (widthBox, row, col++);
 
@@ -358,7 +364,7 @@ Chart2DWindow::exportImage ()
   QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
   heightBox->setDecimals (4);
   heightBox->setMinimum (16.0);
-  heightBox->setMaximum (512.0);
+  heightBox->setMaximum (5000.0);
   heightBox->setValue (512.0);
   btnlayout->addWidget (heightBox, row, col++);
 
@@ -419,6 +425,60 @@ Chart2DWindow::exportImage ()
     // https://forum.qt.io/topic/76684/qpaintdevice-cannot-destroy-paint-device-that-is-being-painted/3
     int cvw = chartView->width ();
     int cvh = chartView->height ();
+
+    double diagInit   = hypot ((double)cvw, (double)cvh);
+    double diagExport = hypot (widthDim, heightDim);
+    fontScale  = diagExport / diagInit;
+
+
+    /**** adjust title font size ****/
+    
+    QFont font = chart->titleFont ();
+    double psf = font.pointSizeF ();
+    bool fontChanged = false;
+    if (psf < 0.0) {
+      psf = (double) font.pixelSize ();
+      if (psf > 0.0) {
+	psf *= fontScale;
+	QFont newFont = QFont (font);
+	newFont.setPointSizeF (psf);
+	chart->setTitleFont (newFont);
+	fontChanged = true;
+      }
+    }
+    else {
+      psf *= fontScale;
+      QFont newFont = QFont (font);
+      newFont.setPointSizeF (psf);
+      chart->setTitleFont (newFont);
+      fontChanged = true;
+    }
+    
+
+    /**** adjust legend font size ****/
+
+    QLegend *legend = chart->legend ();
+    QFont legendFont = legend->font ();
+    psf = font.pointSizeF ();
+    bool legendFontChanged = false;
+    if (psf < 0.0) {
+      psf = (double) font.pixelSize ();
+      if (psf > 0.0) {
+	psf *= fontScale;
+	QFont newFont = QFont (font);
+	newFont.setPointSizeF (psf);
+	legend->setFont (newFont);
+	legendFontChanged = true;
+      }
+    }
+    else {
+      psf *= fontScale;
+      QFont newFont = QFont (font);
+      newFont.setPointSizeF (psf);
+      legend->setFont (newFont);
+      legendFontChanged = true;
+    }
+
     chartView->setMinimumSize ((int)widthDim, (int)heightDim);
     QPixmap plotPixmap (chartView->width(), chartView->height());
     plotPixmap.fill(Qt::white);
@@ -463,7 +523,16 @@ Chart2DWindow::exportImage ()
 	msgBox.exec();
       }
     }
+    
+    fontScale  = 1.0;
     chartView->setMinimumSize (cvw, cvh);
+
+    if (fontChanged)
+      chart->setTitleFont (font);
+    if (legendFontChanged)
+      legend->setFont (legendFont);
+    drawCurves ();
+
   }
 }
 
@@ -483,6 +552,7 @@ Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
   this->setWindowTitle ("qapl 2D Plot");
   pw = parent;
   mw = mainWin;
+  fontScale = 1.0;
 
   QWidget *hw = new QWidget ();
   this->setCentralWidget(hw);

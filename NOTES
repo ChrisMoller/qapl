@@ -9,11 +9,11 @@ done:			dump image
 done:			attach mode to curve
 done:			delete curve
 done:			alloc series in drawcurve
+done:			add preview to export
 
 xml
 scale resulution to screen size.
 scale fonts when exporting
-add preview to export
 setect plot area and zoom in
 set optional x/y limits
 set font in drawcurves
