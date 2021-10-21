@@ -265,6 +265,32 @@ void Plot2DWindow::setDecorations ()
 
   row++;
   col = 0;
+
+  QLabel themeLbl ("Theme");
+  layout->addWidget (&themeLbl, row, 0);
+  
+  QComboBox *themebox = new QComboBox ();
+  themebox->addItem ("Light", QChart::ChartThemeLight);
+  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+  themebox->addItem ("Dark", QChart::ChartThemeDark);
+  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
+  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
+  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
+  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
+  themebox->addItem ("Qt", QChart::ChartThemeQt);
+  themebox->setCurrentIndex ((int)theme);
+  connect (themebox, QOverload<int>::of(&QComboBox::activated),
+          [=](int index)
+          {
+	    QVariant sel = themebox->itemData (index);
+	    theme = sel.toInt ();
+	    mw->getSettings ()->setValue (SETTINGS_PLOT_THEME, theme);
+	    drawCurves ();
+	  });
+  layout->addWidget(themebox, row, 1);
+
+  row++;
+  col = 0;
 #if 0
   QLabel curvesLbl ("Axes Labels");
   layout->addWidget (&curvesLbl, row, col++);
@@ -355,32 +381,6 @@ void Plot2DWindow::setDecorations ()
   layout->addWidget (curvesTable, row, col++, 1, 4);
 
   row++;
-  col = 0;
-
-  QLabel themeLbl ("Theme");
-  layout->addWidget (&themeLbl, row, 0);
-  
-  QComboBox *themebox = new QComboBox ();
-  themebox->addItem ("Light", QChart::ChartThemeLight);
-  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
-  themebox->addItem ("Dark", QChart::ChartThemeDark);
-  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
-  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
-  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
-  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
-  themebox->addItem ("Qt", QChart::ChartThemeQt);
-  themebox->setCurrentIndex ((int)theme);
-  connect (themebox, QOverload<int>::of(&QComboBox::activated),
-          [=](int index)
-          {
-	    QVariant sel = themebox->itemData (index);
-	    theme = sel.toInt ();
-	    mw->getSettings ()->setValue (SETTINGS_PLOT_THEME, theme);
-	    drawCurves ();
-	  });
-  layout->addWidget(themebox, row, 1);
-
-  row++;
 
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   closeButton->setAutoDefault (true);
@@ -443,7 +443,7 @@ void Plot2DWindow::createMenubar ()
   resolutionAct->setStatusTip(tr("Set resolution"));
 
   QAction *decorationsAct =
-    settingsMenu->addAction(tr("&Decor"), this,
+    settingsMenu->addAction(tr("&Controls"), this,
 			    & Plot2DWindow::setDecorations);
   decorationsAct->setStatusTip(tr("Set plot decorations"));
 
