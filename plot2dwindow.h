@@ -48,7 +48,10 @@ public:
   Plot2DWindow (MainWindow *parent = nullptr);
   ~Plot2DWindow ();
   QString  getAplExpression () { return aplExpression->text (); }
-  aspect_e getAspect () {return (aspect_e) aspectGroup->checkedId (); }
+  aspect_e getAspect () {
+    QVariant sel = aspectCombo->currentData ();
+    return (aspect_e)sel.toInt ();
+  }
   series_mode_e getMode () {return (series_mode_e) modeGroup->checkedId (); }
   double   getRealFinal () { return realFinal; }
   double   getRealInit  () { return realInit; }
@@ -87,7 +90,7 @@ private:
   QChartView *chartView;
   QChart *chart;
   QButtonGroup *modeGroup;
-  QButtonGroup *aspectGroup;
+  QComboBox *aspectCombo;
   QList<PlotCurve *> plotCurves;
   QString chartTitle;
   QString xTitle;

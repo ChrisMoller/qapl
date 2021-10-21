@@ -27,6 +27,11 @@
 #define STYLE_DASH_DOT_LINE	"Dash Dot Line"
 #define STYLE_DASH_DOT_DOT_LINE "Dash Dot Dot Line"
 
+#define STRING_REAL		tr ("Real")
+#define STRING_IMAGINARY	tr ("Imaginary")
+#define STRING_MAGNITUDE	tr ("Magnitude")
+#define STRING_PHASE		tr ("Phase")
+
 const char *styleStrings[] = {
   STYLE_NO_PEN,
   STYLE_SOLID_LINE,
@@ -45,7 +50,8 @@ void Plot2DWindow::pushExpression ()
 {
   QString aplExpr = aplExpression->text ();
   QString label = curveTitle->text ();
-  aspect_e aspect = (aspect_e) aspectGroup->checkedId ();
+  QVariant sel = aspectCombo->currentData ();
+  aspect_e aspect = (aspect_e)sel.toInt ();
   PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect, label, activePen);
   plotCurves.append (plotCurve);
   aplExpression->clear ();
@@ -161,10 +167,10 @@ Plot2DWindow::updateAspect (PlotCurve *pc)
 	    QVariant sel = aspectCombo->itemData (index);
 	    pc->setAspect ((aspect_e)sel.toInt ());
 	  });
-  aspectCombo->addItem ("Real",      QVariant(ASPECT_REAL));
-  aspectCombo->addItem ("Imaginary", QVariant(ASPECT_IMAG));
-  aspectCombo->addItem ("Magnitude", QVariant(ASPECT_MAGNITUDE));
-  aspectCombo->addItem ("Phase",     QVariant(ASPECT_PHASE));
+  aspectCombo->addItem (STRING_REAL,		QVariant(ASPECT_REAL));
+  aspectCombo->addItem (STRING_IMAGINARY,	QVariant(ASPECT_IMAG));
+  aspectCombo->addItem (STRING_MAGNITUDE,	QVariant(ASPECT_MAGNITUDE));
+  aspectCombo->addItem (STRING_PHASE,		QVariant(ASPECT_PHASE));
   int ap = (int)pc->aspect ();
   aspectCombo->setCurrentIndex (ap);
   layout->addWidget (aspectCombo, row, col++);
@@ -187,16 +193,16 @@ QString Plot2DWindow::getAspectString (int idx)
   QString aspectString;
   switch(plotCurves[idx]->aspect ()) {
   case ASPECT_REAL:
-    aspectString = QString ("Real");
+    aspectString = QString (STRING_REAL);
     break;
   case ASPECT_IMAG:
-    aspectString = QString ("Imaginary");
+    aspectString = QString (STRING_IMAGINARY);
     break;
   case ASPECT_MAGNITUDE:
-    aspectString = QString ("Magnitude");
+    aspectString = QString (STRING_MAGNITUDE);
     break;
   case ASPECT_PHASE:
-    aspectString = QString ("Phase");
+    aspectString = QString (STRING_PHASE);
     break;
   }
   return aspectString;
@@ -396,7 +402,7 @@ Plot2DWindow::setResolution ()
   layout->addWidget (resolutionLbl, row, 0);
 
   QSpinBox *resolutionBox = new QSpinBox ();
-  resolutionBox->setRange (16, 128);
+  resolutionBox->setRange (4, 128);
   resolutionBox->setValue (resolution);
   layout->addWidget (resolutionBox, row, 1);
   connect (resolutionBox,
@@ -551,42 +557,25 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 
 
 
-
   row++;
   col = 0;
 
-  QGroupBox *aspectBox = new QGroupBox (tr ("Aspect"));
-  aspectGroup = new QButtonGroup ();
-  connect(aspectGroup,
-	  QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
-	  [=](
-	      QAbstractButton *button __attribute__((unused))
-	      ){
+  aspectCombo = new QComboBox ();
+  connect (aspectCombo,
+	   QOverload<int>::of(&QComboBox::activated),
+          [=](int index __attribute__((unused)))
+          {
 	    drawCurves ();
 	  });
-  aspectGroup->setExclusive(true);
-  QHBoxLayout *aspectLayout = new QHBoxLayout;
-  aspectBox->setLayout (aspectLayout);
+  aspectCombo->addItem (STRING_REAL,		QVariant(ASPECT_REAL));
+  aspectCombo->addItem (STRING_IMAGINARY,	QVariant(ASPECT_IMAG));
+  aspectCombo->addItem (STRING_MAGNITUDE,	QVariant(ASPECT_MAGNITUDE));
+  aspectCombo->addItem (STRING_PHASE,		QVariant(ASPECT_PHASE));
 
-  QRadioButton *realButton = new QRadioButton(tr ("Real"), aspectBox);
-  realButton->setChecked (true);
-  aspectGroup->addButton (realButton,  ASPECT_REAL);
-  aspectLayout->addWidget (realButton);
-
-  QRadioButton *imagButton = new QRadioButton(tr ("Imaginary"), aspectBox);
-  aspectGroup->addButton (imagButton,  ASPECT_IMAG);
-  aspectLayout->addWidget (imagButton);
-
-  QRadioButton *magButton = new QRadioButton(tr ("Magnitude"), aspectBox);
-  aspectGroup->addButton (magButton,  ASPECT_MAGNITUDE);
-  aspectLayout->addWidget (magButton);
-
-  QRadioButton *phaseButton = new QRadioButton(tr ("Phase"), aspectBox);
-  aspectGroup->addButton (phaseButton,  ASPECT_PHASE);
-  aspectLayout->addWidget (phaseButton);
-
-  layout->addWidget (aspectBox, row, col++, 1, 3);
-
+  layout->addWidget (aspectCombo, row, col++);
+  
+  
+  
   row++;
   col = 0;
 
@@ -612,10 +601,14 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   modeLayout->addWidget (splineButton, modeRow, modeCol++);
 
   QRadioButton *lineButton = new QRadioButton(tr ("Lines"), modeBox);
-  lineButton->setEnabled (false);
   modeGroup->addButton (lineButton,  MODE_BUTTON_LINE);
   modeLayout->addWidget (lineButton, modeRow, modeCol++);
 
+  QRadioButton *scatterButton = new QRadioButton(tr ("Scatter"), modeBox);
+  modeGroup->addButton (scatterButton,  MODE_BUTTON_SCATTER);
+  modeLayout->addWidget (scatterButton, modeRow, modeCol++);
+
+#if 0
   QRadioButton *polarButton = new QRadioButton(tr ("Polar"), modeBox);
   polarButton->setEnabled (false);
   modeGroup->addButton (polarButton,  MODE_BUTTON_POLAR);
@@ -629,11 +622,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   modeRow++;
   modeCol = 0;  
 
-  QRadioButton *scatterButton = new QRadioButton(tr ("Scatter"), modeBox);
-  scatterButton->setEnabled (false);
-  modeGroup->addButton (scatterButton,  MODE_BUTTON_SCATTER);
-  modeLayout->addWidget (scatterButton, modeRow, modeCol++);
-
   QRadioButton *areaButton = new QRadioButton(tr ("Area"), modeBox);
   areaButton->setEnabled (false);
   modeGroup->addButton (areaButton,  MODE_BUTTON_AREA);
@@ -643,6 +631,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   boxButton->setEnabled (false);
   modeGroup->addButton (boxButton,  MODE_BUTTON_BOX);
   modeLayout->addWidget (boxButton, modeRow, modeCol++);
+#endif
 
   layout->addWidget (modeBox, row, col++, 1, 3);
     

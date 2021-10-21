@@ -10,6 +10,8 @@ doneL			dump image
 xml
 scale resulution to screen size.
 scale fonts when exporting
+delete curve
+attach mode to curve
 
 ⍴ = 1
   real		2d parametric x vs y

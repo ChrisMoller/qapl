@@ -1,3 +1,5 @@
+#include <QScatterSeries>
+
 #include "mainwindow.h"
 #include "plot2dwindow.h"
 #include "chart2dwindow.h"
@@ -25,9 +27,27 @@ bool Chart2DWindow::appendSeries (double x, double y,
     static_cast<QSplineSeries*>(series)->append(x, y);
     break;
   case MODE_BUTTON_LINE:
+    if (series == nullptr) {
+      series = new QLineSeries ();
+      seriesMode = MODE_BUTTON_LINE;
+    }
+    else {
+      if (seriesMode != MODE_BUTTON_LINE) rc = false;
+    }
+    static_cast<QLineSeries*>(series)->append(x, y);
+    break;
   case MODE_BUTTON_POLAR:
   case MODE_BUTTON_PIE:
   case MODE_BUTTON_SCATTER:
+    if (series == nullptr) {
+      series = new QScatterSeries ();
+      seriesMode = MODE_BUTTON_SCATTER;
+    }
+    else {
+      if (seriesMode != MODE_BUTTON_SCATTER) rc = false;
+    }
+    static_cast<QScatterSeries*>(series)->append(x, y);
+    break;
   case MODE_BUTTON_AREA:
   case MODE_BUTTON_BOX:
   case MODE_BUTTON_UNSET:
@@ -66,7 +86,7 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
     mw->processLine (false, cmd);
     APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurve.idxVals");
     if (idxVals != nullptr) {
-      int idxElementCount	= get_element_count (idxVals);
+      int idxElementCount = get_element_count (idxVals);
       bool idxValid = true;
       bool idxComplex   = false;
       std::vector<double> idxVector;
@@ -161,9 +181,26 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	if (!run)
 	  mw->printError (tr ("Inconsistent series type."));
 	if (run && resultValid) {
-	  if (idxElementCount ==
-	      static_cast<QSplineSeries*>(series)->count ()) {
+	  int seriesCount = -1;
+	  switch (pw->getMode ()) {
+	  case MODE_BUTTON_SPLINE:
+	    seriesCount = static_cast<QSplineSeries*>(series)->count ();
 	    static_cast<QSplineSeries*>(series)->setPen (pen);
+	    break;
+	  case MODE_BUTTON_LINE:
+	    seriesCount = static_cast<QLineSeries*>(series)->count ();
+	    static_cast<QLineSeries*>(series)->setPen (pen);
+	    break;
+	  case MODE_BUTTON_SCATTER:
+	    seriesCount = static_cast<QScatterSeries*>(series)->count ();
+	    static_cast<QScatterSeries*>(series)->setPen (pen);
+	    //	    https://doc.qt.io/qt-5/qscatterseries.html#markerShape-prop
+	    break;
+	  default:
+	    break;
+	  }
+	  
+	  if (seriesCount > 0 && idxElementCount == seriesCount) {
 	    series->setName (label);
 	    chartView->chart()->addSeries(series);
 	    chart->createDefaultAxes ();
