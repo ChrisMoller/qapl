@@ -35,7 +35,7 @@ public:
   QChartView *chartView;
   QChart *chart;
   QAbstractSeries *series;
-  series_mode_e seriesMode;
+  //  series_mode_e seriesMode;
   bool appendSeries (double x, double y, series_mode_e mode,
 		     double &realMax, double &realMin);
   QString currentFile;

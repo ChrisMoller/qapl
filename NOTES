@@ -12,6 +12,7 @@ scale resulution to screen size.
 scale fonts when exporting
 delete curve
 attach mode to curve
+add preview to export
 
 ⍴ = 1
   real		2d parametric x vs y

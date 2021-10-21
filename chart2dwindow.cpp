@@ -15,40 +15,18 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
   bool rc = true;
   if (realMax < y) realMax = y;
   if (realMin > y) realMin = y;
-  //  switch (pw->getMode ()) 
   switch (mode) {
   case MODE_BUTTON_SPLINE:
-    if (series == nullptr) {
-      series = new QSplineSeries ();
-      seriesMode = MODE_BUTTON_SPLINE;
-    }
-    else {
-      if (seriesMode != MODE_BUTTON_SPLINE) rc = false;
-    }
     static_cast<QSplineSeries*>(series)->append(x, y);
     break;
   case MODE_BUTTON_LINE:
-    if (series == nullptr) {
-      series = new QLineSeries ();
-      seriesMode = MODE_BUTTON_LINE;
-    }
-    else {
-      if (seriesMode != MODE_BUTTON_LINE) rc = false;
-    }
     static_cast<QLineSeries*>(series)->append(x, y);
+    break;
+  case MODE_BUTTON_SCATTER:
+    static_cast<QScatterSeries*>(series)->append(x, y);
     break;
   case MODE_BUTTON_POLAR:
   case MODE_BUTTON_PIE:
-  case MODE_BUTTON_SCATTER:
-    if (series == nullptr) {
-      series = new QScatterSeries ();
-      seriesMode = MODE_BUTTON_SCATTER;
-    }
-    else {
-      if (seriesMode != MODE_BUTTON_SCATTER) rc = false;
-    }
-    static_cast<QScatterSeries*>(series)->append(x, y);
-    break;
   case MODE_BUTTON_AREA:
   case MODE_BUTTON_BOX:
   case MODE_BUTTON_UNSET:
@@ -126,7 +104,21 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	double realMax = -MAXDOUBLE;
 	double realMin =  MAXDOUBLE;
 	series = nullptr;
-	seriesMode = MODE_BUTTON_UNSET;
+
+	switch (mode) {
+	case MODE_BUTTON_SPLINE:
+	  series = new QSplineSeries ();
+	  break;
+	case MODE_BUTTON_LINE:
+	  series = new QLineSeries ();
+	  break;
+	case MODE_BUTTON_SCATTER:
+	  series = new QScatterSeries ();
+	  break;
+	default:
+	  break;
+	}
+	
 	bool run = true;
 	for (int i = 0; run && i < resultElementCount; i++) {
 	  int type = get_type (result, i);
