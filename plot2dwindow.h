@@ -18,11 +18,12 @@ class MainWindow;
 
 class PlotCurve {
 public:
-  PlotCurve (QString &e,  aspect_e &a, QString l, QPen p) {
+  PlotCurve (QString &e,  aspect_e &a, QString l, QPen p, series_mode_e m) {
     a_expression = e;
     a_aspect = a;
     a_pen = p;
     a_label = l;
+    a_mode = m;
   }
   QString label () { return a_label; }
   void setLabel (QString label) { a_label = label; }
@@ -32,12 +33,15 @@ public:
   void setExpression (QString expression) { a_expression = expression; }
   aspect_e aspect () { return a_aspect; }
   void setAspect (aspect_e aspect) { a_aspect = aspect; }
+  series_mode_e mode () { return a_mode; }
+  void setMode (series_mode_e mode) { a_mode = mode; }
   
 private:
   QString	a_label;
   QString	a_expression;
   aspect_e	a_aspect;
   QPen		a_pen;
+  series_mode_e a_mode;
 };
 
 class Plot2DWindow : public QMainWindow
@@ -79,7 +83,9 @@ private:
   void pushExpression ();
   void updatePen (QPen *pen);
   void updateAspect (PlotCurve *pc);
+  void updateMode (PlotCurve *pc);
   QString getAspectString (int idx);
+  QString getModeString (int idx);
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;

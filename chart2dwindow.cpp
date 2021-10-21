@@ -9,13 +9,14 @@
 #define PLOTVAR "plotvarλ"
 #define IDXVAR  "idxvarλ"
 
-bool Chart2DWindow::appendSeries (double x, double y,
+bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
 				 double &realMax, double &realMin)
 {
   bool rc = true;
   if (realMax < y) realMax = y;
   if (realMin > y) realMin = y;
-  switch (pw->getMode ()) {
+  //  switch (pw->getMode ()) 
+  switch (mode) {
   case MODE_BUTTON_SPLINE:
     if (series == nullptr) {
       series = new QSplineSeries ();
@@ -57,7 +58,7 @@ bool Chart2DWindow::appendSeries (double x, double y,
 }
 
 void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
-			       QString label, QPen pen)
+			       QString label, QPen pen, series_mode_e mode)
 {
   if (!aplExpr.isEmpty ()) {
     double realIncr   = (pw->getRealFinal () - pw->getRealInit ()) /
@@ -87,7 +88,7 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
     APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurve.idxVals");
     if (idxVals != nullptr) {
       int idxElementCount = get_element_count (idxVals);
-      bool idxValid = true;
+      //      bool idxValid = true;
       bool idxComplex   = false;
       std::vector<double> idxVector;
       for (int i = 0; i < idxElementCount; i++) {
@@ -95,7 +96,7 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	switch(type) {
 	case CCT_CHAR:
 	case CCT_POINTER:
-	  idxValid = false;
+	  //	  idxValid = false;
 	  break;
 	case CCT_INT:
 	  idxVector.push_back ((double)get_int (idxVals, i));	
@@ -136,41 +137,42 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	    break;
 	  case CCT_INT:
 	    if (!appendSeries (idxVector[i],
-			       (double)get_int (result, i), realMax, realMin))
+			       (double)get_int (result, i), mode,
+			       realMax, realMin))
 	      run = false;
 	    break;
 	  case CCT_FLOAT:
-	    if (!appendSeries (idxVector[i],
-			       get_real (result, i), realMax, realMin))
+	    if (!appendSeries (idxVector[i], get_real (result, i), mode,
+			       realMax, realMin))
 	      run = false;
 	    break;
 	  case CCT_COMPLEX:
 	    {
 	      switch (aspect) {
 		case ASPECT_REAL:
-		  if (!appendSeries (idxVector[i],
-				     get_real (result, i), realMax, realMin))
+		  if (!appendSeries (idxVector[i], get_real (result, i), mode,
+				     realMax, realMin))
 		    run = false;
 		  break;
 	      case ASPECT_IMAG:
-		if (!appendSeries (idxVector[i],
-				   get_imag (result, i), realMax, realMin))
+		if (!appendSeries (idxVector[i], get_imag (result, i), mode,
+				   realMax, realMin))
 		  run = false;
 		break;
 	      case ASPECT_MAGNITUDE:
 		{
 		  std::complex<double> val (get_real (result, i),
 					    get_imag (result, i));
-		  if (!appendSeries (idxVector[i],
-				     std::abs (val), realMax, realMin))
+		  if (!appendSeries (idxVector[i], std::abs (val), mode,
+				     realMax, realMin))
 		    run = false;
 		}
 		break;
 	      case ASPECT_PHASE:
 		std::complex<double> val (get_real (result, i),
 					  get_imag (result, i));
-		if (!appendSeries (idxVector[i],
-				   std::arg (val), realMax, realMin))
+		if (!appendSeries (idxVector[i], std::arg (val), mode,
+				   realMax, realMin))
 		  run = false;
 		break;
 	      }
@@ -261,12 +263,14 @@ void Chart2DWindow::drawCurves ()
   aspect_e aspect = pw->getAspect ();
   QPen pen = pw->getPen ();
   QString label = pw->getCurveTitle ();
-  drawCurve (aplExpr, aspect, label, pen);
+  series_mode_e mode = pw->getMode ();
+  drawCurve (aplExpr, aspect, label, pen, mode);
   for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
     drawCurve (pw->getPlotCurves ()[i]->expression (),
 	       pw->getPlotCurves ()[i]->aspect (),
 	       pw->getPlotCurves ()[i]->label (),
-	       pw->getPlotCurves ()[i]->pen ());
+	       pw->getPlotCurves ()[i]->pen (),
+	       pw->getPlotCurves ()[i]->mode ());
   }
 }
 

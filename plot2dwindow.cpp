@@ -56,7 +56,10 @@ void Plot2DWindow::pushExpression ()
   QString label = curveTitle->text ();
   QVariant sel = aspectCombo->currentData ();
   aspect_e aspect = (aspect_e)sel.toInt ();
-  PlotCurve *plotCurve = new PlotCurve (aplExpr, aspect, label, activePen);
+  sel = modeCombo->currentData ();
+  series_mode_e mode = (series_mode_e)sel.toInt ();
+  PlotCurve *plotCurve =
+    new PlotCurve (aplExpr, aspect, label, activePen, mode);
   plotCurves.append (plotCurve);
   aplExpression->clear ();
 }
@@ -159,7 +162,7 @@ Plot2DWindow::updateAspect (PlotCurve *pc)
   int row = 0;
   int col = 0;
   
-  QLabel lbla ("Aspect");
+  QLabel lbla (tr ("Aspect"));
   layout->addWidget (&lbla, row, col++);
   
   row++;
@@ -192,6 +195,68 @@ Plot2DWindow::updateAspect (PlotCurve *pc)
   dialog.exec ();
 }
 
+void
+Plot2DWindow::updateMode (PlotCurve *pc)
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  int col = 0;
+  
+  QLabel lbla (tr ("Mode"));
+  layout->addWidget (&lbla, row, col++);
+  
+  row++;
+  
+  QComboBox *modeCombo = new QComboBox ();
+  connect(modeCombo,
+	  QOverload<int>::of(&QComboBox::activated),
+	  [=](int index){
+	    QVariant sel = modeCombo->itemData (index);
+	    pc->setMode ((series_mode_e)sel.toInt ());
+	  });
+  modeCombo->addItem (STRING_SPLINES,	QVariant(MODE_BUTTON_SPLINE));
+  modeCombo->addItem (STRING_LINES,	QVariant(MODE_BUTTON_LINE));
+  modeCombo->addItem (STRING_SCATTER,	QVariant(MODE_BUTTON_SCATTER));
+  QVariant ap ((int)pc->mode ());
+  int idx = modeCombo->findData (ap);
+  modeCombo->setCurrentIndex (idx);
+  layout->addWidget (modeCombo, row, col++);
+
+  row++;
+  col = 0;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+  
+  dialog.exec ();
+}
+
+QString Plot2DWindow::getModeString (int idx)
+{
+  QString modeString;
+  switch(plotCurves[idx]->mode ()) {
+  case MODE_BUTTON_SPLINE:
+    modeString = QString (STRING_SPLINES);
+    break;
+  case MODE_BUTTON_LINE:
+    modeString = QString (STRING_LINES);
+    break;
+  case MODE_BUTTON_SCATTER:
+    modeString = QString (STRING_SCATTER);
+    break;
+  default:
+    break;
+  }
+  return modeString;
+}
+
 QString Plot2DWindow::getAspectString (int idx)
 {
   QString aspectString;
@@ -215,6 +280,8 @@ QString Plot2DWindow::getAspectString (int idx)
 void Plot2DWindow::setDecorations ()
 {
   QDialog dialog (this, Qt::Dialog);
+  dialog.setMinimumWidth (640);
+  dialog.setWindowTitle ("qapl controls");
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
 
@@ -300,10 +367,13 @@ void Plot2DWindow::setDecorations ()
     CURVES_COLUMN_LABEL,
     CURVES_COLUMN_EXPRESSION,
     CURVES_COLUMN_ASPECT,
-    CURVES_COLUMN_PEN
+    CURVES_COLUMN_PEN,
+    CURVES_COLUMN_MODE,
+    CURVES_COLUMN_LAST
   };
 
-  QTableWidget *curvesTable = new QTableWidget (plotCurves.size (), 4, this);
+  QTableWidget *curvesTable = new QTableWidget (plotCurves.size (),
+						CURVES_COLUMN_LAST, this);
   connect (curvesTable,
 	   QOverload<int, int>::of(&QTableWidget::cellChanged),
 	   [=](int row, int column)
@@ -332,6 +402,13 @@ void Plot2DWindow::setDecorations ()
 	       aspectItem->setText (aspectString);
 	       drawCurves ();
 	     }
+	     else if (column == CURVES_COLUMN_MODE) {
+	       updateMode (plotCurves[row]);
+	       QString modeString = getModeString (row);
+	       QTableWidgetItem *modeItem = curvesTable->item (row, column);
+	       modeItem->setText (modeString);
+	       drawCurves ();
+	     }
 	     else if (column == CURVES_COLUMN_PEN) {
 	       QPen pen = plotCurves[row]->pen ();
 	       updatePen (&pen);
@@ -348,7 +425,12 @@ void Plot2DWindow::setDecorations ()
 	     }
 	   });
 
-  QStringList headers = {"Label", "Expression", "Aspect", "Pen"};
+  QStringList headers = {
+    "Label",
+    "Expression",
+    "Aspect",
+    "Pen",
+    "Mode"};
   curvesTable->setHorizontalHeaderLabels (headers);
   
   for (int i = 0; i < plotCurves.size (); i++) {
@@ -376,6 +458,13 @@ void Plot2DWindow::setDecorations ()
     QBrush penBrush (plotCurves[i]->pen ().color());
     penItem->setBackground (penBrush);
     curvesTable->setItem (i, CURVES_COLUMN_PEN, penItem);
+
+    QString modeString = getModeString (i);
+    QTableWidgetItem *modeItem = new QTableWidgetItem (modeString);
+    Qt::ItemFlags modeFlags = modeItem->flags ();
+    modeFlags &= ~Qt::ItemIsEditable;
+    modeItem->setFlags (modeFlags);
+    curvesTable->setItem (i, CURVES_COLUMN_MODE, modeItem);
   }
 
   layout->addWidget (curvesTable, row, col++, 1, 4);

@@ -24,7 +24,7 @@ public:
   ~Chart2DWindow ();
   void drawCurves ();
   void drawCurve (QString aplExpr, aspect_e aspect,
-		  QString label, QPen pen);
+		  QString label, QPen pen, series_mode_e mode);
   void exportImage ();
   
  private:
@@ -36,7 +36,7 @@ public:
   QChart *chart;
   QAbstractSeries *series;
   series_mode_e seriesMode;
-  bool appendSeries (double x, double y,
+  bool appendSeries (double x, double y, series_mode_e mode,
 		     double &realMax, double &realMin);
   QString currentFile;
 
