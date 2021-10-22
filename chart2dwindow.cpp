@@ -1,4 +1,5 @@
 #include <QScatterSeries>
+#include <QValueAxis>
 
 #include "mainwindow.h"
 #include "plot2dwindow.h"
@@ -251,12 +252,12 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	    double dy = 0.075 * (realMax - realMin);
 	    QAbstractAxis *axisX = chart->axes (Qt::Horizontal).first();
 	    QAbstractAxis *axisY = chart->axes (Qt::Vertical).first();
-	    axisY->setRange(realMin - dy, realMax + dy);
-	    axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
-	    if (fontScale > 1.0) {
+	    if (fontScale != 1.0) {
 	      setAxesFont (axisX);
 	      setAxesFont (axisY);
 	    }
+	    axisY->setRange(realMin - dy, realMax + dy);
+	    axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
 
 #if 0
 	    QValueAxis *axisX =  QValueAxis ();
