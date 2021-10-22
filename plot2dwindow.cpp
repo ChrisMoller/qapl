@@ -372,6 +372,19 @@ void Plot2DWindow::setFonts ()
 		      } 
 		    });
 
+  QPushButton *axisLabelColourButton =
+    new QPushButton (QObject::tr ("Axis Label Colour"));
+  layout->addWidget (axisLabelColourButton, row, col++);
+  QObject::connect (axisLabelColourButton, &QPushButton::clicked,
+		    [=](){
+		      axisLabelColour
+			= QColorDialog::getColor (axisLabelColour,
+						  this,
+						  "Axis label colour",
+					  QColorDialog::ShowAlphaChannel);
+		      drawCurves ();
+		    });
+
   row++;
   col = 0;
 
@@ -391,6 +404,19 @@ void Plot2DWindow::setFonts ()
 			drawCurves ();
 		      } 
 		    });
+
+  QPushButton *chartTitleColourButton =
+    new QPushButton (QObject::tr ("Chart Title Colour"));
+  layout->addWidget (chartTitleColourButton, row, col++);
+  QObject::connect (chartTitleColourButton, &QPushButton::clicked,
+		    [=](){
+		      chartTitleColour
+			= QColorDialog::getColor (chartTitleColour,
+						  this,
+						  "Chart title colour",
+					  QColorDialog::ShowAlphaChannel);
+		      drawCurves ();
+		    });
   
 
   row++;
@@ -398,7 +424,7 @@ void Plot2DWindow::setFonts ()
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   closeButton->setAutoDefault (true);
   closeButton->setDefault (true);
-  layout->addWidget (closeButton, row, 0);
+  layout->addWidget (closeButton, row, 1);
   QObject::connect (closeButton, &QPushButton::clicked,
                     &dialog, &QDialog::accept);
 
@@ -666,8 +692,10 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   imagInit	= 0.0;
   imagFinal	= 0.0;
   chart 	= nullptr;
-  axisLabelFont = QFont ("Times", 12);
-  chartTitleFont = QFont ("Times", 18);
+  axisLabelFont    = QFont ("Times", 10);
+  chartTitleFont   = QFont ("Times", 18);
+  axisLabelColour  = QColor (Qt::white);
+  chartTitleColour = QColor (Qt::white);
 
   chart2DWindow = new Chart2DWindow (this, mw);
 

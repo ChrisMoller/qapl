@@ -239,6 +239,9 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	  
 	  if (seriesCount > 0 && idxElementCount == seriesCount) {
 	    series->setName (label);
+	    // fixme -- scale pen width
+	    //	    series->setWidth(2 * fontScale);
+
 	    chartView->chart()->addSeries(series);
 #if 1
 
@@ -253,15 +256,33 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	      QFont labelsFont ("Serif", 12);
 	      //	      labelsFont.setPixelSize(12);
 #endif
+	      axisX->setTitleBrush(QBrush(pw->getAxisLabelColour ()));
+	      axisY->setTitleBrush(QBrush(pw->getAxisLabelColour ()));
+
+#if 0
+	      if (fontScale != 1.0) {
+		setAxesFont (axisX);
+		setAxesFont (axisY);
+	      }
+#endif
+
+	      QFont tfont (pw->getAxisLabelFont ());
+	      double psf = fontScale * tfont.pointSizeF ();
+	      tfont.setPointSizeF (psf);
+#if 1
+	      axisX->setLabelsFont(tfont);
+	      axisY->setLabelsFont(tfont);
+#else
 	      axisX->setLabelsFont(pw->getAxisLabelFont ());
 	      axisY->setLabelsFont(pw->getAxisLabelFont ());
+#endif
 	      axisX->setTitleText (pw->getXTitle ());
 	      axisY->setTitleText (pw->getYTitle ());
 	    }
 
 	    {
 	      QPen axisPen(QColor("yellow"));
-	      axisPen.setWidth(2);
+	      axisPen.setWidth(2 * fontScale);
 	      axisX->setLinePen(axisPen);
 	      axisY->setLinePen(axisPen);
 	      
@@ -354,7 +375,7 @@ void Chart2DWindow::drawCurves ()
     //	      font.setPixelSize(18);
 #endif
     chart->setTitleFont(pw->getChartTitleFont ());
-    chart->setTitleBrush(QBrush(Qt::green));
+    chart->setTitleBrush(QBrush(pw->getChartTitleColour ()));
     chart->setTitle (pw->getChartTitle ());
   }
   

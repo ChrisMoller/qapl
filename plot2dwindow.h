@@ -73,8 +73,10 @@ public:
   QString  getCurveTitle () { return curveTitle->text (); }
   QChart::ChartTheme getTheme () { return (QChart::ChartTheme)theme; }
   QList<PlotCurve *> getPlotCurves () { return plotCurves; }
-  QFont getAxisLabelFont () { return axisLabelFont; }
-  QFont getChartTitleFont () { return chartTitleFont; }
+  QFont  getAxisLabelFont () { return axisLabelFont; }
+  QFont  getChartTitleFont () { return chartTitleFont; }
+  QColor getAxisLabelColour () { return axisLabelColour; }
+  QColor getChartTitleColour () { return chartTitleColour; }
 
 private:
   MainWindow *mw;
@@ -112,8 +114,10 @@ private:
   int theme;
   Chart2DWindow *chart2DWindow;
   QPen activePen;
-  QFont axisLabelFont;
-  QFont chartTitleFont;
+  QFont  axisLabelFont;
+  QColor axisLabelColour;
+  QFont  chartTitleFont;
+  QColor chartTitleColour;
   
 protected:
   void closeEvent(QCloseEvent *event) override;
