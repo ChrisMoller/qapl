@@ -1,5 +1,7 @@
+// https://doc.qt.io/qt-5/qtcharts-customchart-example.html
+
 #include <QScatterSeries>
-#include <QValueAxis>
+#include <QCategoryAxis>
 
 #include "mainwindow.h"
 #include "plot2dwindow.h"
@@ -36,8 +38,9 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
   return rc;
 }
 
-void Chart2DWindow::setAxesFont (QAbstractAxis *axis)
+void Chart2DWindow::setAxesFont (QAbstractAxis *a_axis)
 {
+  QCategoryAxis *axis = static_cast<QCategoryAxis *>(a_axis);
   QFont font = axis->labelsFont ();
   double psf = font.pointSizeF ();
   if (psf < 0.0) {
@@ -237,6 +240,51 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	  if (seriesCount > 0 && idxElementCount == seriesCount) {
 	    series->setName (label);
 	    chartView->chart()->addSeries(series);
+#if 1
+
+	    QValueAxis *axisX = new QValueAxis();
+	    QValueAxis *axisY = new QValueAxis();
+	    axisX->setTickCount(10);
+	    axisY->setTickCount(10);
+	    //	    axisX->setLabelFormat("%.2f");
+
+	    {
+	      QFont labelsFont ("Serif", 12);
+	      //	      labelsFont.setPixelSize(12);
+	      axisX->setLabelsFont(labelsFont);
+	      axisY->setLabelsFont(labelsFont);
+	      axisX->setTitleText (pw->getXTitle ());
+	      axisY->setTitleText (pw->getYTitle ());
+	    }
+
+	    {
+	      QPen axisPen(QColor("yellow"));
+	      axisPen.setWidth(2);
+	      axisX->setLinePen(axisPen);
+	      axisY->setLinePen(axisPen);
+	      
+	      QBrush axisBrush(Qt::red);
+	      axisX->setLabelsBrush(axisBrush);
+	      axisY->setLabelsBrush(axisBrush);
+
+	      axisX->setGridLineVisible(true);
+	      axisY->setGridLineVisible(true);
+	      // axisY->setShadesPen(Qt::NoPen);
+	      // axisY->setShadesBrush(QBrush(QColor(0x99, 0xcc, 0xcc, 0x55)));
+	      // axisY->setShadesVisible(true);
+
+	      double dx = 0.075 * (idxVector.back () - idxVector.front ());
+	      double dy = 0.075 * (realMax - realMin);
+	      axisY->setRange(realMin - dy, realMax + dy);
+	      axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
+
+	      chart->addAxis(axisX, Qt::AlignBottom);
+	      chart->addAxis(axisY, Qt::AlignLeft);
+	      series->attachAxis(axisX);
+	      series->attachAxis(axisY);
+	    }
+
+#else
 	    chart->createDefaultAxes ();
 	    QList<QAbstractAxis *>haxes = chart->axes (Qt::Horizontal);
 	    if (haxes.size () > 0)
@@ -258,6 +306,7 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	    }
 	    axisY->setRange(realMin - dy, realMax + dy);
 	    axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
+#endif
 
 #if 0
 	    QValueAxis *axisX =  QValueAxis ();
@@ -294,6 +343,16 @@ void Chart2DWindow::drawCurves ()
   chartView->setChart (chart);
   if (oldChart != nullptr)
     delete oldChart;
+
+  chart->setTheme (pw->getTheme ());
+
+  {
+    QFont font ("Serif", 18);
+    //	      font.setPixelSize(18);
+    chart->setTitleFont(font);
+    chart->setTitleBrush(QBrush(Qt::green));
+    chart->setTitle (pw->getChartTitle ());
+  }
   
   QString aplExpr = pw->getAplExpression ();
   aspect_e aspect = pw->getAspect ();

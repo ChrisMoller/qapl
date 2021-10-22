@@ -21,6 +21,7 @@ polar
 set scatter glyphs in setPen
 font selection in settings
 put labels on chart
+copy stack ety back to active
 
 ⍴ = 1
   real		2d parametric x vs y
