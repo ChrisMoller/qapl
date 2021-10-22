@@ -345,6 +345,68 @@ void Plot2DWindow::fillTable ( QTableWidget *curvesTable)
   }
 }
 
+void Plot2DWindow::setFonts ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  dialog.setWindowTitle ("qapl font controls");
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  int col = 0;
+
+  QPushButton *axisLabelFontButton =
+    new QPushButton (QObject::tr ("Axis Label Font"));
+  layout->addWidget (axisLabelFontButton, row, col++);
+  QObject::connect (axisLabelFontButton, &QPushButton::clicked,
+		    [=](){
+		      bool ok;
+
+		      QFont font = QFontDialog::getFont(&ok,
+							axisLabelFont,
+							this,
+							"Axis label font");
+		      if (ok) {
+			axisLabelFont = font;
+			drawCurves ();
+		      } 
+		    });
+
+  row++;
+  col = 0;
+
+  QPushButton *chartTitleFontButton =
+    new QPushButton (QObject::tr ("Chart Title Font"));
+  layout->addWidget (chartTitleFontButton, row, col++);
+  QObject::connect (chartTitleFontButton, &QPushButton::clicked,
+		    [=](){
+		      bool ok;
+
+		      QFont font = QFontDialog::getFont(&ok,
+							chartTitleFont,
+							this,
+							"Chart title font");
+		      if (ok) {
+			chartTitleFont = font;
+			drawCurves ();
+		      } 
+		    });
+  
+
+  row++;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 0);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+
+
+  dialog.exec ();
+}
+  
+
 void Plot2DWindow::setDecorations ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -576,6 +638,11 @@ void Plot2DWindow::createMenubar ()
 			    & Plot2DWindow::setDecorations);
   decorationsAct->setStatusTip(tr("Set plot decorations"));
 
+  QAction *fontsAct =
+    settingsMenu->addAction(tr("&Fonts"), this,
+			    & Plot2DWindow::setFonts);
+  fontsAct->setStatusTip(tr("Set fonts"));
+
 }
 
 void
@@ -599,6 +666,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   imagInit	= 0.0;
   imagFinal	= 0.0;
   chart 	= nullptr;
+  axisLabelFont = QFont ("Times", 12);
+  chartTitleFont = QFont ("Times", 18);
 
   chart2DWindow = new Chart2DWindow (this, mw);
 

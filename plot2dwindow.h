@@ -73,6 +73,8 @@ public:
   QString  getCurveTitle () { return curveTitle->text (); }
   QChart::ChartTheme getTheme () { return (QChart::ChartTheme)theme; }
   QList<PlotCurve *> getPlotCurves () { return plotCurves; }
+  QFont getAxisLabelFont () { return axisLabelFont; }
+  QFont getChartTitleFont () { return chartTitleFont; }
 
 private:
   MainWindow *mw;
@@ -87,7 +89,8 @@ private:
   QString getAspectString (int idx);
   QString getModeString (int idx);
   void deleteStackEntry (int row);
-  void fillTable ( QTableWidget *curvesTable);
+  void fillTable (QTableWidget *curvesTable);
+  void setFonts ();
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;
@@ -109,6 +112,8 @@ private:
   int theme;
   Chart2DWindow *chart2DWindow;
   QPen activePen;
+  QFont axisLabelFont;
+  QFont chartTitleFont;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

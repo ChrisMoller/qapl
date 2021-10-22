@@ -249,10 +249,12 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	    //	    axisX->setLabelFormat("%.2f");
 
 	    {
+#if 0
 	      QFont labelsFont ("Serif", 12);
 	      //	      labelsFont.setPixelSize(12);
-	      axisX->setLabelsFont(labelsFont);
-	      axisY->setLabelsFont(labelsFont);
+#endif
+	      axisX->setLabelsFont(pw->getAxisLabelFont ());
+	      axisY->setLabelsFont(pw->getAxisLabelFont ());
 	      axisX->setTitleText (pw->getXTitle ());
 	      axisY->setTitleText (pw->getYTitle ());
 	    }
@@ -347,9 +349,11 @@ void Chart2DWindow::drawCurves ()
   chart->setTheme (pw->getTheme ());
 
   {
+#if 0
     QFont font ("Serif", 18);
     //	      font.setPixelSize(18);
-    chart->setTitleFont(font);
+#endif
+    chart->setTitleFont(pw->getChartTitleFont ());
     chart->setTitleBrush(QBrush(Qt::green));
     chart->setTitle (pw->getChartTitle ());
   }
