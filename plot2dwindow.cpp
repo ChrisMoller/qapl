@@ -388,6 +388,41 @@ void Plot2DWindow::setFonts ()
   row++;
   col = 0;
 
+
+  QPushButton *axisTitleFontButton =
+    new QPushButton (QObject::tr ("Axis Title Font"));
+  layout->addWidget (axisTitleFontButton, row, col++);
+  QObject::connect (axisTitleFontButton, &QPushButton::clicked,
+		    [=](){
+		      bool ok;
+
+		      QFont font = QFontDialog::getFont(&ok,
+							axisTitleFont,
+							this,
+							"Axis title font");
+		      if (ok) {
+			axisTitleFont = font;
+			drawCurves ();
+		      } 
+		    });
+
+  QPushButton *axisTitleColourButton =
+    new QPushButton (QObject::tr ("Axis Title Colour"));
+  layout->addWidget (axisTitleColourButton, row, col++);
+  QObject::connect (axisTitleColourButton, &QPushButton::clicked,
+		    [=](){
+		      axisTitleColour
+			= QColorDialog::getColor (axisTitleColour,
+						  this,
+						  "Axis title colour",
+					  QColorDialog::ShowAlphaChannel);
+		      drawCurves ();
+		    });
+
+  
+  row++;
+  col = 0;
+
   QPushButton *chartTitleFontButton =
     new QPushButton (QObject::tr ("Chart Title Font"));
   layout->addWidget (chartTitleFontButton, row, col++);
@@ -693,8 +728,10 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   imagFinal	= 0.0;
   chart 	= nullptr;
   axisLabelFont    = QFont ("Times", 10);
+  axisTitleFont    = QFont ("Times", 12);
   chartTitleFont   = QFont ("Times", 18);
   axisLabelColour  = QColor (Qt::white);
+  axisTitleColour  = QColor (Qt::white);
   chartTitleColour = QColor (Qt::white);
 
   chart2DWindow = new Chart2DWindow (this, mw);

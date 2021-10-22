@@ -23,6 +23,11 @@ font selection in settings
 put labels on chart
 copy stack ety back to active
 
+axis label colour not working
+axis labels (tic numbers) not scaling
+axis titles not scaling
+find a way to make curve lines thicker
+
 ⍴ = 1
   real		2d parametric x vs y
   imag		2d parametric x vs real y

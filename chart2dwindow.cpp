@@ -38,6 +38,7 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
   return rc;
 }
 
+#if 0
 void Chart2DWindow::setAxesFont (QAbstractAxis *a_axis)
 {
   QCategoryAxis *axis = static_cast<QCategoryAxis *>(a_axis);
@@ -77,6 +78,7 @@ void Chart2DWindow::setAxesFont (QAbstractAxis *a_axis)
     axis->setTitleFont (newFont);
   }
 }
+#endif
 
 void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 			       QString label, QPen pen, series_mode_e mode)
@@ -243,7 +245,6 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	    //	    series->setWidth(2 * fontScale);
 
 	    chartView->chart()->addSeries(series);
-#if 1
 
 	    QValueAxis *axisX = new QValueAxis();
 	    QValueAxis *axisY = new QValueAxis();
@@ -252,32 +253,25 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	    //	    axisX->setLabelFormat("%.2f");
 
 	    {
-#if 0
-	      QFont labelsFont ("Serif", 12);
-	      //	      labelsFont.setPixelSize(12);
-#endif
-	      axisX->setTitleBrush(QBrush(pw->getAxisLabelColour ()));
-	      axisY->setTitleBrush(QBrush(pw->getAxisLabelColour ()));
+	      axisX->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
+	      axisY->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
+	      axisX->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
+	      axisY->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
 
-#if 0
-	      if (fontScale != 1.0) {
-		setAxesFont (axisX);
-		setAxesFont (axisY);
-	      }
-#endif
 
-	      QFont tfont (pw->getAxisLabelFont ());
+	      QFont tfont (pw->getAxisTitleFont ());
 	      double psf = fontScale * tfont.pointSizeF ();
 	      tfont.setPointSizeF (psf);
-#if 1
-	      axisX->setLabelsFont(tfont);
-	      axisY->setLabelsFont(tfont);
-#else
-	      axisX->setLabelsFont(pw->getAxisLabelFont ());
-	      axisY->setLabelsFont(pw->getAxisLabelFont ());
-#endif
+	      axisX->setTitleFont(tfont);
+	      axisY->setTitleFont(tfont);
 	      axisX->setTitleText (pw->getXTitle ());
 	      axisY->setTitleText (pw->getYTitle ());
+	      
+	      QFont ufont (pw->getAxisLabelFont ());
+	      psf = fontScale * ufont.pointSizeF ();
+	      ufont.setPointSizeF (psf);
+	      axisX->setLabelsFont(ufont);
+	      axisY->setLabelsFont(ufont);
 	    }
 
 	    {
@@ -306,30 +300,6 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	      series->attachAxis(axisX);
 	      series->attachAxis(axisY);
 	    }
-
-#else
-	    chart->createDefaultAxes ();
-	    QList<QAbstractAxis *>haxes = chart->axes (Qt::Horizontal);
-	    if (haxes.size () > 0)
-	      haxes.first ()->setTitleText (pw->getXTitle ());
-	    QList<QAbstractAxis *>vaxes = chart->axes (Qt::Vertical);
-	    if (vaxes.size () > 0)
-	      vaxes.first ()->setTitleText (pw->getYTitle ());
-	    chart->setTitle (pw->getChartTitle ());
-	    chart->setTheme (pw->getTheme ());
-
-	    // fixme -- assumes left/down are min
-	    double dx = 0.075 * (idxVector.back () - idxVector.front ());
-	    double dy = 0.075 * (realMax - realMin);
-	    QAbstractAxis *axisX = chart->axes (Qt::Horizontal).first();
-	    QAbstractAxis *axisY = chart->axes (Qt::Vertical).first();
-	    if (fontScale != 1.0) {
-	      setAxesFont (axisX);
-	      setAxesFont (axisY);
-	    }
-	    axisY->setRange(realMin - dy, realMax + dy);
-	    axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
-#endif
 
 #if 0
 	    QValueAxis *axisX =  QValueAxis ();

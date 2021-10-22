@@ -32,7 +32,9 @@ public:
   Plot2DWindow *pw;
   MainWindow *mw;
   void createMenubar ();
+#if 0
   void setAxesFont (QAbstractAxis *axis);
+#endif
   QChartView *chartView;
   QChart *chart;
   QAbstractSeries *series;

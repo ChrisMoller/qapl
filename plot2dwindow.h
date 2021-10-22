@@ -74,8 +74,10 @@ public:
   QChart::ChartTheme getTheme () { return (QChart::ChartTheme)theme; }
   QList<PlotCurve *> getPlotCurves () { return plotCurves; }
   QFont  getAxisLabelFont () { return axisLabelFont; }
-  QFont  getChartTitleFont () { return chartTitleFont; }
   QColor getAxisLabelColour () { return axisLabelColour; }
+  QFont  getAxisTitleFont () { return axisTitleFont; }
+  QColor getAxisTitleColour () { return axisTitleColour; }
+  QFont  getChartTitleFont () { return chartTitleFont; }
   QColor getChartTitleColour () { return chartTitleColour; }
 
 private:
@@ -116,6 +118,8 @@ private:
   QPen activePen;
   QFont  axisLabelFont;
   QColor axisLabelColour;
+  QFont  axisTitleFont;
+  QColor axisTitleColour;
   QFont  chartTitleFont;
   QColor chartTitleColour;
   
