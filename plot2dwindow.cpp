@@ -368,6 +368,8 @@ void Plot2DWindow::setFonts ()
 							"Axis label font");
 		      if (ok) {
 			axisLabelFont = font;
+			mw->getSettings ()->setValue (SETTINGS_AXIS_LABEL_FONT,
+						      font.toString ());
 			drawCurves ();
 		      } 
 		    });
@@ -382,6 +384,8 @@ void Plot2DWindow::setFonts ()
 						  this,
 						  "Axis label colour",
 					  QColorDialog::ShowAlphaChannel);
+		      mw->getSettings ()->setValue (SETTINGS_AXIS_LABEL_COLOUR,
+				    axisLabelColour.name (QColor::HexArgb));
 		      drawCurves ();
 		    });
 
@@ -402,6 +406,8 @@ void Plot2DWindow::setFonts ()
 							"Axis title font");
 		      if (ok) {
 			axisTitleFont = font;
+			mw->getSettings ()->setValue (SETTINGS_AXIS_TITLE_FONT,
+						      font.toString ());
 			drawCurves ();
 		      } 
 		    });
@@ -416,6 +422,8 @@ void Plot2DWindow::setFonts ()
 						  this,
 						  "Axis title colour",
 					  QColorDialog::ShowAlphaChannel);
+		      mw->getSettings ()->setValue (SETTINGS_AXIS_TITLE_COLOUR,
+				    axisTitleColour.name (QColor::HexArgb));
 		      drawCurves ();
 		    });
 
@@ -436,6 +444,8 @@ void Plot2DWindow::setFonts ()
 							"Chart title font");
 		      if (ok) {
 			chartTitleFont = font;
+			mw->getSettings ()->setValue (SETTINGS_CHART_TITLE_FONT,
+						      font.toString ());
 			drawCurves ();
 		      } 
 		    });
@@ -450,6 +460,8 @@ void Plot2DWindow::setFonts ()
 						  this,
 						  "Chart title colour",
 					  QColorDialog::ShowAlphaChannel);
+		      mw->getSettings ()->setValue (SETTINGS_CHART_TITLE_COLOUR,
+				    chartTitleColour.name (QColor::HexArgb));
 		      drawCurves ();
 		    });
   
@@ -700,8 +712,9 @@ void Plot2DWindow::createMenubar ()
   decorationsAct->setStatusTip(tr("Set plot decorations"));
 
   QAction *fontsAct =
-    settingsMenu->addAction(tr("&Fonts"), this,
+    settingsMenu->addAction(tr("&Appearance"), this,
 			    & Plot2DWindow::setFonts);
+  fontsAct->setMinimumWidth (30);
   fontsAct->setStatusTip(tr("Set fonts"));
 
 }
@@ -727,12 +740,34 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   imagInit	= 0.0;
   imagFinal	= 0.0;
   chart 	= nullptr;
-  axisLabelFont    = QFont ("Times", 10);
-  axisTitleFont    = QFont ("Times", 12);
-  chartTitleFont   = QFont ("Times", 18);
-  axisLabelColour  = QColor (Qt::white);
-  axisTitleColour  = QColor (Qt::white);
-  chartTitleColour = QColor (Qt::white);
+
+  QVariant fontVariant;
+  QVariant colourVariant;
+  
+  fontVariant = QVariant (QFont ("Times", 10));
+  axisLabelFont = mw->getSettings ()->value (SETTINGS_AXIS_LABEL_FONT,
+					     fontVariant).toString ();
+
+  fontVariant = QFont ("Times", 12);
+  axisTitleFont = mw->getSettings ()->value (SETTINGS_AXIS_TITLE_FONT,
+					     fontVariant).toString ();
+
+  fontVariant = QFont ("Times", 18);
+  chartTitleFont = mw->getSettings ()->value (SETTINGS_CHART_TITLE_FONT,
+					      fontVariant).toString ();
+
+  colourVariant = QVariant ("white");
+  axisLabelColour = QColor (mw->getSettings ()
+			    ->value (SETTINGS_AXIS_LABEL_COLOUR,
+				     colourVariant).toString ());
+
+  axisTitleColour = QColor (mw->getSettings ()
+			    ->value (SETTINGS_AXIS_TITLE_COLOUR,
+				     colourVariant).toString ());
+
+  chartTitleColour = QColor (mw->getSettings ()
+			     ->value (SETTINGS_CHART_TITLE_COLOUR,
+				      colourVariant).toString ());
 
   chart2DWindow = new Chart2DWindow (this, mw);
 

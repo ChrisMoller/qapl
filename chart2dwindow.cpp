@@ -38,48 +38,6 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
   return rc;
 }
 
-#if 0
-void Chart2DWindow::setAxesFont (QAbstractAxis *a_axis)
-{
-  QCategoryAxis *axis = static_cast<QCategoryAxis *>(a_axis);
-  QFont font = axis->labelsFont ();
-  double psf = font.pointSizeF ();
-  if (psf < 0.0) {
-    psf = (double) font.pixelSize ();
-    if (psf > 0.0) {
-      psf *= fontScale;
-      QFont newFont = QFont (font);
-      newFont.setPointSizeF (psf);
-      axis->setLabelsFont (newFont);
-    }
-  }
-  else {
-    psf *= fontScale;
-    QFont newFont = QFont (font);
-    newFont.setPointSizeF (psf);
-    axis->setLabelsFont (newFont);
-  }
-
-  font = axis->titleFont ();
-  psf = font.pointSizeF ();
-  if (psf < 0.0) {
-    psf = (double) font.pixelSize ();
-    if (psf > 0.0) {
-      psf *= fontScale;
-      QFont newFont = QFont (font);
-      newFont.setPointSizeF (psf);
-      axis->setTitleFont (newFont);
-    }
-  }
-  else {
-    psf *= fontScale;
-    QFont newFont = QFont (font);
-    newFont.setPointSizeF (psf);
-    axis->setTitleFont (newFont);
-  }
-}
-#endif
-
 void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 			       QString label, QPen pen, series_mode_e mode)
 {
@@ -133,7 +91,8 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	}
       }
       if (idxComplex)		// fixme
-	mw->printError (tr ("Index contains imaginary components.  Using only the real components in the axis."));
+	mw->printError (tr ("Index contains imaginary components.  \
+Using only the real components in the axis."));
 
       aplExpr.replace (QString ("%1"), QString (IDXVAR));
       cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
@@ -340,10 +299,6 @@ void Chart2DWindow::drawCurves ()
   chart->setTheme (pw->getTheme ());
 
   {
-#if 0
-    QFont font ("Serif", 18);
-    //	      font.setPixelSize(18);
-#endif
     chart->setTitleFont(pw->getChartTitleFont ());
     chart->setTitleBrush(QBrush(pw->getChartTitleColour ()));
     chart->setTitle (pw->getChartTitle ());
@@ -363,11 +318,6 @@ void Chart2DWindow::drawCurves ()
 	       pw->getPlotCurves ()[i]->pen (),
 	       pw->getPlotCurves ()[i]->mode ());
   }
-
-#if 0
-  if (fontChanged)
-    chart->setTitleFont (newFont);
-#endif
 }
 
 enum {

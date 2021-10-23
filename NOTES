@@ -10,6 +10,7 @@ done:			attach mode to curve
 done:			delete curve
 done:			alloc series in drawcurve
 done:			add preview to export
+done:			save all colours and fonts in settings
 
 xml
 scale resulution to screen size.
@@ -27,6 +28,7 @@ axis label colour not working
 axis labels (tic numbers) not scaling
 axis titles not scaling
 find a way to make curve lines thicker
+what do pen ctls in stack do?
 
 ⍴ = 1
   real		2d parametric x vs y

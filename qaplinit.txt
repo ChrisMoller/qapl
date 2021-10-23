@@ -7,6 +7,9 @@ sinr  ← {1○○⍵}
 asin  ← {¯1○⍵}
 asind ← {(¯1○⍵)÷(○÷180)}
 asinr ← {(¯1○⍵)÷(○1)}
+atan2 ← {¯3○⍵÷⍺}
+atan2d← {(¯3○⍵÷⍺)÷(○÷180)}
+atan2r← {(¯3○⍵÷⍺)÷(○1)}
 
 cos   ← {2○⍵}
 cosd  ← {2○○⍵÷180}
@@ -31,8 +34,10 @@ atanh ← {¯7○⍵}
 
 sqr   ← {⍵*2}
 sqrt  ← {⍵*.5}
+hypot ← {((⍺*2)+(⍵*2))*.5}
+avg   ← {(+/⍵)÷1⌈⍴,⍵} 
 
-!'Hi there!  It''s', ⎕ts
+!'Hi there again!  It''s', ⎕ts
 
 qapl editor+ emacs --geometry=40x20  -background '#ff0000' -font "Monospace"
 qapl nocont
