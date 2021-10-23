@@ -11,6 +11,7 @@ done:			delete curve
 done:			alloc series in drawcurve
 done:			add preview to export
 done:			save all colours and fonts in settings
+done:			axis label colour not working
 
 xml
 scale resulution to screen size.
@@ -24,7 +25,6 @@ font selection in settings
 put labels on chart
 copy stack ety back to active
 
-axis label colour not working
 axis labels (tic numbers) not scaling
 axis titles not scaling
 find a way to make curve lines thicker

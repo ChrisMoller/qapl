@@ -714,7 +714,6 @@ void Plot2DWindow::createMenubar ()
   QAction *fontsAct =
     settingsMenu->addAction(tr("&Appearance"), this,
 			    & Plot2DWindow::setFonts);
-  fontsAct->setMinimumWidth (30);
   fontsAct->setStatusTip(tr("Set fonts"));
 
 }
