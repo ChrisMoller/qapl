@@ -77,6 +77,7 @@ public:
   QColor getAxisLabelColour () { return axisLabelColour; }
   QFont  getAxisTitleFont () { return axisTitleFont; }
   QColor getAxisTitleColour () { return axisTitleColour; }
+  QColor getAxisColour () { return axisColour; }
   QFont  getChartTitleFont () { return chartTitleFont; }
   QColor getChartTitleColour () { return chartTitleColour; }
 
@@ -120,6 +121,7 @@ private:
   QColor axisLabelColour;
   QFont  axisTitleFont;
   QColor axisTitleColour;
+  QColor axisColour;
   QFont  chartTitleFont;
   QColor chartTitleColour;
   

@@ -379,15 +379,18 @@ void Plot2DWindow::setFonts ()
   layout->addWidget (axisLabelColourButton, row, col++);
   QObject::connect (axisLabelColourButton, &QPushButton::clicked,
 		    [=](){
-		      axisLabelColour
+		      QColor colour
 			= QColorDialog::getColor (axisLabelColour,
 						  this,
 						  "Axis label colour",
 					  QColorDialog::ShowAlphaChannel);
-		      mw->getSettings ()->setValue (SETTINGS_AXIS_LABEL_COLOUR,
-				    axisLabelColour.name (QColor::HexArgb));
-		      drawCurves ();
-		    });
+		      if (colour.isValid ()) {
+			axisLabelColour = colour;
+		mw->getSettings ()->setValue (SETTINGS_AXIS_LABEL_COLOUR,
+				axisLabelColour.name (QColor::HexArgb));
+		drawCurves ();
+		      }
+		      });
 
   row++;
   col = 0;
@@ -417,14 +420,17 @@ void Plot2DWindow::setFonts ()
   layout->addWidget (axisTitleColourButton, row, col++);
   QObject::connect (axisTitleColourButton, &QPushButton::clicked,
 		    [=](){
-		      axisTitleColour
+		      QColor colour
 			= QColorDialog::getColor (axisTitleColour,
 						  this,
 						  "Axis title colour",
 					  QColorDialog::ShowAlphaChannel);
+		       if (colour.isValid ()) {
+			axisTitleColour = colour;
 		      mw->getSettings ()->setValue (SETTINGS_AXIS_TITLE_COLOUR,
 				    axisTitleColour.name (QColor::HexArgb));
 		      drawCurves ();
+		       }
 		    });
 
   
@@ -455,14 +461,40 @@ void Plot2DWindow::setFonts ()
   layout->addWidget (chartTitleColourButton, row, col++);
   QObject::connect (chartTitleColourButton, &QPushButton::clicked,
 		    [=](){
-		      chartTitleColour
+		      QColor colour
 			= QColorDialog::getColor (chartTitleColour,
 						  this,
 						  "Chart title colour",
 					  QColorDialog::ShowAlphaChannel);
+		       if (colour.isValid ()) {
+			chartTitleColour = colour;
 		      mw->getSettings ()->setValue (SETTINGS_CHART_TITLE_COLOUR,
 				    chartTitleColour.name (QColor::HexArgb));
 		      drawCurves ();
+		       }
+		    });
+  
+
+  row++;
+  col = 0;
+
+
+  QPushButton *axisColourButton =
+    new QPushButton (QObject::tr ("Axis Colour"));
+  layout->addWidget (axisColourButton, row, 1);
+  QObject::connect (axisColourButton, &QPushButton::clicked,
+		    [=](){
+		      QColor colour
+			= QColorDialog::getColor (axisColour,
+						  this,
+						  "Axis colour",
+					  QColorDialog::ShowAlphaChannel);
+		      if (colour.isValid ()) {
+			axisColour = colour;
+		      mw->getSettings ()->setValue (SETTINGS_AXIS_COLOUR,
+				    axisColour.name (QColor::HexArgb));
+		      drawCurves ();
+		      }
 		    });
   
 
@@ -759,6 +791,10 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   axisLabelColour = QColor (mw->getSettings ()
 			    ->value (SETTINGS_AXIS_LABEL_COLOUR,
 				     colourVariant).toString ());
+
+  axisColour = QColor (mw->getSettings ()
+		       ->value (SETTINGS_AXIS_COLOUR,
+				colourVariant).toString ());
 
   axisTitleColour = QColor (mw->getSettings ()
 			    ->value (SETTINGS_AXIS_TITLE_COLOUR,

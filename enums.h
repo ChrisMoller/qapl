@@ -32,6 +32,7 @@ typedef enum {
 #define SETTINGS_AXIS_LABEL_FONT	"Axis_Label_Font"
 #define SETTINGS_CHART_TITLE_FONT	"Chart_Title_Font"
 #define SETTINGS_AXIS_TITLE_COLOUR	"Axis_Title_Colour"
+#define SETTINGS_AXIS_COLOUR		"Axis_Colour"
 #define SETTINGS_AXIS_LABEL_COLOUR	"Axis_Label_Colour"
 #define SETTINGS_CHART_TITLE_COLOUR	"Chart_Title_Colour"
 

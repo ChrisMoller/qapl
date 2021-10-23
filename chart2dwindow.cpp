@@ -217,33 +217,27 @@ Using only the real components in the axis."));
 	      axisX->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
 	      axisY->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
 
-	      fprintf (stderr, "atc %s\n",
-		       toCString (pw->getAxisTitleColour ().name ()));
-	      fprintf (stderr, "alc %s\n",
-		       toCString (pw->getAxisLabelColour ().name ()));
-
-
 	      QFont tfont (pw->getAxisTitleFont ());
-	      fprintf (stderr, "title before %g\n", tfont.pointSizeF ());
+	      // fprintf (stderr, "title before %g\n", tfont.pointSizeF ());
 	      double psf = fontScale * tfont.pointSizeF ();
 	      tfont.setPointSizeF (psf);
-	      fprintf (stderr, "title after %g\n", tfont.pointSizeF ());
+	      // fprintf (stderr, "title after %g\n", tfont.pointSizeF ());
 	      axisX->setTitleFont(tfont);
 	      axisY->setTitleFont(tfont);
 	      axisX->setTitleText (pw->getXTitle ());
 	      axisY->setTitleText (pw->getYTitle ());
 	      
 	      QFont ufont (pw->getAxisLabelFont ());
-	      fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
+	      // fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
 	      psf = fontScale * ufont.pointSizeF ();
 	      ufont.setPointSizeF (psf);
-	      fprintf (stderr, "label after %g\n", ufont.pointSizeF ());
+	      // fprintf (stderr, "label after %g\n", ufont.pointSizeF ());
 	      axisX->setLabelsFont(ufont);
 	      axisY->setLabelsFont(ufont);
 	    }
 
 	    {
-	      QPen axisPen(QColor("yellow"));
+	      QPen axisPen(QColor(pw->getAxisColour ()));
 	      axisPen.setWidth(2 * fontScale);
 	      axisX->setLinePen(axisPen);
 	      axisY->setLinePen(axisPen);

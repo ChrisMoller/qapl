@@ -12,6 +12,7 @@ done:			alloc series in drawcurve
 done:			add preview to export
 done:			save all colours and fonts in settings
 done:			axis label colour not working
+fixed:			axis colors going to black if cancelled
 
 xml
 scale resulution to screen size.
