@@ -179,6 +179,41 @@ void Plot2DWindow::dumpXML (QString fileName)
   stream.writeEndElement(); // active
 
   for (int i = 0; i < plotCurves.size (); i++) {
+
+    /*** stack element ***/
+
+    PlotCurve *pc = plotCurves[i];
+  
+    stream.writeStartElement(xml_tags[XML_stack].tag);
+    stream.writeAttribute(xml_tags[XML_index].tag,
+			  QString::number (i));
+    stream.writeAttribute(xml_tags[XML_aspect].tag,
+			  QString::number (pc->aspect ()));
+    stream.writeAttribute(xml_tags[XML_mode].tag,
+			  QString::number (pc->mode ()));
+
+    /*** expression element ***/
+  
+    stream.writeStartElement(xml_tags[XML_expression].tag);
+    stream.writeCharacters(pc->expression ());
+    stream.writeEndElement(); // expression
+
+    /*** label element ***/
+  
+    stream.writeStartElement(xml_tags[XML_label].tag);
+    stream.writeCharacters(pc->label ());
+    stream.writeEndElement(); // label
+
+    /*** pen element ***/
+  
+    stream.writeStartElement(xml_tags[XML_pen].tag);
+    stream.writeAttribute(xml_tags[XML_colour].tag,
+			  pc->pen ().color ().name (QColor::HexArgb));
+    stream.writeAttribute(xml_tags[XML_style].tag,
+			  QString::number (pc->pen ().style ()));
+    stream.writeEndElement(); // pen
+
+    stream.writeEndElement(); // stack
   }
 
 
