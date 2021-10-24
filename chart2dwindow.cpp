@@ -183,16 +183,37 @@ Using only the real components in the axis."));
 	  switch (pw->getMode ()) {
 	  case MODE_BUTTON_SPLINE:
 	    seriesCount = static_cast<QSplineSeries*>(series)->count ();
-	    static_cast<QSplineSeries*>(series)->setPen (pen);
+	    if (fontScale != 1.0) {
+	      QPen penCopy (pen);
+	      penCopy.setWidth ((int)(5.0 * fontScale * (double)pen.width ()));
+	      // fprintf (stderr, "w = %g\n",
+	      // 5.0 * fontScale * (double)pen.width ());
+	      static_cast<QSplineSeries*>(series)->setPen (penCopy);
+	    }
+	    else static_cast<QSplineSeries*>(series)->setPen (pen);
 	    break;
 	  case MODE_BUTTON_LINE:
 	    seriesCount = static_cast<QLineSeries*>(series)->count ();
-	    static_cast<QLineSeries*>(series)->setPen (pen);
+	    if (fontScale != 1.0) {
+	      QPen penCopy (pen);
+	      penCopy.setWidth ((int)(5.0 * fontScale * (double)pen.width ()));
+	      // fprintf (stderr, "w = %g\n",
+	      // 5.0 * fontScale * (double)pen.width ());
+	      static_cast<QLineSeries*>(series)->setPen (penCopy);
+	    }
+	    else static_cast<QLineSeries*>(series)->setPen (pen);
 	    break;
 	  case MODE_BUTTON_SCATTER:
 	    seriesCount = static_cast<QScatterSeries*>(series)->count ();
-	    static_cast<QScatterSeries*>(series)->setPen (pen);
-	    //	    https://doc.qt.io/qt-5/qscatterseries.html#markerShape-prop
+	    if (fontScale != 1.0) {
+	      QPen penCopy (pen);
+	      penCopy.setWidth ((int)(5.0 * fontScale * (double)pen.width ()));
+	      // fprintf (stderr, "w = %g\n",
+	      // 5.0 * fontScale * (double)pen.width ());
+	      static_cast<QScatterSeries*>(series)->setPen (penCopy);
+	      // https://doc.qt.io/qt-5/qscatterseries.html#markerShape-prop
+	    }
+	    else static_cast<QScatterSeries*>(series)->setPen (pen);
 	    break;
 	  default:
 	    break;
@@ -217,23 +238,68 @@ Using only the real components in the axis."));
 	      axisX->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
 	      axisY->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
 
-	      QFont tfont (pw->getAxisTitleFont ());
+
+	      /***
+	      double dpi =
+		QGuiApplication::primaryScreen()->physicalDotsPerInch();
+	      fprintf (stderr, "dpi %g\n", dpi);
+
+	      pixels = dpi * point / 72
+
+	       ***/
+	      
+#if 1
+	      if (fontScale != 1.0) {
+		QString family = pw->getAxisTitleFont ().family ();
+		int pointSize  =
+		  (int) (2.0 * fontScale *
+			 pw->getAxisTitleFont ().pointSizeF ());
+		int weight     = pw->getAxisTitleFont ().weight ();
+		bool italic    = pw->getAxisTitleFont ().italic ();
+		QFont tfont = QFont(family, pointSize, weight, italic);
+		axisX->setTitleFont (tfont);
+		axisY->setTitleFont (tfont);
+	      }
+	      else {
+		axisX->setTitleFont ((pw->getAxisTitleFont ()));
+		axisY->setTitleFont ((pw->getAxisTitleFont ()));
+	      }
+#else
 	      // fprintf (stderr, "title before %g\n", tfont.pointSizeF ());
 	      double psf = fontScale * tfont.pointSizeF ();
 	      tfont.setPointSizeF (psf);
 	      // fprintf (stderr, "title after %g\n", tfont.pointSizeF ());
 	      axisX->setTitleFont(tfont);
 	      axisY->setTitleFont(tfont);
+#endif
 	      axisX->setTitleText (pw->getXTitle ());
 	      axisY->setTitleText (pw->getYTitle ());
 	      
 	      QFont ufont (pw->getAxisLabelFont ());
+#if 1
+	      if (fontScale != 1.0) {
+		QString family = pw->getAxisLabelFont ().family ();
+		int pointSize  =
+		  (int) (2.0 * fontScale *
+			 pw->getAxisTitleFont ().pointSizeF ());
+		int weight     = pw->getAxisTitleFont ().weight ();
+		bool italic    = pw->getAxisTitleFont ().italic ();
+		QFont tfont = QFont(family, pointSize, weight, italic);
+		axisX->setLabelsFont (tfont);
+		axisY->setLabelsFont (tfont);
+	      }
+	      else {
+		axisX->setLabelsFont ((pw->getAxisLabelFont ()));
+		axisY->setLabelsFont ((pw->getAxisLabelFont ()));
+	      }
+#else
 	      // fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
 	      psf = fontScale * ufont.pointSizeF ();
 	      ufont.setPointSizeF (psf);
 	      // fprintf (stderr, "label after %g\n", ufont.pointSizeF ());
 	      axisX->setLabelsFont(ufont);
 	      axisY->setLabelsFont(ufont);
+#endif
 	    }
 
 	    {
@@ -473,9 +539,13 @@ Chart2DWindow::exportImage ()
     int cvw = chartView->width ();
     int cvh = chartView->height ();
 
+#if 1
+    fontScale  = heightDim / (double)cvh;
+#else
     double diagInit   = hypot ((double)cvw, (double)cvh);
     double diagExport = hypot (widthDim, heightDim);
     fontScale  = diagExport / diagInit;
+#endif
 
 
     /**** adjust title font size ****/
