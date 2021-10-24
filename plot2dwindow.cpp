@@ -885,7 +885,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 #endif
   layout->addWidget (indexVariable, row, col++, 1, 2);
   
-  ComplexSpinBox *rangeInit = new ComplexSpinBox ();
+  rangeInit = new ComplexSpinBox ();
   connect (rangeInit,
            &ComplexSpinBox::valueChanged,
           [=](){
@@ -896,7 +896,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   rangeInit->setComplex (0.0, 0.0);
   layout->addWidget (rangeInit, row, col++);
   
-  ComplexSpinBox *rangeFinal = new ComplexSpinBox ();
+  rangeFinal = new ComplexSpinBox ();
   connect (rangeFinal,
            &ComplexSpinBox::valueChanged,
           [=](){

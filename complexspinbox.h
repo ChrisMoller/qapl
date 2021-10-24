@@ -22,6 +22,8 @@ public:
     double getReal ();
     double getImag ();
     std::complex<double> getComplex ();
+    coord_e getType () { return coord_type; }
+    QString getString () { return string; }
     void setReal (double rv);
     void setImag (double iv);
     void setComplex (double rv, double iv);
@@ -49,5 +51,6 @@ private:
     double incr;
     bool mousePressActive;
     coord_e coord_type;
+    QString string;
 };
 #endif // COMPLEXSPINBOX_H

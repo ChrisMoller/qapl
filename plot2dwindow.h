@@ -127,6 +127,8 @@ private:
   QColor axisColour;
   QFont  chartTitleFont;
   QColor chartTitleColour;
+  ComplexSpinBox *rangeInit;
+  ComplexSpinBox *rangeFinal;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

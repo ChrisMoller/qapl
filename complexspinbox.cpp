@@ -155,6 +155,7 @@ void ComplexSpinBox::formatValue ()
     }
     break;
   }
+  string = txt;
   this->lineEdit ()->setText (txt);
 }
 
@@ -313,6 +314,7 @@ ComplexSpinBox::ComplexSpinBox (QWidget *parent)
   connect (this, &QAbstractSpinBox::editingFinished,
 	   [=]() {
 	     QString txt = this->lineEdit ()->text ();
+	     string = txt;
 	     parseComplex (txt);
 	   });
   this->installEventFilter(this);
