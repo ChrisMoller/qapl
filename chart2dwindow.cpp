@@ -183,37 +183,15 @@ Using only the real components in the axis."));
 	  switch (pw->getMode ()) {
 	  case MODE_BUTTON_SPLINE:
 	    seriesCount = static_cast<QSplineSeries*>(series)->count ();
-	    if (fontScale != 1.0) {
-	      QPen penCopy (pen);
-	      penCopy.setWidth ((int)(5.0 * fontScale * (double)pen.width ()));
-	      // fprintf (stderr, "w = %g\n",
-	      // 5.0 * fontScale * (double)pen.width ());
-	      static_cast<QSplineSeries*>(series)->setPen (penCopy);
-	    }
-	    else static_cast<QSplineSeries*>(series)->setPen (pen);
+	    static_cast<QSplineSeries*>(series)->setPen (pen);
 	    break;
 	  case MODE_BUTTON_LINE:
 	    seriesCount = static_cast<QLineSeries*>(series)->count ();
-	    if (fontScale != 1.0) {
-	      QPen penCopy (pen);
-	      penCopy.setWidth ((int)(5.0 * fontScale * (double)pen.width ()));
-	      // fprintf (stderr, "w = %g\n",
-	      // 5.0 * fontScale * (double)pen.width ());
-	      static_cast<QLineSeries*>(series)->setPen (penCopy);
-	    }
-	    else static_cast<QLineSeries*>(series)->setPen (pen);
+	    static_cast<QLineSeries*>(series)->setPen (pen);
 	    break;
 	  case MODE_BUTTON_SCATTER:
 	    seriesCount = static_cast<QScatterSeries*>(series)->count ();
-	    if (fontScale != 1.0) {
-	      QPen penCopy (pen);
-	      penCopy.setWidth ((int)(5.0 * fontScale * (double)pen.width ()));
-	      // fprintf (stderr, "w = %g\n",
-	      // 5.0 * fontScale * (double)pen.width ());
-	      static_cast<QScatterSeries*>(series)->setPen (penCopy);
-	      // https://doc.qt.io/qt-5/qscatterseries.html#markerShape-prop
-	    }
-	    else static_cast<QScatterSeries*>(series)->setPen (pen);
+	    static_cast<QScatterSeries*>(series)->setPen (pen);
 	    break;
 	  default:
 	    break;
@@ -371,7 +349,9 @@ void Chart2DWindow::drawCurves ()
   
   QString aplExpr = pw->getAplExpression ();
   aspect_e aspect = pw->getAspect ();
-  QPen pen = pw->getPen ();
+  QPen pen (pw->getPen ());
+  if (fontScale != 1.0)
+    pen.setWidth ((int)(10.0 * fontScale * (double)(pw->getPen ().width ())));
   QString label = pw->getCurveTitle ();
   series_mode_e mode = pw->getMode ();
   
@@ -603,7 +583,7 @@ Chart2DWindow::exportImage ()
     QPainter *paint = new QPainter(&plotPixmap);
     // see void QPainter::setBackgroundMode(Qt::BGMode mode)
     //  paint->setPen(*(new QColor(255,34,255,255)));
-    QColor colour(255,34,255,255);
+    //QColor colour(255,34,255,255);
     chartView->render(paint);
 
     drawCurves ();
