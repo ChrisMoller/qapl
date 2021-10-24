@@ -434,11 +434,12 @@ Chart2DWindow::exportImage ()
   QLabel widthLbl(tr ("Width"));
   btnlayout->addWidget (&widthLbl, row, col++);
 
+  static double currentWidth = 640.0;
   QDoubleSpinBox *widthBox = new QDoubleSpinBox ();
   widthBox->setDecimals (4);
   widthBox->setMinimum (16.0);
   widthBox->setMaximum (5000.0);
-  widthBox->setValue (512.0);
+  widthBox->setValue (currentWidth);
   btnlayout->addWidget (widthBox, row, col++);
 
   QComboBox *widthUnits = unitsComboBox ();
@@ -454,11 +455,12 @@ Chart2DWindow::exportImage ()
   QLabel heightLbl(tr ("Height"));
   btnlayout->addWidget (&heightLbl, row, col++);
 
+  static double currentHeight = 640.0;
   QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
   heightBox->setDecimals (4);
   heightBox->setMinimum (16.0);
   heightBox->setMaximum (5000.0);
-  heightBox->setValue (512.0);
+  heightBox->setValue (currentHeight);
   btnlayout->addWidget (heightBox, row, col++);
 
   QComboBox *heightUnits = unitsComboBox ();
@@ -490,6 +492,7 @@ Chart2DWindow::exportImage ()
     QVariant widthSel = widthUnits->currentData ();
     int widthUnits = widthSel.toInt ();
     double widthDim = widthBox->value ();
+    currentWidth = widthDim;
     switch(widthUnits) {	// fixme
     case UNITS_PIXELS:
       break;
@@ -504,6 +507,7 @@ Chart2DWindow::exportImage ()
     QVariant heightSel = heightUnits->currentData ();
     int heightUnits = heightSel.toInt ();
     double heightDim = heightBox->value ();
+    currentHeight = heightDim;
     switch(heightUnits) {	// fixme
     case UNITS_PIXELS:
       break;
