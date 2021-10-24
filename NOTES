@@ -15,6 +15,7 @@ done:			axis label colour not working
 fixed:			axis colors going to black if cancelled
 
 xml
+add parameters
 scale resulution to screen size.
 scale fonts when exporting
 setect plot area and zoom in

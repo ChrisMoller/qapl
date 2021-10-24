@@ -19,6 +19,13 @@ typedef enum {
   ASPECT_PHASE
 } aspect_e;
 
+typedef enum {
+  COORD_RECTANGULAR,
+  COORD_POLAR,
+  COORD_POLAR_DEGREES,
+  COORD_POLAR_PI
+} coord_e;
+
 
 #define SETTINGS_EDITOR		"Editor"
 #define SETTINGS_FONT_FAMILY	"FontFamily"

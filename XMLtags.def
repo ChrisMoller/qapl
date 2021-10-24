@@ -1,0 +1,42 @@
+xml_def(active,		0),
+xml_def(aspect,		0),
+xml_def(cerulean,	QChart::ChartThemeBlueCerulean),	// theme
+xml_def(colour,		0),
+xml_def(contrast,	QChart::ChartThemeHighContrast),	// theme
+xml_def(dark,		QChart::ChartThemeDark),		// theme
+xml_def(dash,		Qt::DashLine),				// style
+xml_def(dashdot,	Qt::DashDotLine),			// style
+xml_def(dashdotdot,	Qt::DashDotDotLine),			// style
+xml_def(degrees,	COORD_POLAR_DEGREES),			// format
+xml_def(dot,		Qt::DotLine),				// style
+xml_def(expression,	0),
+xml_def(icy,		QChart::ChartThemeBlueIcy),		// theme
+xml_def(imaginary,	ASPECT_IMAG),				// aspect
+xml_def(index,		0),
+xml_def(label,		0),
+xml_def(light,		QChart::ChartThemeLight),		// theme
+xml_def(lines,		MODE_BUTTON_LINE),			// mode
+xml_def(magnitude,	ASPECT_MAGNITUDE),			// aspect
+xml_def(ncs,		QChart::ChartThemeBlueNcs),		// theme
+xml_def(none,		0),
+xml_def(pen,		0),
+xml_def(phase,		ASPECT_PHASE),				// aspect
+xml_def(pi,		COORD_POLAR_PI),   			// format
+xml_def(qapl,		0),
+xml_def(qt,		QChart::ChartThemeQt),
+xml_def(radians,	COORD_POLAR),				// format
+xml_def(range,		0),
+xml_def(real,		ASPECT_REAL),				// aspect
+xml_def(resolution,	0),
+xml_def(retanglular,	COORD_RECTANGULAR),			// format
+xml_def(sand,		QChart::ChartThemeBrownSand),		// theme
+xml_def(scatter,	MODE_BUTTON_SCATTER),			// mode
+xml_def(solid,		Qt::SolidLine),				// style
+xml_def(splines,	MODE_BUTTON_SPLINE),			// mode
+xml_def(stack,		0),
+xml_def(style,		0),
+xml_def(theme,		0),
+xml_def(title,		0),
+xml_def(xlabel,		0),
+xml_def(ylabel,		0),
+xml_def(LAST,		0)

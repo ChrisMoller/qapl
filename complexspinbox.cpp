@@ -1,5 +1,6 @@
 #include <QtWidgets>
 
+#include "enums.h"
 #include "complexspinbox.h"
 
 #ifndef toCString

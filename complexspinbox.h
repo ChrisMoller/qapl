@@ -4,17 +4,12 @@
 #include <QtWidgets>
 #include <complex>
 
+#include "enums.h"
+
 typedef enum {
   WHICH_REAL,
   WHICH_IMAG
 } which_e;
-
-typedef enum {
-  COORD_RECTANGULAR,
-  COORD_POLAR,
-  COORD_POLAR_DEGREES,
-  COORD_POLAR_PI
-} coord_e;
 
 class
 ComplexSpinBox : public QAbstractSpinBox

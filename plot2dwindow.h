@@ -96,6 +96,8 @@ private:
   void deleteStackEntry (int row);
   void fillTable (QTableWidget *curvesTable);
   void setFonts ();
+  void exportChart ();
+  void dumpXML (QString fileName);
 
   QLineEdit *aplExpression;
   QLineEdit *indexVariable;
@@ -114,6 +116,7 @@ private:
   QString chartTitle;
   QString xTitle;
   QString yTitle;
+  QString currentFile;
   int theme;
   Chart2DWindow *chart2DWindow;
   QPen activePen;

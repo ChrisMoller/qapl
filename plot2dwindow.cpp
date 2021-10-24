@@ -15,11 +15,6 @@
 #include "plot2dwindow.h"
 #include "chart2dwindow.h"
 
-#ifdef OLD_CODE
-#define PLOTVAR "plotvarλ"
-#define IDXVAR  "idxvarλ"
-#endif
-
 #define STYLE_NO_PEN		""
 #define STYLE_SOLID_LINE	"Solid Line"
 #define STYLE_DASH_LINE		"Dash Line"
@@ -669,7 +664,9 @@ void Plot2DWindow::setDecorations ()
     "Expression",
     "Aspect",
     "Pen",
-    "Mode"};
+    "Mode",
+    "Delete"
+  };
   curvesTable->setHorizontalHeaderLabels (headers);
 
   fillTable (curvesTable);
@@ -724,12 +721,30 @@ Plot2DWindow::setResolution ()
   dialog.exec ();
 }
 
+void Plot2DWindow::exportChart ()
+{
+  QFileDialog dialog (this, "Export As...", ".",
+		      tr("XML Files (*.xml)"));
+
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+
+   int drc = dialog.exec();
+  
+  if (drc == QDialog::Accepted) {
+    currentFile = dialog.selectedFiles().first();
+    dumpXML (currentFile);
+  }
+}
+
 
 void Plot2DWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-
-  // save/print graph
+  
+  QAction *exportAct =
+    fileMenu->addAction(tr("&Export"), this,
+			    & Plot2DWindow::exportChart);
+  exportAct->setStatusTip(tr("Export chart"));
 
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
 

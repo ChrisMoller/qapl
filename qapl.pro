@@ -23,7 +23,8 @@ SOURCES += \
     mainwindow.cpp \
     menuops.cpp \
     plot2dwindow.cpp \
-    processline.cpp
+    processline.cpp \
+    xml.cpp
 
 HEADERS += \
     aplexec.h \
@@ -35,7 +36,8 @@ HEADERS += \
     mainwindow.h \
     optionstrings.h \
     plot2dwindow.h \
-    processline.h
+    processline.h \
+    xml.h
 
 PREFIX = /usr/local
 
