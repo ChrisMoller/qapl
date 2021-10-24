@@ -22,6 +22,7 @@ xml_def(label,		0),
 xml_def(light,		QChart::ChartThemeLight),		// theme
 xml_def(lines,		MODE_BUTTON_LINE),			// mode
 xml_def(magnitude,	ASPECT_MAGNITUDE),			// aspect
+xml_def(mode,		0),			// aspect
 xml_def(ncs,		QChart::ChartThemeBlueNcs),		// theme
 xml_def(none,		0),
 xml_def(pen,		0),

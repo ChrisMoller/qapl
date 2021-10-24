@@ -36,6 +36,9 @@
         <label>....</label>
         <pen colour="..." style="..."/>
       </stack>
+
+      repeat stack...
+      
     </qapl>
  ***/
 
@@ -144,7 +147,39 @@ void Plot2DWindow::dumpXML (QString fileName)
 
   stream.writeEndElement(); // range
 
+  /*** active element ***/
+  
+  stream.writeStartElement(xml_tags[XML_active].tag);
+  stream.writeAttribute(xml_tags[XML_aspect].tag,
+			QString::number (getAspect ()));
+  stream.writeAttribute(xml_tags[XML_mode].tag,
+			QString::number (getMode ()));
 
+  /*** expression element ***/
+  
+  stream.writeStartElement(xml_tags[XML_expression].tag);
+  stream.writeCharacters(aplExpression->text ());
+  stream.writeEndElement(); // expression
+
+  /*** label element ***/
+  
+  stream.writeStartElement(xml_tags[XML_label].tag);
+  stream.writeCharacters(curveTitle->text ());
+  stream.writeEndElement(); // label
+
+  /*** pen element ***/
+  
+  stream.writeStartElement(xml_tags[XML_pen].tag);
+  stream.writeAttribute(xml_tags[XML_colour].tag,
+			activePen.color ().name (QColor::HexArgb));
+  stream.writeAttribute(xml_tags[XML_style].tag,
+			QString::number (activePen.style ()));
+  stream.writeEndElement(); // pen
+
+  stream.writeEndElement(); // active
+
+  for (int i = 0; i < plotCurves.size (); i++) {
+  }
 
 
   stream.writeEndElement(); // qapl
