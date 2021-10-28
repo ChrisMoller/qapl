@@ -7,6 +7,7 @@
 #include <signal.h>
 
 #include "mainwindow.h"
+#include "plot2dwindow.h"
 #include "helpwindow.h"
 #include "optionstrings.h"
 #include "aplexec.h"
@@ -437,6 +438,10 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
     for (int i = 0; i <  pargs.size (); i++)
       readScript (pargs[i]);
   }
+
+  
+  QString fn ("test.xml");
+  Plot2DWindow::readXML (fn);
 }
 
 MainWindow::~MainWindow()

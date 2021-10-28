@@ -35,6 +35,7 @@ HEADERS += \
     history.h \
     mainwindow.h \
     optionstrings.h \
+    plot2ddata.h \
     plot2dwindow.h \
     processline.h \
     xml.h \

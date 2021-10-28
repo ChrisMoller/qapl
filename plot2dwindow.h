@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "chart2dwindow.h"
 #include "complexspinbox.h"
+#include "plot2ddata.h"
 
 class Chart2DWindow;
 
@@ -16,42 +17,61 @@ class Chart2DWindow;
 
 class MainWindow;
 
-class PlotCurve {
-public:
-  PlotCurve (QString &e,  aspect_e &a, QString l, QPen p, series_mode_e m) {
-    a_expression = e;
-    a_aspect = a;
-    a_pen = p;
-    a_label = l;
-    a_mode = m;
-  }
-  QString label () { return a_label; }
-  void setLabel (QString label) { a_label = label; }
-  QString expression () { return a_expression; }
-  QPen pen () { return a_pen; }
-  void setPen (QPen pen) { a_pen = pen; }
-  void setExpression (QString expression) { a_expression = expression; }
-  aspect_e aspect () { return a_aspect; }
-  void setAspect (aspect_e aspect) { a_aspect = aspect; }
-  series_mode_e mode () { return a_mode; }
-  void setMode (series_mode_e mode) { a_mode = mode; }
-  
-private:
-  QString	a_label;
-  QString	a_expression;
-  aspect_e	a_aspect;
-  QPen		a_pen;
-  series_mode_e a_mode;
-};
-
 class Plot2DWindow : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  Plot2DWindow (MainWindow *parent = nullptr);
+  Plot2DWindow (MainWindow *parent);
   ~Plot2DWindow ();
-  QString  getAplExpression () { return aplExpression->text (); }
+  QString  getAplExpression () { return plot2DData->activeCurve.expression (); }
+  void     setAplExpression (QString expression) {
+    plot2DData->activeCurve.setExpression (expression);
+  }
+  double   getRealInit ()  { return plot2DData->rangeInit.real (); }
+  double   getRealFinal () { return plot2DData->rangeFinal.real (); }
+  double   getImagInit ()  { return plot2DData->rangeFinal.imag (); }
+  double   getImagFinal () { return plot2DData->rangeInit.imag (); }
+  int      getResolution () {return plot2DData->resolution; }
+  void     setResolution (int res) {plot2DData->resolution = res; }
+  QFont	   getAxisLabelFont () { return plot2DData->axisLabelFont; }
+  void     setAxisLabelFont (QFont font) { plot2DData->axisLabelFont = font; }
+  QColor   getAxisLabelColour () { return plot2DData->axisLabelColour; }
+  void     setAxisLabelColour (QColor colour) {
+    plot2DData->axisLabelColour = colour;
+  }
+  QFont    getAxisTitleFont () { return plot2DData->axisTitleFont; }
+  void     setAxisTitleFont (QFont font) { plot2DData->axisTitleFont = font; }
+  QColor   getAxisTitleColour () { return plot2DData->axisTitleColour; }
+  void     setAxisTitleColour (QColor colour) {
+    plot2DData->axisTitleColour = colour;
+  }
+  QColor   getAxisColour () { return plot2DData-> axisColour; }
+  void     setAxisColour (QColor colour) { plot2DData->axisColour = colour; }
+  QFont    getChartTitleFont () { return plot2DData->chartTitleFont; }
+  void     setChartTitleFont (QFont font) { plot2DData->chartTitleFont = font; }
+  QColor   getChartTitleColour () { return plot2DData->chartTitleColour; }
+  void     setChartTitleColour (QColor colour) {
+    plot2DData->chartTitleColour = colour;
+  }
+  QString  getIndexVariable () { return plot2DData->indexVariable; }
+  QString  getXTitle () { return plot2DData->xTitle; }
+  void     setXTitle (QString xtitle) { plot2DData->xTitle = xtitle; }
+  QString  getYTitle () { return plot2DData->yTitle; }
+  void     setYTitle (QString ytitle) { plot2DData->yTitle = ytitle; }
+  QString  getChartTitle () { return plot2DData->chartTitle; }
+  void     setChartTitle (QString title) { plot2DData->chartTitle = title; }
+  QPen    *getPen () { return plot2DData->activeCurve.pen (); }
+  void     setPen (QPen pen) { plot2DData->activeCurve.setPen (pen); }
+  QString  getCurveTitle () { return plot2DData->activeCurve.title (); }
+  void     setCurveTitle (QString title) {
+    plot2DData->activeCurve.setTitle (title);
+  }
+  QChart::ChartTheme getTheme () {
+    return (QChart::ChartTheme)plot2DData->theme;
+  }
+  void setTheme (int theme) { plot2DData->theme = theme; }
+  QList<PlotCurve *> getPlotCurves () { return plot2DData->plotCurves; }
   aspect_e getAspect () {
     QVariant sel = aspectCombo->currentData ();
     return (aspect_e)sel.toInt ();
@@ -60,32 +80,15 @@ public:
     QVariant sel = modeCombo->currentData ();
     return (series_mode_e)sel.toInt ();
   }
-  double   getRealFinal () { return realFinal; }
-  double   getRealInit  () { return realInit; }
-  double   getImagFinal () { return imagFinal; }
-  double   getImagInit  () { return imagInit; }
-  int      getResolution () {return resolution; }
-  QString  getIndexVariable () { return indexVariable->text (); }
-  QString  getXTitle () { return xTitle; }
-  QString  getYTitle () { return yTitle; }
-  QString  getChartTitle () { return chartTitle; }
-  QPen     getPen () { return activePen; }
-  QString  getCurveTitle () { return curveTitle->text (); }
-  QChart::ChartTheme getTheme () { return (QChart::ChartTheme)theme; }
-  QList<PlotCurve *> getPlotCurves () { return plotCurves; }
-  QFont  getAxisLabelFont () { return axisLabelFont; }
-  QColor getAxisLabelColour () { return axisLabelColour; }
-  QFont  getAxisTitleFont () { return axisTitleFont; }
-  QColor getAxisTitleColour () { return axisTitleColour; }
-  QColor getAxisColour () { return axisColour; }
-  QFont  getChartTitleFont () { return chartTitleFont; }
-  QColor getChartTitleColour () { return chartTitleColour; }
+  
+  static void readXML (QString &fileName);
+  static bool parseQapl (QXmlStreamReader &stream);
 
 private:
   MainWindow *mw;
   void drawCurves ();
   void createMenubar ();
-  void setResolution ();
+  void setGranularity ();
   void setDecorations ();
   void pushExpression ();
   void updatePen (QPen *pen);
@@ -99,36 +102,38 @@ private:
   void exportChart ();
   void dumpXML (QString fileName);
 
-  QLineEdit *aplExpression;
-  QLineEdit *indexVariable;
-  QLineEdit *curveTitle;
-  int resolution;
-  double realInit;
-  double realFinal;
-  double imagInit;
-  double imagFinal;
   bool setupComplete;
   QChartView *chartView;
   QChart *chart;
   QComboBox *modeCombo;
   QComboBox *aspectCombo;
-  QList<PlotCurve *> plotCurves;
-  QString chartTitle;
-  QString xTitle;
-  QString yTitle;
   QString currentFile;
-  int theme;
   Chart2DWindow *chart2DWindow;
-  QPen activePen;
-  QFont  axisLabelFont;
-  QColor axisLabelColour;
-  QFont  axisTitleFont;
-  QColor axisTitleColour;
-  QColor axisColour;
-  QFont  chartTitleFont;
-  QColor chartTitleColour;
   ComplexSpinBox *rangeInit;
   ComplexSpinBox *rangeFinal;
+  Plot2dData *plot2DData;
+
+  // QLineEdit *aplExpression;
+  // QLineEdit *indexVariable;
+  // QLineEdit *curveTitle;
+  // int resolution;
+  // double realInit;
+  // double realFinal;
+  // double imagInit;
+  // double imagFinal;
+  // QList<PlotCurve *> plotCurves;
+  // QString chartTitle;
+  // QString xTitle;
+  // QString yTitle;
+  // int theme;
+  // QPen activePen;
+  // QFont  axisLabelFont;
+  // QColor axisLabelColour;
+  // QFont  axisTitleFont;
+  // QColor axisTitleColour;
+  // QColor axisColour;
+  // QFont  chartTitleFont;
+  // QColor chartTitleColour;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

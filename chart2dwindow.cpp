@@ -349,9 +349,11 @@ void Chart2DWindow::drawCurves ()
   
   QString aplExpr = pw->getAplExpression ();
   aspect_e aspect = pw->getAspect ();
-  QPen pen (pw->getPen ());
-  if (fontScale != 1.0)
-    pen.setWidth ((int)(10.0 * fontScale * (double)(pw->getPen ().width ())));
+  QPen pen = *(pw->getPen ());
+
+  // fixme -- this doesn't change the width of the line
+  pen.setWidth ((int)(fontScale * (double)pen.width ()));
+  
   QString label = pw->getCurveTitle ();
   series_mode_e mode = pw->getMode ();
   
@@ -359,10 +361,11 @@ void Chart2DWindow::drawCurves ()
   for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
     drawCurve (pw->getPlotCurves ()[i]->expression (),
 	       pw->getPlotCurves ()[i]->aspect (),
-	       pw->getPlotCurves ()[i]->label (),
-	       pw->getPlotCurves ()[i]->pen (),
+	       pw->getPlotCurves ()[i]->title (),
+	       pen,
 	       pw->getPlotCurves ()[i]->mode ());
   }
+  
 }
 
 enum {

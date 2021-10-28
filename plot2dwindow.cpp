@@ -13,6 +13,7 @@
 #include "mainwindow.h"
 #include "complexspinbox.h"
 #include "plot2dwindow.h"
+#include "plot2ddata.h"
 #include "chart2dwindow.h"
 
 #define STYLE_NO_PEN		""
@@ -47,16 +48,17 @@ void Plot2DWindow::drawCurves ()
 
 void Plot2DWindow::pushExpression ()
 {
-  QString aplExpr = aplExpression->text ();
-  QString label = curveTitle->text ();
+  QString aplExpr = getAplExpression ();
+  QString label = getCurveTitle ();
   QVariant sel = aspectCombo->currentData ();
   aspect_e aspect = (aspect_e)sel.toInt ();
+  QPen pen = *getPen ();
   sel = modeCombo->currentData ();
   series_mode_e mode = (series_mode_e)sel.toInt ();
   PlotCurve *plotCurve =
-    new PlotCurve (aplExpr, aspect, label, activePen, mode);
-  plotCurves.append (plotCurve);
-  aplExpression->clear ();
+    new PlotCurve (aplExpr, aspect, label, pen, mode);
+  getPlotCurves ().append (plotCurve);
+  setAplExpression ("");
 }
 
 static QComboBox *
@@ -131,7 +133,7 @@ Plot2DWindow::updatePen (QPen *pen)
           [=](int index)
           {
 	    QVariant sel = lineStyle->itemData (index);
-	    doStyle (sel.toInt (), pen);
+	    doStyle (sel.toInt (), getPen ());
 	  });
   layout->addWidget (lineStyle, row, col++);
   
@@ -241,15 +243,15 @@ void Plot2DWindow:: deleteStackEntry (int row)
   msgBox.setDefaultButton(QMessageBox::Cancel);
   int ret = msgBox.exec();
   if (ret == QMessageBox::Yes) {
-    if (row >= 0 && row < plotCurves.size ())
-      plotCurves.removeAt (row);
+    if (row >= 0 && row < getPlotCurves ().size ())
+      getPlotCurves ().removeAt (row);
   }
 }
 
 QString Plot2DWindow::getModeString (int idx)
 {
   QString modeString;
-  switch(plotCurves[idx]->mode ()) {
+  switch(getPlotCurves ()[idx]->mode ()) {
   case MODE_BUTTON_SPLINE:
     modeString = QString (STRING_SPLINES);
     break;
@@ -268,7 +270,7 @@ QString Plot2DWindow::getModeString (int idx)
 QString Plot2DWindow::getAspectString (int idx)
 {
   QString aspectString;
-  switch(plotCurves[idx]->aspect ()) {
+  switch(getPlotCurves ()[idx]->aspect ()) {
   case ASPECT_REAL:
     aspectString = QString (STRING_REAL);
     break;
@@ -297,14 +299,14 @@ enum {
 
 void Plot2DWindow::fillTable ( QTableWidget *curvesTable)
 {
-  for (int i = 0; i < plotCurves.size (); i++) {
-    QString labelString = plotCurves[i]->label ().isEmpty () ?
-      QString ("---") : plotCurves[i]->label ();
+  for (int i = 0; i < getPlotCurves ().size (); i++) {
+    QString labelString = getPlotCurves ()[i]->title ().isEmpty () ?
+      QString ("---") : getPlotCurves ()[i]->title ();
     QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
     curvesTable->setItem (i, CURVES_COLUMN_LABEL, labelItem);
     
     QTableWidgetItem *exprItem
-      = new QTableWidgetItem (plotCurves[i]->expression ());
+      = new QTableWidgetItem (getPlotCurves ()[i]->expression ());
     curvesTable->setItem (i, CURVES_COLUMN_EXPRESSION, exprItem);
 
     QString aspectString = getAspectString (i);
@@ -314,12 +316,12 @@ void Plot2DWindow::fillTable ( QTableWidget *curvesTable)
     aspectItem->setFlags (aspectFlags);
     curvesTable->setItem (i, CURVES_COLUMN_ASPECT, aspectItem);
 
-    unsigned long int ls = plotCurves[i]->pen ().style();
+    unsigned long int ls = getPlotCurves ()[i]->pen ()->style();
     QString lbl;
     if (ls < sizeof(styleStrings)/sizeof(char *))
       lbl = QString (styleStrings[ls]);
     QTableWidgetItem *penItem = new QTableWidgetItem (lbl);
-    QBrush penBrush (plotCurves[i]->pen ().color());
+    QBrush penBrush (getPlotCurves ()[i]->pen ()->color());
     penItem->setBackground (penBrush);
     curvesTable->setItem (i, CURVES_COLUMN_PEN, penItem);
 
@@ -358,11 +360,11 @@ void Plot2DWindow::setFonts ()
 		      bool ok;
 
 		      QFont font = QFontDialog::getFont(&ok,
-							axisLabelFont,
+							getAxisLabelFont (),
 							this,
 							"Axis label font");
 		      if (ok) {
-			axisLabelFont = font;
+			setAxisLabelFont (font);
 			mw->getSettings ()->setValue (SETTINGS_AXIS_LABEL_FONT,
 						      font.toString ());
 			drawCurves ();
@@ -375,14 +377,14 @@ void Plot2DWindow::setFonts ()
   QObject::connect (axisLabelColourButton, &QPushButton::clicked,
 		    [=](){
 		      QColor colour
-			= QColorDialog::getColor (axisLabelColour,
+			= QColorDialog::getColor (getAxisLabelColour (),
 						  this,
 						  "Axis label colour",
 					  QColorDialog::ShowAlphaChannel);
 		      if (colour.isValid ()) {
-			axisLabelColour = colour;
+			setAxisLabelColour (colour);
 		mw->getSettings ()->setValue (SETTINGS_AXIS_LABEL_COLOUR,
-				axisLabelColour.name (QColor::HexArgb));
+		      getAxisLabelColour ().name (QColor::HexArgb));
 		drawCurves ();
 		      }
 		      });
@@ -399,11 +401,11 @@ void Plot2DWindow::setFonts ()
 		      bool ok;
 
 		      QFont font = QFontDialog::getFont(&ok,
-							axisTitleFont,
+							getAxisTitleFont (),
 							this,
 							"Axis title font");
 		      if (ok) {
-			axisTitleFont = font;
+			setAxisTitleFont (font);
 			mw->getSettings ()->setValue (SETTINGS_AXIS_TITLE_FONT,
 						      font.toString ());
 			drawCurves ();
@@ -416,14 +418,14 @@ void Plot2DWindow::setFonts ()
   QObject::connect (axisTitleColourButton, &QPushButton::clicked,
 		    [=](){
 		      QColor colour
-			= QColorDialog::getColor (axisTitleColour,
+			= QColorDialog::getColor (getAxisTitleColour (),
 						  this,
 						  "Axis title colour",
 					  QColorDialog::ShowAlphaChannel);
 		       if (colour.isValid ()) {
-			axisTitleColour = colour;
+			 setAxisTitleColour (colour);
 		      mw->getSettings ()->setValue (SETTINGS_AXIS_TITLE_COLOUR,
-				    axisTitleColour.name (QColor::HexArgb));
+			    getAxisTitleColour ().name (QColor::HexArgb));
 		      drawCurves ();
 		       }
 		    });
@@ -440,11 +442,11 @@ void Plot2DWindow::setFonts ()
 		      bool ok;
 
 		      QFont font = QFontDialog::getFont(&ok,
-							chartTitleFont,
+							getChartTitleFont (),
 							this,
 							"Chart title font");
 		      if (ok) {
-			chartTitleFont = font;
+			setChartTitleFont (font);
 			mw->getSettings ()->setValue (SETTINGS_CHART_TITLE_FONT,
 						      font.toString ());
 			drawCurves ();
@@ -457,14 +459,14 @@ void Plot2DWindow::setFonts ()
   QObject::connect (chartTitleColourButton, &QPushButton::clicked,
 		    [=](){
 		      QColor colour
-			= QColorDialog::getColor (chartTitleColour,
+			= QColorDialog::getColor (getChartTitleColour (),
 						  this,
 						  "Chart title colour",
 					  QColorDialog::ShowAlphaChannel);
 		       if (colour.isValid ()) {
-			chartTitleColour = colour;
+			 setChartTitleColour (colour);
 		      mw->getSettings ()->setValue (SETTINGS_CHART_TITLE_COLOUR,
-				    chartTitleColour.name (QColor::HexArgb));
+			    getChartTitleColour ().name (QColor::HexArgb));
 		      drawCurves ();
 		       }
 		    });
@@ -480,14 +482,14 @@ void Plot2DWindow::setFonts ()
   QObject::connect (axisColourButton, &QPushButton::clicked,
 		    [=](){
 		      QColor colour
-			= QColorDialog::getColor (axisColour,
+			= QColorDialog::getColor (getAxisColour (),
 						  this,
 						  "Axis colour",
 					  QColorDialog::ShowAlphaChannel);
 		      if (colour.isValid ()) {
-			axisColour = colour;
+			setAxisColour (colour);
 		      mw->getSettings ()->setValue (SETTINGS_AXIS_COLOUR,
-				    axisColour.name (QColor::HexArgb));
+			    getAxisColour ().name (QColor::HexArgb));
 		      drawCurves ();
 		      }
 		    });
@@ -522,11 +524,11 @@ void Plot2DWindow::setDecorations ()
   layout->addWidget (&chartTitileLbl, row, col++);
 
   QLineEdit *chartTitleBox = new QLineEdit ();
-  chartTitleBox->setText (chartTitle);
+  chartTitleBox->setText (getChartTitle ());
   connect (chartTitleBox,
            &QLineEdit::editingFinished,
           [=](){
-	    chartTitle = chartTitleBox->text ();
+	    setChartTitle (chartTitleBox->text ());
 	    drawCurves ();
           });
   chartTitleBox->setPlaceholderText ("ChartTitle");
@@ -539,22 +541,22 @@ void Plot2DWindow::setDecorations ()
   layout->addWidget (&xLbl, row, col++);
 
   QLineEdit *xTitleBox = new QLineEdit ();
-  xTitleBox->setText (xTitle);
+  xTitleBox->setText (getXTitle ());
   connect (xTitleBox,
            &QLineEdit::editingFinished,
           [=](){
-	    xTitle = xTitleBox->text ();
+	    setXTitle (xTitleBox->text ());
 	    drawCurves ();
           });
   xTitleBox->setPlaceholderText ("X label");
   layout->addWidget (xTitleBox, row, col++);
 
   QLineEdit *yTitleBox = new QLineEdit ();
-  yTitleBox->setText (yTitle);
+  yTitleBox->setText (getYTitle ());
   connect (yTitleBox,
            &QLineEdit::editingFinished,
           [=](){
-	    yTitle = yTitleBox->text ();
+	    setYTitle (yTitleBox->text ());
 	    drawCurves ();
           });
   yTitleBox->setPlaceholderText ("Y Label");
@@ -575,13 +577,13 @@ void Plot2DWindow::setDecorations ()
   themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
   themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
   themebox->addItem ("Qt", QChart::ChartThemeQt);
-  themebox->setCurrentIndex ((int)theme);
+  themebox->setCurrentIndex ((int)getTheme ());
   connect (themebox, QOverload<int>::of(&QComboBox::activated),
           [=](int index)
           {
 	    QVariant sel = themebox->itemData (index);
-	    theme = sel.toInt ();
-	    mw->getSettings ()->setValue (SETTINGS_PLOT_THEME, theme);
+	    setTheme (sel.toInt ());
+	    mw->getSettings ()->setValue (SETTINGS_PLOT_THEME, getTheme ());
 	    drawCurves ();
 	  });
   layout->addWidget(themebox, row, 1);
@@ -593,7 +595,7 @@ void Plot2DWindow::setDecorations ()
   layout->addWidget (&curvesLbl, row, col++);
 #endif
 
-  QTableWidget *curvesTable = new QTableWidget (plotCurves.size (),
+  QTableWidget *curvesTable = new QTableWidget (getPlotCurves ().size (),
 						CURVES_COLUMN_LAST, this);
   connect (curvesTable,
 	   QOverload<int, int>::of(&QTableWidget::cellDoubleClicked),
@@ -615,13 +617,13 @@ void Plot2DWindow::setDecorations ()
 	     if (column == CURVES_COLUMN_LABEL) {
 	       QTableWidgetItem *labelItem = curvesTable->item (row, column);
 	       QString newLabel = labelItem->text ();
-	       plotCurves[row]->setLabel (newLabel);
+	       getPlotCurves ()[row]->setTitle (newLabel);
 	       drawCurves ();
 	     }
 	     else if (column == CURVES_COLUMN_EXPRESSION) {
 	       QTableWidgetItem *expItem = curvesTable->item (row, column);
 	       QString newExp = expItem->text ();
-	       plotCurves[row]->setExpression (newExp);
+	       plot2DData->plotCurves[row]->setExpression (newExp);
 	       drawCurves ();
 	     }
 	   });
@@ -630,23 +632,23 @@ void Plot2DWindow::setDecorations ()
 	   [=](int row, int column)
 	   {
 	     if (column == CURVES_COLUMN_ASPECT) {
-	       updateAspect (plotCurves[row]);
+	       updateAspect (plot2DData->plotCurves[row]);
 	       QString aspectString = getAspectString (row);
 	       QTableWidgetItem *aspectItem = curvesTable->item (row, column);
 	       aspectItem->setText (aspectString);
 	       drawCurves ();
 	     }
 	     else if (column == CURVES_COLUMN_MODE) {
-	       updateMode (plotCurves[row]);
+	       updateMode (plot2DData->plotCurves[row]);
 	       QString modeString = getModeString (row);
 	       QTableWidgetItem *modeItem = curvesTable->item (row, column);
 	       modeItem->setText (modeString);
 	       drawCurves ();
 	     }
 	     else if (column == CURVES_COLUMN_PEN) {
-	       QPen pen = plotCurves[row]->pen ();
+	       QPen pen = *plot2DData->plotCurves[row]->pen ();
 	       updatePen (&pen);
-	       plotCurves[row]->setPen (pen);
+	       plot2DData->plotCurves[row]->setPen (pen);
 	       QTableWidgetItem *penItem = curvesTable->item (row, column);
 	       unsigned long int ls = (unsigned long int)pen.style();
 	       QString lbl;
@@ -687,7 +689,7 @@ void Plot2DWindow::setDecorations ()
 }
 
 void
-Plot2DWindow::setResolution ()
+Plot2DWindow::setGranularity ()
 {
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *layout = new QGridLayout;
@@ -700,12 +702,12 @@ Plot2DWindow::setResolution ()
 
   QSpinBox *resolutionBox = new QSpinBox ();
   resolutionBox->setRange (4, 128);
-  resolutionBox->setValue (resolution);
+  resolutionBox->setValue (getResolution ());
   layout->addWidget (resolutionBox, row, 1);
   connect (resolutionBox,
            &QSpinBox::valueChanged,
           [=](){
-	    resolution = resolutionBox->value ();
+	    setResolution (resolutionBox->value ());
 	    drawCurves ();
           });
 
@@ -750,7 +752,7 @@ void Plot2DWindow::createMenubar ()
 
   QAction *resolutionAct =
     settingsMenu->addAction(tr("&Resolution"), this,
-			    & Plot2DWindow::setResolution);
+			    & Plot2DWindow::setGranularity);
   resolutionAct->setStatusTip(tr("Set resolution"));
 
   QAction *decorationsAct =
@@ -778,14 +780,13 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   this->setWindowTitle ("qapl 2D Plot Controls");
   mw = parent;
 
+#if 0
   theme = mw->getSettings ()->value (SETTINGS_PLOT_THEME).toInt ();
-  
   resolution	= 16.0;
   realInit	= 0.0;
   realFinal	= 1.0;
   imagInit	= 0.0;
   imagFinal	= 0.0;
-  chart 	= nullptr;
 
   QVariant fontVariant;
   QVariant colourVariant;
@@ -818,8 +819,12 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   chartTitleColour = QColor (mw->getSettings ()
 			     ->value (SETTINGS_CHART_TITLE_COLOUR,
 				      colourVariant).toString ());
-
+#endif
+  plot2DData   = new Plot2dData (mw);
+  fprintf (stderr, "initial plot2DData = %p\n", plot2DData);
+  chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
+
 
   setupComplete = false;
     
@@ -832,11 +837,14 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   int row = 0;
   int col = 0;
   
-  aplExpression = new QLineEdit ();
+  QLineEdit *aplExpression = new QLineEdit ();
   aplExpression->setPlaceholderText (tr ("APL expression"));
   connect (aplExpression,
-           &QLineEdit::returnPressed,
+           &QLineEdit::editingFinished,
           [=](){
+	    setAplExpression (aplExpression->text ());
+  fprintf (stderr, "setting plot2DData = %p \"%s\"\n",
+	   plot2DData, toCString (aplExpression->text ()));
 	    if (setupComplete) drawCurves ();
           });
   layout->addWidget (aplExpression, row, col, 1, 3);
@@ -844,20 +852,21 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   row++;
   col = 0;
 
-  curveTitle = new QLineEdit ();
+  QLineEdit *curveTitle = new QLineEdit ();
   curveTitle->setPlaceholderText (tr ("Curve label"));
   connect (curveTitle,
-           &QLineEdit::returnPressed,
+           &QLineEdit::editingFinished,
           [=](){
+	    setCurveTitle (curveTitle->text ());
 	    if (setupComplete) drawCurves ();
           });
   layout->addWidget (curveTitle, row, col++);
 
-  activePen.setColor (QColor ("red"));
+  setPen (QColor ("red"));
   QPushButton *setPenButton = new QPushButton (QObject::tr ("Pen"));
   QObject::connect (setPenButton, &QPushButton::clicked,
 		    [=](){
-		      updatePen (&activePen);
+		      updatePen (getPen ());
 		      drawCurves ();
 		    });
   layout->addWidget (setPenButton, row, col++);
@@ -873,13 +882,14 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   row++;
   col = 0;
   
-  indexVariable = new QLineEdit ();
+  QLineEdit *indexVariable = new QLineEdit ();
   indexVariable->setPlaceholderText ("Index var");
   indexVariable->setMaximumWidth (100);
 #if 0
   connect (indexVariable,
            &QLineEdit::returnPressed,
           [=](){
+	    plot2DData->indexVariable = indexVariable->text ();
 	    if (setupComplete) drawCurves ();
           });
 #endif
@@ -889,8 +899,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   connect (rangeInit,
            &ComplexSpinBox::valueChanged,
           [=](){
-	    realInit = rangeInit->getReal ();
-	    imagInit = rangeInit->getImag ();
+	    plot2DData->rangeInit = rangeInit->getComplex ();
 	    if (setupComplete) drawCurves ();
           });
   rangeInit->setComplex (0.0, 0.0);
@@ -900,8 +909,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   connect (rangeFinal,
            &ComplexSpinBox::valueChanged,
           [=](){
-	    realFinal = rangeFinal->getReal ();
-	    imagFinal = rangeFinal->getImag ();
+	    plot2DData->rangeFinal = rangeFinal->getComplex ();
 	    if (setupComplete) drawCurves ();
           });
   rangeFinal->setComplex (0.0, 0.0);
