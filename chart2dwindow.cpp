@@ -44,6 +44,20 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 			       std::vector<double> idxVector)
 {
   if (!aplExpr.isEmpty ()) {
+    switch (mode) {
+    case MODE_BUTTON_SPLINE:
+      series = new QSplineSeries ();
+      break;
+    case MODE_BUTTON_LINE:
+      series = new QLineSeries ();
+      break;
+    case MODE_BUTTON_SCATTER:
+      series = new QScatterSeries ();
+      break;
+    default:
+      series = nullptr;
+      break;
+    }
     if (fontScale != 1.0) {
       fprintf (stderr, "setting pw %g\n",
 	       10.0 * fontScale * (double)pen.width ());
@@ -142,10 +156,12 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 	  //	    series->setWidth(2 * fontScale);
 
 	  chartView->chart()->addSeries(series);
-      
 	}
-	else
+	else {
+	  fprintf (stderr, "sc = %d, vs = %d\n",
+		   seriesCount,  (int)idxVector.size ());
 	  mw->printError (tr ("Index and result vectors are of different lengths."));
+	}
       }
       else
 	mw->printError (tr ("Expression evaluation error."));
@@ -228,6 +244,7 @@ void Chart2DWindow::drawCurves ()
       mw->printError (tr ("Index contains imaginary components.  \
 Using only the real components in the axis."));
 
+#if 0
     series_mode_e mode = pw->getMode ();
     switch (mode) {
     case MODE_BUTTON_SPLINE:
@@ -243,13 +260,15 @@ Using only the real components in the axis."));
       series = nullptr;
       break;
     }
+#endif
       
-    double realMax = -MAXDOUBLE;
-    double realMin =  MAXDOUBLE;
     QString aplExpr = pw->getAplExpression ();
     aspect_e aspect = pw->getAspect ();
-    QPen pen = *(pw->getPen ());
     QString label = pw->getCurveTitle ();
+    QPen pen = *(pw->getPen ());
+    series_mode_e mode = pw->getMode ();
+    double realMax = -MAXDOUBLE;
+    double realMin =  MAXDOUBLE;
     drawCurve (aplExpr, aspect, label, pen, mode,
 	       realMax, realMin, idxVector);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
