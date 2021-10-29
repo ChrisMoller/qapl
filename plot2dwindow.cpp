@@ -48,6 +48,7 @@ void Plot2DWindow::drawCurves ()
 
 void Plot2DWindow::pushExpression ()
 {
+  fprintf (stderr, "pushing\n");
   QString aplExpr = getAplExpression ();
   QString label = getCurveTitle ();
   QVariant sel = aspectCombo->currentData ();
@@ -57,7 +58,8 @@ void Plot2DWindow::pushExpression ()
   series_mode_e mode = (series_mode_e)sel.toInt ();
   PlotCurve *plotCurve =
     new PlotCurve (aplExpr, aspect, label, pen, mode);
-  getPlotCurves ().append (plotCurve);
+  plot2DData->plotCurves.append(plotCurve);
+  //getPlotCurves ().append (plotCurve);
   setAplExpression ("");
 }
 

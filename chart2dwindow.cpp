@@ -352,13 +352,18 @@ void Chart2DWindow::drawCurves ()
   QPen pen = *(pw->getPen ());
 
   // fixme -- this doesn't change the width of the line
-  pen.setWidth ((int)(fontScale * (double)pen.width ()));
+  if (fontScale != 1.0) {
+    fprintf (stderr, "setting pw %g\n",
+	     10.0 * fontScale * (double)pen.width ());
+    pen.setWidth ((int)(10.0 * fontScale * (double)pen.width ()));
+  }
   
   QString label = pw->getCurveTitle ();
   series_mode_e mode = pw->getMode ();
   
   drawCurve (aplExpr, aspect, label, pen, mode);
   for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
+    fprintf (stderr, "drawing stack ety %d\n", i);
     drawCurve (pw->getPlotCurves ()[i]->expression (),
 	       pw->getPlotCurves ()[i]->aspect (),
 	       pw->getPlotCurves ()[i]->title (),
