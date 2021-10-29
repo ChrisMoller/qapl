@@ -24,7 +24,8 @@ public:
   ~Chart2DWindow ();
   void drawCurves ();
   void drawCurve (QString aplExpr, aspect_e aspect,
-		  QString label, QPen pen, series_mode_e mode);
+		  QString label, QPen pen, series_mode_e mode,
+		  double &realMax, double &realMin);
   void exportImage ();
   
  private:

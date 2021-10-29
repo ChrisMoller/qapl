@@ -13,7 +13,7 @@
 #define IDXVAR  "idxvarλ"
 
 bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
-				 double &realMax, double &realMin)
+				  double &realMax, double &realMin)
 {
   bool rc = true;
   if (realMax < y) realMax = y;
@@ -39,7 +39,8 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
 }
 
 void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
-			       QString label, QPen pen, series_mode_e mode)
+			       QString label, QPen pen, series_mode_e mode,
+			       double &realMax, double &realMin)
 {
   if (!aplExpr.isEmpty ()) {
     double realIncr   = (pw->getRealFinal () - pw->getRealInit ()) /
@@ -105,8 +106,6 @@ Using only the real components in the axis."));
 	int resultElementCount	= get_element_count (result);
 	bool resultValid = true;
 	//    bool isComplex   = false;
-	double realMax = -MAXDOUBLE;
-	double realMin =  MAXDOUBLE;
 	series = nullptr;
 
 	switch (mode) {
@@ -361,14 +360,17 @@ void Chart2DWindow::drawCurves ()
   QString label = pw->getCurveTitle ();
   series_mode_e mode = pw->getMode ();
   
-  drawCurve (aplExpr, aspect, label, pen, mode);
+  double realMax = -MAXDOUBLE;
+  double realMin =  MAXDOUBLE;
+  drawCurve (aplExpr, aspect, label, pen, mode, realMax, realMin);
   for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
     fprintf (stderr, "drawing stack ety %d\n", i);
     drawCurve (pw->getPlotCurves ()[i]->expression (),
 	       pw->getPlotCurves ()[i]->aspect (),
 	       pw->getPlotCurves ()[i]->title (),
 	       pen,
-	       pw->getPlotCurves ()[i]->mode ());
+	       pw->getPlotCurves ()[i]->mode (),
+	       realMax, realMin);
   }
   
 }
