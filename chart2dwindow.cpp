@@ -243,24 +243,6 @@ void Chart2DWindow::drawCurves ()
     if (idxComplex)		// fixme
       mw->printError (tr ("Index contains imaginary components.  \
 Using only the real components in the axis."));
-
-#if 0
-    series_mode_e mode = pw->getMode ();
-    switch (mode) {
-    case MODE_BUTTON_SPLINE:
-      series = new QSplineSeries ();
-      break;
-    case MODE_BUTTON_LINE:
-      series = new QLineSeries ();
-      break;
-    case MODE_BUTTON_SCATTER:
-      series = new QScatterSeries ();
-      break;
-    default:
-      series = nullptr;
-      break;
-    }
-#endif
       
     QString aplExpr = pw->getAplExpression ();
     aspect_e aspect = pw->getAspect ();
@@ -272,7 +254,7 @@ Using only the real components in the axis."));
     drawCurve (aplExpr, aspect, label, pen, mode,
 	       realMax, realMin, idxVector);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
-      fprintf (stderr, "drawing stack ety %d\n", i);
+      pen = *(pw->getPlotCurves ()[i]->pen ());
       drawCurve (pw->getPlotCurves ()[i]->expression (),
 		 pw->getPlotCurves ()[i]->aspect (),
 		 pw->getPlotCurves ()[i]->title (),
