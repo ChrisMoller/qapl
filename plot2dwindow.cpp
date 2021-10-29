@@ -478,6 +478,34 @@ void Plot2DWindow::setFonts ()
   col = 0;
 
 
+  QLabel themeLbl ("Theme");
+  layout->addWidget (&themeLbl, row, 0, Qt::AlignRight);
+  
+  QComboBox *themebox = new QComboBox ();
+  themebox->addItem ("Light", QChart::ChartThemeLight);
+  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+  themebox->addItem ("Dark", QChart::ChartThemeDark);
+  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
+  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
+  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
+  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
+  themebox->addItem ("Qt", QChart::ChartThemeQt);
+  themebox->setCurrentIndex ((int)getTheme ());
+  connect (themebox, QOverload<int>::of(&QComboBox::activated),
+          [=](int index)
+          {
+	    QVariant sel = themebox->itemData (index);
+	    setTheme (sel.toInt ());
+	    mw->getSettings ()->setValue (SETTINGS_PLOT_THEME, getTheme ());
+	    drawCurves ();
+	  });
+  layout->addWidget(themebox, row, 1);
+
+  
+  row++;
+  col = 0;
+
+
   QPushButton *axisColourButton =
     new QPushButton (QObject::tr ("Axis Colour"));
   layout->addWidget (axisColourButton, row, 1);
@@ -563,32 +591,6 @@ void Plot2DWindow::setDecorations ()
           });
   yTitleBox->setPlaceholderText ("Y Label");
   layout->addWidget (yTitleBox, row, col++);
-
-  row++;
-  col = 0;
-
-  QLabel themeLbl ("Theme");
-  layout->addWidget (&themeLbl, row, 0);
-  
-  QComboBox *themebox = new QComboBox ();
-  themebox->addItem ("Light", QChart::ChartThemeLight);
-  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
-  themebox->addItem ("Dark", QChart::ChartThemeDark);
-  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
-  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
-  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
-  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
-  themebox->addItem ("Qt", QChart::ChartThemeQt);
-  themebox->setCurrentIndex ((int)getTheme ());
-  connect (themebox, QOverload<int>::of(&QComboBox::activated),
-          [=](int index)
-          {
-	    QVariant sel = themebox->itemData (index);
-	    setTheme (sel.toInt ());
-	    mw->getSettings ()->setValue (SETTINGS_PLOT_THEME, getTheme ());
-	    drawCurves ();
-	  });
-  layout->addWidget(themebox, row, 1);
 
   row++;
   col = 0;
@@ -765,6 +767,21 @@ void Plot2DWindow::createMenubar ()
   QAction *fontsAct =
     settingsMenu->addAction(tr("&Appearance"), this,
 			    & Plot2DWindow::setFonts);
+  {
+    QFont font = fontsAct->font ();
+    int pixelSize = font.pixelSize ();
+    if (pixelSize != -1) {
+      font.setPixelSize ((2 * pixelSize) / 3);
+      fontsAct->setFont (font);
+    }
+    else {
+      double pointSize = font.pointSizeF ();
+      if (pointSize != -1.0) {
+	font.setPointSizeF (pointSize * 0.667);
+	fontsAct->setFont (font);
+      }
+    }
+  }
   fontsAct->setStatusTip(tr("Set fonts"));
 
 }
