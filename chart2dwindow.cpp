@@ -40,292 +40,120 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
 
 void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 			       QString label, QPen pen, series_mode_e mode,
-			       double &realMax, double &realMin)
+			       double &realMax, double &realMin,
+			       std::vector<double> idxVector)
 {
   if (!aplExpr.isEmpty ()) {
-    double realIncr   = (pw->getRealFinal () - pw->getRealInit ()) /
-      (double)(pw->getResolution ());
-    double imagIncr   = (pw->getImagFinal () - pw->getImagInit ()) /
-      (double)(pw->getResolution ());
-    QString realIncrString =
-      QString::number (realIncr).replace (QString ("-"), QString ("¯"));
-    QString imagIncrString =
-      QString::number (imagIncr).replace (QString ("-"), QString ("¯"));
-    QString realInitString =
-      QString::number (pw->getRealInit ()).replace (QString ("-"),
-						    QString ("¯"));
-    QString imagInitString =
-      QString::number (pw->getImagInit ()).replace (QString ("-"),
-						    QString ("¯"));
-    QString idxvar = pw->getIndexVariable ();
-    bool autoIdx = false;
-    if (idxvar.isEmpty ()) {
-      idxvar = QString (IDXVAR);
-      autoIdx = true;
+    if (fontScale != 1.0) {
+      fprintf (stderr, "setting pw %g\n",
+	       10.0 * fontScale * (double)pen.width ());
+      pen.setWidth ((int)(10.0 * fontScale * (double)pen.width ()));
     }
-    QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
-      .arg (idxvar).arg (realInitString).arg (imagInitString)
-      .arg (1+pw->getResolution ()).arg (realIncrString).arg (imagIncrString);
+  
+    aplExpr.replace (QString ("%1"), QString (IDXVAR));
+    QString cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
     mw->processLine (false, cmd);
-    APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurve.idxVals");
-    if (idxVals != nullptr) {
-      int idxElementCount = get_element_count (idxVals);
-      //      bool idxValid = true;
-      bool idxComplex   = false;
-      std::vector<double> idxVector;
-      for (int i = 0; i < idxElementCount; i++) {
-	int type = get_type (idxVals, i);
+    QString pv (PLOTVAR);
+    APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
+
+    if (result != nullptr) {
+      int resultElementCount = get_element_count (result);
+      bool resultValid = true;
+      bool run = true;
+
+      for (int i = 0; run && i < resultElementCount; i++) {
+	int type = get_type (result, i);
 	switch(type) {
 	case CCT_CHAR:
 	case CCT_POINTER:
-	  //	  idxValid = false;
+	  resultValid = false;
 	  break;
 	case CCT_INT:
-	  idxVector.push_back ((double)get_int (idxVals, i));	
+	  if (!appendSeries (idxVector[i],
+			     (double)get_int (result, i), mode,
+			     realMax, realMin))
+	    run = false;
 	  break;
-	case CCT_FLOAT:	
-	  idxVector.push_back (get_real (idxVals, i));
+	case CCT_FLOAT:
+	  if (!appendSeries (idxVector[i], get_real (result, i), mode,
+			     realMax, realMin))
+	    run = false;
 	  break;
 	case CCT_COMPLEX:
-	  if (get_imag (idxVals, i) != 0.0) idxComplex = true;
-	  idxVector.push_back (get_real (idxVals, i));
+	  {
+	    switch (aspect) {
+	    case ASPECT_REAL:
+	      if (!appendSeries (idxVector[i], get_real (result, i), mode,
+				 realMax, realMin))
+		run = false;
+	      break;
+	    case ASPECT_IMAG:
+	      if (!appendSeries (idxVector[i], get_imag (result, i), mode,
+				 realMax, realMin))
+		run = false;
+	      break;
+	    case ASPECT_MAGNITUDE:
+	      {
+		std::complex<double> val (get_real (result, i),
+					  get_imag (result, i));
+		if (!appendSeries (idxVector[i], std::abs (val), mode,
+				   realMax, realMin))
+		  run = false;
+	      }
+	      break;
+	    case ASPECT_PHASE:
+	      std::complex<double> val (get_real (result, i),
+					get_imag (result, i));
+	      if (!appendSeries (idxVector[i], std::arg (val), mode,
+				 realMax, realMin))
+		run = false;
+	      break;
+	    }
+	  }
+	  break;
 	}
       }
-      if (idxComplex)		// fixme
-	mw->printError (tr ("Index contains imaginary components.  \
-Using only the real components in the axis."));
+      if (!run)
+	mw->printError (tr ("Inconsistent series type."));
 
-      aplExpr.replace (QString ("%1"), QString (IDXVAR));
-      cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
-      mw->processLine (false, cmd);
-      mw->processLine (false, cmd);
-      QString pv (PLOTVAR);
-      APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
-      if (result != nullptr) {
-	//    int resultRank		= get_rank (result);
-	int resultElementCount	= get_element_count (result);
-	bool resultValid = true;
-	//    bool isComplex   = false;
-	series = nullptr;
-
-	switch (mode) {
+      if (run && resultValid) {
+	int seriesCount = -1;
+	switch (pw->getMode ()) {
 	case MODE_BUTTON_SPLINE:
-	  series = new QSplineSeries ();
+	  seriesCount = static_cast<QSplineSeries*>(series)->count ();
+	  static_cast<QSplineSeries*>(series)->setPen (pen);
 	  break;
 	case MODE_BUTTON_LINE:
-	  series = new QLineSeries ();
+	  seriesCount = static_cast<QLineSeries*>(series)->count ();
+	  static_cast<QLineSeries*>(series)->setPen (pen);
 	  break;
 	case MODE_BUTTON_SCATTER:
-	  series = new QScatterSeries ();
+	  seriesCount = static_cast<QScatterSeries*>(series)->count ();
+	  static_cast<QScatterSeries*>(series)->setPen (pen);
 	  break;
 	default:
 	  break;
 	}
-	
-	bool run = true;
-	for (int i = 0; run && i < resultElementCount; i++) {
-	  int type = get_type (result, i);
-	  switch(type) {
-	  case CCT_CHAR:
-	  case CCT_POINTER:
-	    resultValid = false;
-	    break;
-	  case CCT_INT:
-	    if (!appendSeries (idxVector[i],
-			       (double)get_int (result, i), mode,
-			       realMax, realMin))
-	      run = false;
-	    break;
-	  case CCT_FLOAT:
-	    if (!appendSeries (idxVector[i], get_real (result, i), mode,
-			       realMax, realMin))
-	      run = false;
-	    break;
-	  case CCT_COMPLEX:
-	    {
-	      switch (aspect) {
-		case ASPECT_REAL:
-		  if (!appendSeries (idxVector[i], get_real (result, i), mode,
-				     realMax, realMin))
-		    run = false;
-		  break;
-	      case ASPECT_IMAG:
-		if (!appendSeries (idxVector[i], get_imag (result, i), mode,
-				   realMax, realMin))
-		  run = false;
-		break;
-	      case ASPECT_MAGNITUDE:
-		{
-		  std::complex<double> val (get_real (result, i),
-					    get_imag (result, i));
-		  if (!appendSeries (idxVector[i], std::abs (val), mode,
-				     realMax, realMin))
-		    run = false;
-		}
-		break;
-	      case ASPECT_PHASE:
-		std::complex<double> val (get_real (result, i),
-					  get_imag (result, i));
-		if (!appendSeries (idxVector[i], std::arg (val), mode,
-				   realMax, realMin))
-		  run = false;
-		break;
-	      }
-	    }
-	    break;
-	  }
-	}
-	if (!run)
-	  mw->printError (tr ("Inconsistent series type."));
-	if (run && resultValid) {
-	  int seriesCount = -1;
-	  switch (pw->getMode ()) {
-	  case MODE_BUTTON_SPLINE:
-	    seriesCount = static_cast<QSplineSeries*>(series)->count ();
-	    static_cast<QSplineSeries*>(series)->setPen (pen);
-	    break;
-	  case MODE_BUTTON_LINE:
-	    seriesCount = static_cast<QLineSeries*>(series)->count ();
-	    static_cast<QLineSeries*>(series)->setPen (pen);
-	    break;
-	  case MODE_BUTTON_SCATTER:
-	    seriesCount = static_cast<QScatterSeries*>(series)->count ();
-	    static_cast<QScatterSeries*>(series)->setPen (pen);
-	    break;
-	  default:
-	    break;
-	  }
 	  
-	  if (seriesCount > 0 && idxElementCount == seriesCount) {
-	    series->setName (label);
-	    // fixme -- scale pen width
-	    //	    series->setWidth(2 * fontScale);
+	if (seriesCount > 0 && idxVector.size () ==
+	    (long unsigned int)seriesCount) {
+	  series->setName (label);
+	  // fixme -- scale pen width
+	  //	    series->setWidth(2 * fontScale);
 
-	    chartView->chart()->addSeries(series);
-
-	    QValueAxis *axisX = new QValueAxis();
-	    QValueAxis *axisY = new QValueAxis();
-	    axisX->setTickCount(10);
-	    axisY->setTickCount(10);
-	    //	    axisX->setLabelFormat("%.2f");
-
-	    {
-	      axisX->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
-	      axisY->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
-	      axisX->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
-	      axisY->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
-
-
-	      /***
-	      double dpi =
-		QGuiApplication::primaryScreen()->physicalDotsPerInch();
-	      fprintf (stderr, "dpi %g\n", dpi);
-
-	      pixels = dpi * point / 72
-
-	       ***/
-	      
-#if 1
-	      if (fontScale != 1.0) {
-		QString family = pw->getAxisTitleFont ().family ();
-		int pointSize  =
-		  (int) (2.0 * fontScale *
-			 pw->getAxisTitleFont ().pointSizeF ());
-		int weight     = pw->getAxisTitleFont ().weight ();
-		bool italic    = pw->getAxisTitleFont ().italic ();
-		QFont tfont = QFont(family, pointSize, weight, italic);
-		axisX->setTitleFont (tfont);
-		axisY->setTitleFont (tfont);
-	      }
-	      else {
-		axisX->setTitleFont ((pw->getAxisTitleFont ()));
-		axisY->setTitleFont ((pw->getAxisTitleFont ()));
-	      }
-#else
-	      // fprintf (stderr, "title before %g\n", tfont.pointSizeF ());
-	      double psf = fontScale * tfont.pointSizeF ();
-	      tfont.setPointSizeF (psf);
-	      // fprintf (stderr, "title after %g\n", tfont.pointSizeF ());
-	      axisX->setTitleFont(tfont);
-	      axisY->setTitleFont(tfont);
-#endif
-	      axisX->setTitleText (pw->getXTitle ());
-	      axisY->setTitleText (pw->getYTitle ());
-	      
-	      QFont ufont (pw->getAxisLabelFont ());
-#if 1
-	      if (fontScale != 1.0) {
-		QString family = pw->getAxisLabelFont ().family ();
-		int pointSize  =
-		  (int) (2.0 * fontScale *
-			 pw->getAxisTitleFont ().pointSizeF ());
-		int weight     = pw->getAxisTitleFont ().weight ();
-		bool italic    = pw->getAxisTitleFont ().italic ();
-		QFont tfont = QFont(family, pointSize, weight, italic);
-		axisX->setLabelsFont (tfont);
-		axisY->setLabelsFont (tfont);
-	      }
-	      else {
-		axisX->setLabelsFont ((pw->getAxisLabelFont ()));
-		axisY->setLabelsFont ((pw->getAxisLabelFont ()));
-	      }
-#else
-	      // fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
-	      psf = fontScale * ufont.pointSizeF ();
-	      ufont.setPointSizeF (psf);
-	      // fprintf (stderr, "label after %g\n", ufont.pointSizeF ());
-	      axisX->setLabelsFont(ufont);
-	      axisY->setLabelsFont(ufont);
-#endif
-	    }
-
-	    {
-	      QPen axisPen(QColor(pw->getAxisColour ()));
-	      axisPen.setWidth(2 * fontScale);
-	      axisX->setLinePen(axisPen);
-	      axisY->setLinePen(axisPen);
-
-	      axisX->setGridLineVisible(true);
-	      axisY->setGridLineVisible(true);
-	      // axisY->setShadesPen(Qt::NoPen);
-	      // axisY->setShadesBrush(QBrush(QColor(0x99, 0xcc, 0xcc, 0x55)));
-	      // axisY->setShadesVisible(true);
-
-	      double dx = 0.075 * (idxVector.back () - idxVector.front ());
-	      double dy = 0.075 * (realMax - realMin);
-	      axisY->setRange(realMin - dy, realMax + dy);
-	      axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
-
-	      chart->addAxis(axisX, Qt::AlignBottom);
-	      chart->addAxis(axisY, Qt::AlignLeft);
-	      series->attachAxis(axisX);
-	      series->attachAxis(axisY);
-	    }
-
-#if 0
-	    QValueAxis *axisX =  QValueAxis ();
-
-	    axisX->setRange(10, 20.5);
-	    axisX->setTickCount(10);
-	    axisX->setLabelFormat("%.2f");
-	    chartView->chart()->setAxisX(axisX, series);
-#endif
+	  chartView->chart()->addSeries(series);
       
-	  }
-	  else
-  mw->printError (tr ("Index and result vectors are of different lengths."));
 	}
 	else
-	  mw->printError (tr ("Invalid vector."));
+	  mw->printError (tr ("Index and result vectors are of different lengths."));
       }
       else
 	mw->printError (tr ("Expression evaluation error."));
     }
     else
-      mw->printError (tr ("Index evaluation error."));
-    cmd = autoIdx 
-      ? QString (")erase %1 %2").arg (IDXVAR, PLOTVAR)
-      : QString (")erase %1").arg (PLOTVAR);
+      mw->printError (tr ("Expression evaluation error."));
+
+    cmd = QString (")erase %1").arg (PLOTVAR);
     mw->processLine (false, cmd);
   }
 }
@@ -337,42 +165,222 @@ void Chart2DWindow::drawCurves ()
   chartView->setChart (chart);
   if (oldChart != nullptr)
     delete oldChart;
-
+  
   chart->setTheme (pw->getTheme ());
-
+    
   {
     chart->setTitleFont(pw->getChartTitleFont ());
     chart->setTitleBrush(QBrush(pw->getChartTitleColour ()));
     chart->setTitle (pw->getChartTitle ());
   }
-  
-  QString aplExpr = pw->getAplExpression ();
-  aspect_e aspect = pw->getAspect ();
-  QPen pen = *(pw->getPen ());
 
-  // fixme -- this doesn't change the width of the line
-  if (fontScale != 1.0) {
-    fprintf (stderr, "setting pw %g\n",
-	     10.0 * fontScale * (double)pen.width ());
-    pen.setWidth ((int)(10.0 * fontScale * (double)pen.width ()));
+  // was in drawCurves()
+  
+  double realIncr   = (pw->getRealFinal () - pw->getRealInit ()) /
+    (double)(pw->getResolution ());
+  double imagIncr   = (pw->getImagFinal () - pw->getImagInit ()) /
+    (double)(pw->getResolution ());
+  QString realIncrString =
+    QString::number (realIncr).replace (QString ("-"), QString ("¯"));
+  QString imagIncrString =
+    QString::number (imagIncr).replace (QString ("-"), QString ("¯"));
+  QString realInitString =
+    QString::number (pw->getRealInit ()).replace (QString ("-"),
+						  QString ("¯"));
+  QString imagInitString =
+    QString::number (pw->getImagInit ()).replace (QString ("-"),
+						    QString ("¯"));
+  QString idxvar = pw->getIndexVariable ();
+  bool autoIdx = false;
+  if (idxvar.isEmpty ()) {
+    idxvar = QString (IDXVAR);
+    autoIdx = true;
   }
+  QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
+    .arg (idxvar).arg (realInitString).arg (imagInitString)
+    .arg (1+pw->getResolution ()).arg (realIncrString).arg (imagIncrString);
+  mw->processLine (false, cmd);
+  APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurves.idxVals");
+  if (idxVals != nullptr) {
+    int idxElementCount = get_element_count (idxVals);
+    //      bool idxValid = true;
+    bool idxComplex   = false;
+    std::vector<double> idxVector;
+    for (int i = 0; i < idxElementCount; i++) {
+      int type = get_type (idxVals, i);
+      switch(type) {
+      case CCT_CHAR:
+      case CCT_POINTER:
+	//	  idxValid = false;
+	break;
+      case CCT_INT:
+	idxVector.push_back ((double)get_int (idxVals, i));	
+	break;
+      case CCT_FLOAT:	
+	idxVector.push_back (get_real (idxVals, i));
+	break;
+      case CCT_COMPLEX:
+	if (get_imag (idxVals, i) != 0.0) idxComplex = true;
+	idxVector.push_back (get_real (idxVals, i));
+      }
+    }
+    if (idxComplex)		// fixme
+      mw->printError (tr ("Index contains imaginary components.  \
+Using only the real components in the axis."));
+
+    series_mode_e mode = pw->getMode ();
+    switch (mode) {
+    case MODE_BUTTON_SPLINE:
+      series = new QSplineSeries ();
+      break;
+    case MODE_BUTTON_LINE:
+      series = new QLineSeries ();
+      break;
+    case MODE_BUTTON_SCATTER:
+      series = new QScatterSeries ();
+      break;
+    default:
+      series = nullptr;
+      break;
+    }
+      
+    double realMax = -MAXDOUBLE;
+    double realMin =  MAXDOUBLE;
+    QString aplExpr = pw->getAplExpression ();
+    aspect_e aspect = pw->getAspect ();
+    QPen pen = *(pw->getPen ());
+    QString label = pw->getCurveTitle ();
+    drawCurve (aplExpr, aspect, label, pen, mode,
+	       realMax, realMin, idxVector);
+    for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
+      fprintf (stderr, "drawing stack ety %d\n", i);
+      drawCurve (pw->getPlotCurves ()[i]->expression (),
+		 pw->getPlotCurves ()[i]->aspect (),
+		 pw->getPlotCurves ()[i]->title (),
+		 pen,
+		 pw->getPlotCurves ()[i]->mode (),
+		 realMax, realMin, idxVector);
+    }
+
+    // was in drawCurves()
+    
+    QValueAxis *axisX = new QValueAxis();
+    QValueAxis *axisY = new QValueAxis();
+    axisX->setTickCount(10);
+    axisY->setTickCount(10);
+    //	    axisX->setLabelFormat("%.2f");
+
+    {	
+      axisX->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
+      axisY->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
+      axisX->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
+      axisY->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
+	
+
+      /***
+	  double dpi =
+	  QGuiApplication::primaryScreen()->physicalDotsPerInch();
+	  fprintf (stderr, "dpi %g\n", dpi);
+	  
+	  pixels = dpi * point / 72
+	    
+      ***/
+      
+#if 1
+      if (fontScale != 1.0) {
+	QString family = pw->getAxisTitleFont ().family ();
+	int pointSize  =
+	  (int) (2.0 * fontScale *
+		 pw->getAxisTitleFont ().pointSizeF ());
+	int weight     = pw->getAxisTitleFont ().weight ();
+	bool italic    = pw->getAxisTitleFont ().italic ();
+	QFont tfont = QFont(family, pointSize, weight, italic);
+	axisX->setTitleFont (tfont);
+	axisY->setTitleFont (tfont);
+      }
+      else {
+	axisX->setTitleFont ((pw->getAxisTitleFont ()));
+	axisY->setTitleFont ((pw->getAxisTitleFont ()));
+      }
+#else
+      // fprintf (stderr, "title before %g\n", tfont.pointSizeF ());
+      double psf = fontScale * tfont.pointSizeF ();
+      tfont.setPointSizeF (psf);
+      // fprintf (stderr, "title after %g\n", tfont.pointSizeF ());
+      axisX->setTitleFont(tfont);
+      axisY->setTitleFont(tfont);
+#endif
+      axisX->setTitleText (pw->getXTitle ());
+      axisY->setTitleText (pw->getYTitle ());
+	      
+      QFont ufont (pw->getAxisLabelFont ());
+#if 1
+      if (fontScale != 1.0) {
+	QString family = pw->getAxisLabelFont ().family ();
+	int pointSize  =
+	  (int) (2.0 * fontScale *
+		 pw->getAxisTitleFont ().pointSizeF ());
+	int weight     = pw->getAxisTitleFont ().weight ();
+	bool italic    = pw->getAxisTitleFont ().italic ();
+	QFont tfont = QFont(family, pointSize, weight, italic);
+	axisX->setLabelsFont (tfont);
+	axisY->setLabelsFont (tfont);
+      }
+      else {
+	axisX->setLabelsFont ((pw->getAxisLabelFont ()));
+	axisY->setLabelsFont ((pw->getAxisLabelFont ()));
+      }
+#else
+      // fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
+      psf = fontScale * ufont.pointSizeF ();
+      ufont.setPointSizeF (psf);
+      // fprintf (stderr, "label after %g\n", ufont.pointSizeF ());
+      axisX->setLabelsFont(ufont);
+      axisY->setLabelsFont(ufont);
+#endif	
+    }
+
+    {
+      QPen axisPen(QColor(pw->getAxisColour ()));
+      axisPen.setWidth(2 * fontScale);
+      axisX->setLinePen(axisPen);
+      axisY->setLinePen(axisPen);
+      
+      axisX->setGridLineVisible(true);
+      axisY->setGridLineVisible(true);
+      // axisY->setShadesPen(Qt::NoPen);
+      // axisY->setShadesBrush(QBrush(QColor(0x99, 0xcc, 0xcc, 0x55)));
+      // axisY->setShadesVisible(true);
+      
+      double dx = 0.075 * (idxVector.back () - idxVector.front ());
+      double dy = 0.075 * (realMax - realMin);
+      axisY->setRange(realMin - dy, realMax + dy);
+      axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
+      
+      chart->addAxis(axisX, Qt::AlignBottom);
+      chart->addAxis(axisY, Qt::AlignLeft);
+      series->attachAxis(axisX);
+      series->attachAxis(axisY);
+    }
+    
   
-  QString label = pw->getCurveTitle ();
-  series_mode_e mode = pw->getMode ();
-  
-  double realMax = -MAXDOUBLE;
-  double realMin =  MAXDOUBLE;
-  drawCurve (aplExpr, aspect, label, pen, mode, realMax, realMin);
-  for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
-    fprintf (stderr, "drawing stack ety %d\n", i);
-    drawCurve (pw->getPlotCurves ()[i]->expression (),
-	       pw->getPlotCurves ()[i]->aspect (),
-	       pw->getPlotCurves ()[i]->title (),
-	       pen,
-	       pw->getPlotCurves ()[i]->mode (),
-	       realMax, realMin);
+#if 0	
+    QValueAxis *axisX =  QValueAxis ();
+    
+    axisX->setRange(10, 20.5);
+    axisX->setTickCount(10);
+    axisX->setLabelFormat("%.2f");
+    chartView->chart()->setAxisX(axisX, series);
+#endif
   }
-  
+  else
+    mw->printError (tr ("Index evaluation error."));
+
+
+  if (autoIdx) {
+    cmd = QString (")erase %1").arg (IDXVAR);
+    mw->processLine (false, cmd);
+  }
 }
 
 enum {
