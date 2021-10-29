@@ -48,7 +48,6 @@ void Plot2DWindow::drawCurves ()
 
 void Plot2DWindow::pushExpression ()
 {
-  fprintf (stderr, "pushing\n");
   QString aplExpr = getAplExpression ();
   QString label = getCurveTitle ();
   QVariant sel = aspectCombo->currentData ();
@@ -245,8 +244,12 @@ void Plot2DWindow:: deleteStackEntry (int row)
   msgBox.setDefaultButton(QMessageBox::Cancel);
   int ret = msgBox.exec();
   if (ret == QMessageBox::Yes) {
-    if (row >= 0 && row < getPlotCurves ().size ())
-      getPlotCurves ().removeAt (row);
+    fprintf (stderr, "got a yes\n");
+    if (row >= 0 && row < getPlotCurves ().size ()) {
+      fprintf (stderr, "removing row %d\n", row);
+      plot2DData->plotCurves.removeAt (row);
+      //      getPlotCurves ().removeAt (row);
+    }
   }
 }
 
@@ -840,7 +843,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 				      colourVariant).toString ());
 #endif
   plot2DData   = new Plot2dData (mw);
-  fprintf (stderr, "initial plot2DData = %p\n", plot2DData);
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
 
@@ -862,8 +864,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
            &QLineEdit::editingFinished,
           [=](){
 	    setAplExpression (aplExpression->text ());
-  fprintf (stderr, "setting plot2DData = %p \"%s\"\n",
-	   plot2DData, toCString (aplExpression->text ()));
 	    if (setupComplete) drawCurves ();
           });
   layout->addWidget (aplExpression, row, col, 1, 3);
@@ -904,14 +904,14 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
   QLineEdit *indexVariable = new QLineEdit ();
   indexVariable->setPlaceholderText ("Index var");
   indexVariable->setMaximumWidth (100);
-#if 0
   connect (indexVariable,
-           &QLineEdit::returnPressed,
+           &QLineEdit::editingFinished,
           [=](){
-	    plot2DData->indexVariable = indexVariable->text ();
+	    fprintf (stderr, "idx = %s\n",
+		     toCString (indexVariable->text ()));
+	    setIndexVariable (indexVariable->text ());
 	    if (setupComplete) drawCurves ();
           });
-#endif
   layout->addWidget (indexVariable, row, col++, 1, 2);
   
   rangeInit = new ComplexSpinBox ();

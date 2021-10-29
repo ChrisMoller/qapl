@@ -59,8 +59,8 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
       break;
     }
     if (fontScale != 1.0) {
-      fprintf (stderr, "setting pw %g\n",
-	       10.0 * fontScale * (double)pen.width ());
+      //      fprintf (stderr, "setting pw %g\n",
+      //	       10.0 * fontScale * (double)pen.width ());
       pen.setWidth ((int)(10.0 * fontScale * (double)pen.width ()));
     }
   
@@ -157,11 +157,8 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 
 	  chartView->chart()->addSeries(series);
 	}
-	else {
-	  fprintf (stderr, "sc = %d, vs = %d\n",
-		   seriesCount,  (int)idxVector.size ());
+	else
 	  mw->printError (tr ("Index and result vectors are of different lengths."));
-	}
       }
       else
 	mw->printError (tr ("Expression evaluation error."));
@@ -176,6 +173,7 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 
 void Chart2DWindow::drawCurves ()
 {
+  series = nullptr;
   QChart *oldChart = chartView->chart ();
   chart = new QChart ();
   chartView->setChart (chart);
@@ -215,6 +213,7 @@ void Chart2DWindow::drawCurves ()
   QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
     .arg (idxvar).arg (realInitString).arg (imagInitString)
     .arg (1+pw->getResolution ()).arg (realIncrString).arg (imagIncrString);
+  fprintf (stderr, "cmd = %s\n", toCString (cmd));
   mw->processLine (false, cmd);
   APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurves.idxVals");
   if (idxVals != nullptr) {
@@ -255,6 +254,7 @@ Using only the real components in the axis."));
 	       realMax, realMin, idxVector);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
       pen = *(pw->getPlotCurves ()[i]->pen ());
+      fprintf (stderr, "drawing stack %d\n", i);
       drawCurve (pw->getPlotCurves ()[i]->expression (),
 		 pw->getPlotCurves ()[i]->aspect (),
 		 pw->getPlotCurves ()[i]->title (),
@@ -263,105 +263,107 @@ Using only the real components in the axis."));
 		 realMax, realMin, idxVector);
     }
 
-    // was in drawCurves()
+    if (series != nullptr) {
+      // was in drawCurves()
     
-    QValueAxis *axisX = new QValueAxis();
-    QValueAxis *axisY = new QValueAxis();
-    axisX->setTickCount(10);
-    axisY->setTickCount(10);
-    //	    axisX->setLabelFormat("%.2f");
+      QValueAxis *axisX = new QValueAxis();
+      QValueAxis *axisY = new QValueAxis();
+      axisX->setTickCount(10);
+      axisY->setTickCount(10);
+      //	    axisX->setLabelFormat("%.2f");
 
-    {	
-      axisX->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
-      axisY->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
-      axisX->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
-      axisY->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
+      {	
+	axisX->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
+	axisY->setTitleBrush(QBrush(pw->getAxisTitleColour ()));
+	axisX->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
+	axisY->setLabelsBrush(QBrush(pw->getAxisLabelColour ()));
 	
 
-      /***
-	  double dpi =
-	  QGuiApplication::primaryScreen()->physicalDotsPerInch();
-	  fprintf (stderr, "dpi %g\n", dpi);
+	/***
+	    double dpi =
+	    QGuiApplication::primaryScreen()->physicalDotsPerInch();
+	    fprintf (stderr, "dpi %g\n", dpi);
 	  
-	  pixels = dpi * point / 72
+	    pixels = dpi * point / 72
 	    
-      ***/
+	***/
       
 #if 1
-      if (fontScale != 1.0) {
-	QString family = pw->getAxisTitleFont ().family ();
-	int pointSize  =
-	  (int) (2.0 * fontScale *
-		 pw->getAxisTitleFont ().pointSizeF ());
-	int weight     = pw->getAxisTitleFont ().weight ();
-	bool italic    = pw->getAxisTitleFont ().italic ();
-	QFont tfont = QFont(family, pointSize, weight, italic);
-	axisX->setTitleFont (tfont);
-	axisY->setTitleFont (tfont);
-      }
-      else {
-	axisX->setTitleFont ((pw->getAxisTitleFont ()));
-	axisY->setTitleFont ((pw->getAxisTitleFont ()));
-      }
+	if (fontScale != 1.0) {
+	  QString family = pw->getAxisTitleFont ().family ();
+	  int pointSize  =
+	    (int) (2.0 * fontScale *
+		   pw->getAxisTitleFont ().pointSizeF ());
+	  int weight     = pw->getAxisTitleFont ().weight ();
+	  bool italic    = pw->getAxisTitleFont ().italic ();
+	  QFont tfont = QFont(family, pointSize, weight, italic);
+	  axisX->setTitleFont (tfont);
+	  axisY->setTitleFont (tfont);
+	}
+	else {
+	  axisX->setTitleFont ((pw->getAxisTitleFont ()));
+	  axisY->setTitleFont ((pw->getAxisTitleFont ()));
+	}
 #else
-      // fprintf (stderr, "title before %g\n", tfont.pointSizeF ());
-      double psf = fontScale * tfont.pointSizeF ();
-      tfont.setPointSizeF (psf);
-      // fprintf (stderr, "title after %g\n", tfont.pointSizeF ());
-      axisX->setTitleFont(tfont);
-      axisY->setTitleFont(tfont);
+	// fprintf (stderr, "title before %g\n", tfont.pointSizeF ());
+	double psf = fontScale * tfont.pointSizeF ();
+	tfont.setPointSizeF (psf);
+	// fprintf (stderr, "title after %g\n", tfont.pointSizeF ());
+	axisX->setTitleFont(tfont);
+	axisY->setTitleFont(tfont);
 #endif
-      axisX->setTitleText (pw->getXTitle ());
-      axisY->setTitleText (pw->getYTitle ());
+	axisX->setTitleText (pw->getXTitle ());
+	axisY->setTitleText (pw->getYTitle ());
 	      
-      QFont ufont (pw->getAxisLabelFont ());
+	QFont ufont (pw->getAxisLabelFont ());
 #if 1
-      if (fontScale != 1.0) {
-	QString family = pw->getAxisLabelFont ().family ();
-	int pointSize  =
-	  (int) (2.0 * fontScale *
-		 pw->getAxisTitleFont ().pointSizeF ());
-	int weight     = pw->getAxisTitleFont ().weight ();
-	bool italic    = pw->getAxisTitleFont ().italic ();
-	QFont tfont = QFont(family, pointSize, weight, italic);
-	axisX->setLabelsFont (tfont);
-	axisY->setLabelsFont (tfont);
-      }
-      else {
-	axisX->setLabelsFont ((pw->getAxisLabelFont ()));
-	axisY->setLabelsFont ((pw->getAxisLabelFont ()));
-      }
+	if (fontScale != 1.0) {
+	  QString family = pw->getAxisLabelFont ().family ();
+	  int pointSize  =
+	    (int) (2.0 * fontScale *
+		   pw->getAxisTitleFont ().pointSizeF ());
+	  int weight     = pw->getAxisTitleFont ().weight ();
+	  bool italic    = pw->getAxisTitleFont ().italic ();
+	  QFont tfont = QFont(family, pointSize, weight, italic);
+	  axisX->setLabelsFont (tfont);
+	  axisY->setLabelsFont (tfont);
+	}
+	else {
+	  axisX->setLabelsFont ((pw->getAxisLabelFont ()));
+	  axisY->setLabelsFont ((pw->getAxisLabelFont ()));
+	}
 #else
-      // fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
-      psf = fontScale * ufont.pointSizeF ();
-      ufont.setPointSizeF (psf);
-      // fprintf (stderr, "label after %g\n", ufont.pointSizeF ());
-      axisX->setLabelsFont(ufont);
-      axisY->setLabelsFont(ufont);
+	// fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
+	psf = fontScale * ufont.pointSizeF ();
+	ufont.setPointSizeF (psf);
+	// fprintf (stderr, "label after %g\n", ufont.pointSizeF ());
+	axisX->setLabelsFont(ufont);
+	axisY->setLabelsFont(ufont);
 #endif	
-    }
+      }
 
-    {
-      QPen axisPen(QColor(pw->getAxisColour ()));
-      axisPen.setWidth(2 * fontScale);
-      axisX->setLinePen(axisPen);
-      axisY->setLinePen(axisPen);
+      {
+	QPen axisPen(QColor(pw->getAxisColour ()));
+	axisPen.setWidth(2 * fontScale);
+	axisX->setLinePen(axisPen);
+	axisY->setLinePen(axisPen);
       
-      axisX->setGridLineVisible(true);
-      axisY->setGridLineVisible(true);
-      // axisY->setShadesPen(Qt::NoPen);
-      // axisY->setShadesBrush(QBrush(QColor(0x99, 0xcc, 0xcc, 0x55)));
-      // axisY->setShadesVisible(true);
+	axisX->setGridLineVisible(true);
+	axisY->setGridLineVisible(true);
+	// axisY->setShadesPen(Qt::NoPen);
+	// axisY->setShadesBrush(QBrush(QColor(0x99, 0xcc, 0xcc, 0x55)));
+	// axisY->setShadesVisible(true);
       
-      double dx = 0.075 * (idxVector.back () - idxVector.front ());
-      double dy = 0.075 * (realMax - realMin);
-      axisY->setRange(realMin - dy, realMax + dy);
-      axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
+	double dx = 0.075 * (idxVector.back () - idxVector.front ());
+	double dy = 0.075 * (realMax - realMin);
+	axisY->setRange(realMin - dy, realMax + dy);
+	axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
       
-      chart->addAxis(axisX, Qt::AlignBottom);
-      chart->addAxis(axisY, Qt::AlignLeft);
-      series->attachAxis(axisX);
-      series->attachAxis(axisY);
+	chart->addAxis(axisX, Qt::AlignBottom);
+	chart->addAxis(axisY, Qt::AlignLeft);
+	series->attachAxis(axisX);
+	series->attachAxis(axisY);
+      }
     }
     
   

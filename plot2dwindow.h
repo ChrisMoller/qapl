@@ -55,6 +55,7 @@ public:
     plot2DData->chartTitleColour = colour;
   }
   QString  getIndexVariable () { return plot2DData->indexVariable; }
+  void     setIndexVariable (QString iv) { plot2DData->indexVariable = iv; }
   QString  getXTitle () { return plot2DData->xTitle; }
   void     setXTitle (QString xtitle) { plot2DData->xTitle = xtitle; }
   QString  getYTitle () { return plot2DData->yTitle; }
