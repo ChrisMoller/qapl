@@ -35,9 +35,11 @@ HEADERS += \
     history.h \
     mainwindow.h \
     optionstrings.h \
+    plot2ddata.h \
     plot2dwindow.h \
     processline.h \
-    xml.h
+    xml.h \
+    XMLtags.def
 
 PREFIX = /usr/local
 
