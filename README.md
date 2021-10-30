@@ -294,20 +294,66 @@ Blank lines and any line that starts with # is ignored.
 
 See the sample qaplinit.txt file included with this package.
 
-[//]: # ctl-u/d, ctl-wheel, ctl-arrow, p, r, d
-
 <h1>Plotting</h1>
 
 The other major feature of qapl is integrated interactive plotting, entered by
 hitting Plot on the menu bar.  At the moment, only 2D plots are supported; 3D
 plots will be added later.  2D plot controls can be entered by hitting 2D Plots
-under the Plot menu.
+under the Plot menu, which will get you the following panel:
+
+<h2>2D Plots</h1>
 
 <p align="center">
 <img src="./images/2dcontrols.png">
 </p>
 
-<h2>2D Plots</h1>
+The first entry is the APL expression to be evaluated.  It should be an
+expression that accepts either a real or complex vector (a simple example
+being 1○ix where ix is the numeric vector) and evaluate to a numeric vector.
+The resultant sequence of pairs from ix and the evaluation result are what will
+be plotted.
+
+The enty "Index var" should contain the variable used in the expression, ix in
+this case, and the two following fields the initial and final values of the
+index vector.  (How that vector is generated will be addressed in a moment.)
+Each of those fields may contain a complex number.
+
+Clicking the up and down arrows increment and decrement the real components
+of the values, and the keyboard up and down arrows and the mouse wheel will do
+the same thing.  Holding down the control key while doing any of that will
+increment or decrement the imaginary portion.
+
+Values may be entered manually, in any normally accepted fixed or floating
+point format, with the extra feature that a value affixed with a 'p' (or 'P')
+will be interpreted as a coefficient of π&mdash; "2p" will be evaluated as 2π;
+"0j-2p" would evaluate as -2πi.
+
+Complex values may also be entered in radial form as magnitude<phase: "2<1"
+would evaluate as a complex value of magnitude 2 at a phase angle of 1 radian.
+The phase angle may be suffixed with 'p', 'P', or '○', resulting in
+interpretation, as above, as a coefficient of π, with 'd' or 'D', resulting in
+interpretation as degrees, or with 'r' or 'R' as radians.
+
+The index vector mentioned above is created by linearly interpolating between
+the initial and final real and imaginary values.  The default interpolation
+interval is 16, which can be changed under the Settings sub-menu&mdash;due to
+sampling issues, the resultant curves can vary significantly depending on that
+interval.
+
+Use of the "Index var" field will result in a variable of that name left in
+the APL workspace.  That can be useful when experimenting in the workspace
+with the expression to be evaluated, but under some circumatances leaving that
+variable in the workspace may be undesirable.  If that's the case, a
+qapl-generated dummy variable may used instead by leaving the "Index var"
+field empty and replacing references to it in the expression with "%1".  This
+will result in the temporary creation of a dummy variable and the placement in
+the expression of every instance of "%1" with the name of that variable.  After
+the expression is evaluated, the variable is erased.
+
+(The index dummy variable is named "idxvarλ", which contains a "λ", which I
+assume will be rarely used except by users of Greek keyboards.  Similarly,
+the expression will be evaluated into a dummy variable "plotvarλ" and
+parameters, to be discussed later, as "parmvarλn".)
 
 <h1>Installation</h1>
 
