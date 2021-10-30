@@ -26,6 +26,7 @@ set scatter glyphs in setPen
 font selection in settings
 put labels on chart
 copy stack ety back to active
+reorder stack
 
 axis labels (tic numbers) not scaling
 axis titles not scaling

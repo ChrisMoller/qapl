@@ -364,11 +364,34 @@ active curve defined in the 2D plot control panel can be pushed onto the stack
 by clicking the Push button.  Any number of curves can be stacked (and the
 nature of them can be altered as will be described later.
 
+Since 2D plots can be made of complex values, the aspect of the values
+to be plotted, Real, Imaginary, Magnitude, and Phase, may be selected, as may
+be the type of plot, Splines, Lines, or Scatter.
+
 As an example:
 
 <p align="center">
 <img src="./images/euler.png">
 </p>
+
+This is a collection of curves representing an Euler helix described by the
+expression
+
+<p align="center">
+* 0j1×%1
+</p>
+
+where the dummy variable %1 refers to a 127-element equal-interval vector
+between 0 and 3π inclusive.
+
+Another example showing two instances of the use of the dummy variable %1
+
+<p align="center">
+<img src="./images/amplitude.png">
+</p>
+
+(Note that the expression here makes use of the lambda convenience functions
+described above.)
 
 <h1>Installation</h1>
 
