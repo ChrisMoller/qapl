@@ -4,7 +4,7 @@
 void
 MainWindow::plot2d ()
 {
-  new Plot2DWindow (this);
+  new Plot2DWindow (this, nullptr);
 }
 
 void

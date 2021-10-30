@@ -22,7 +22,7 @@ class Plot2DWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  Plot2DWindow (MainWindow *parent);
+  Plot2DWindow (MainWindow *parent, Plot2dData *data);
   ~Plot2DWindow ();
   QString  getAplExpression () { return plot2DData->activeCurve.expression (); }
   void     setAplExpression (QString expression) {
@@ -82,7 +82,7 @@ public:
     return (series_mode_e)sel.toInt ();
   }
   
-  static void readXML (QString &fileName);
+  static void readXML (QString &fileName, MainWindow *mw);
   static bool parseQapl (QXmlStreamReader &stream);
 
 private:

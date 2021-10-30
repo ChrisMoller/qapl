@@ -213,7 +213,6 @@ void Chart2DWindow::drawCurves ()
   QString cmd = QString ("%1←%2j%3+((⍳%4)-⎕io)×%5j%6")
     .arg (idxvar).arg (realInitString).arg (imagInitString)
     .arg (1+pw->getResolution ()).arg (realIncrString).arg (imagIncrString);
-  fprintf (stderr, "cmd = %s\n", toCString (cmd));
   mw->processLine (false, cmd);
   APL_value idxVals = get_var_value (idxvar.toUtf8 (), "drawCurves.idxVals");
   if (idxVals != nullptr) {
@@ -684,8 +683,8 @@ Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
   createMenubar ();
 
   chartView = new QChartView (this);
-  chartView->setMinimumWidth (360);
-  chartView->setMinimumHeight (360);
+  chartView->setMinimumWidth (650);
+  chartView->setMinimumHeight (420);
 
   layout->addWidget (chartView, 0, 0, 1, 3);
 

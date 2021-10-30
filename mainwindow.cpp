@@ -441,7 +441,7 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
 
   
   QString fn ("test.xml");
-  Plot2DWindow::readXML (fn);
+  Plot2DWindow::readXML (fn, this);
 }
 
 MainWindow::~MainWindow()

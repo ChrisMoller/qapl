@@ -294,9 +294,20 @@ Blank lines and any line that starts with # is ignored.
 
 See the sample qaplinit.txt file included with this package.
 
+[//]: # ctl-u/d, ctl-wheel, ctl-arrow, p, r, d
+
 <h1>Plotting</h1>
 
-ctl-u/d, ctl-wheel, ctl-arrow
+The other major feature of qapl is integrated interactive plotting, entered by
+hitting Plot on the menu bar.  At the moment, only 2D plots are supported; 3D
+plots will be added later.  2D plot controls can be entered by hitting 2D Plots
+under the Plot menu.
+
+<p align="center">
+<img src="./images/2dcontrols.png">
+</p>
+
+<h2>2D Plots</h1>
 
 <h1>Installation</h1>
 
@@ -335,4 +346,3 @@ button to start qapl&mdash;I've included a logo PNG in images/qapl32logo.png:
 
 (Yes, I know&mdash;the Greek ⍴ doesn't correspond to the Roman p, but it
 looks right...)
-

@@ -68,7 +68,16 @@ void ComplexSpinBox::parseComplex (QString txt)
   QRegularExpressionMatch match = rx.match (txt);
   if (match.hasMatch ()) {
     if (match.lastCapturedIndex() >= 2) {
+#if 1
+      QString realString = match.captured (MATCH_REAL).trimmed ();
+      if (realString.endsWith (QChar ('p'), Qt::CaseInsensitive)) {
+	realString.chop (1);
+	real = M_PI * realString.toFloat ();
+      }
+      else real = realString.toFloat ();
+#else
       real = match.captured (MATCH_REAL).toFloat ();
+#endif
       imag = 0.0;
       coord_type = COORD_RECTANGULAR;
       if (match.lastCapturedIndex() >= 5) {

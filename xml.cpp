@@ -87,7 +87,7 @@ bool Plot2DWindow::parseQapl (QXmlStreamReader &stream)
   return rc;
 }
 
-void Plot2DWindow::readXML (QString &fileName)
+void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
 {
   static bool xmlInitialised = false;
   if (!xmlInitialised) {
@@ -96,6 +96,7 @@ void Plot2DWindow::readXML (QString &fileName)
     xmlInitialised = true;
   }
 
+  Plot2dData *plot2DData =  new Plot2dData (mw);
   
   QFile file (fileName);
   file.open (QIODevice::ReadOnly | QIODevice::Text);

@@ -796,7 +796,7 @@ Plot2DWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
   delete this;
 }
 
-Plot2DWindow::Plot2DWindow (MainWindow *parent)
+Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   : QMainWindow(parent)
 {
   this->setWindowTitle ("qapl 2D Plot Controls");
@@ -842,7 +842,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent)
 			     ->value (SETTINGS_CHART_TITLE_COLOUR,
 				      colourVariant).toString ());
 #endif
-  plot2DData   = new Plot2dData (mw);
+  plot2DData   = (data != nullptr) ? data : new Plot2dData (mw);
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
 
