@@ -355,6 +355,21 @@ assume will be rarely used except by users of Greek keyboards.  Similarly,
 the expression will be evaluated into a dummy variable "plotvarλ" and
 parameters, to be discussed later, as "parmvarλn".)
 
+The curve resultant from all this can be labeled in the "Curve label" field
+and the colour and linestyle of the curve set through the use of the Pen
+button.
+
+qapl maintains a stack of curves that can be displayed concurrently and the
+active curve defined in the 2D plot control panel can be pushed onto the stack
+by clicking the Push button.  Any number of curves can be stacked (and the
+nature of them can be altered as will be described later.
+
+As an example:
+
+<p align="center">
+<img src="./images/euler.png">
+</p>
+
 <h1>Installation</h1>
 
 Step Zero, if you don't have Qt installed, is to install it.  I'm running
