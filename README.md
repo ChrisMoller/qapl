@@ -411,7 +411,7 @@ formats.  XML exports are on the Plot Controls panel under the File menu
 option while image exports are under the File option of the displayed curve.
 When being exported as images, the plots can be scaled to any desired size.
 Note that the scaling is done at the drawing level and not at the pixel
-level&mdasheven when scaled to print-level resolution such as 300dpi, no
+level&mdash;even when scaled to print-level resolution such as 300dpi, no
 pixelisation will occur.
 
 <h1>Installation</h1>
