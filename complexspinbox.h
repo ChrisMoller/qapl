@@ -28,6 +28,8 @@ public:
     void setImag (double iv);
     void setComplex (double rv, double iv);
     void setComplex (std::complex<double> cv);
+    static void parseComplex ( coord_e &type,
+			       double &real, double &imag, QString txt);
 
  Q_SIGNALS:
     void valueChanged ();
@@ -39,7 +41,6 @@ protected:
     bool eventFilter(QObject *object, QEvent *event);
 
 private:
-    void parseComplex (QString txt);
     void incdecValue (which_e which, double val);
     void formatValue ();
  

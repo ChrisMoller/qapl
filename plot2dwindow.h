@@ -83,7 +83,13 @@ public:
   }
   
   static void readXML (QString &fileName, MainWindow *mw);
-  static bool parseQapl (QXmlStreamReader &stream);
+  static bool parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseChart (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseAxesLabel (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseAxesTitle (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseActive (QXmlStreamReader &stream, Plot2dData *plot2DData);
 
 private:
   MainWindow *mw;

@@ -336,9 +336,9 @@ interpretation as degrees, or with 'r' or 'R' as radians.
 
 The index vector mentioned above is created by linearly interpolating between
 the initial and final real and imaginary values.  The default interpolation
-interval is 16, which can be changed under the Settings sub-menu&mdash;due to
+interval is 16, which can be changed under the Settings sub-menu.  (Due to
 sampling issues, the resultant curves can vary significantly depending on that
-interval.
+interval.)
 
 Use of the "Index var" field will result in a variable of that name left in
 the APL workspace.  That can be useful when experimenting in the workspace
@@ -346,9 +346,9 @@ with the expression to be evaluated, but under some circumatances leaving that
 variable in the workspace may be undesirable.  If that's the case, a
 qapl-generated dummy variable may used instead by leaving the "Index var"
 field empty and replacing references to it in the expression with "%1".  This
-will result in the temporary creation of a dummy variable and the placement in
-the expression of every instance of "%1" with the name of that variable.  After
-the expression is evaluated, the variable is erased.
+will result in the temporary creation of a dummy variable and the replacement
+in the expression of every instance of "%1" with the name of that dummy
+variable.  After the expression is evaluated, the dummy variable is erased.
 
 (The index dummy variable is named "idxvarλ", which contains a "λ", which I
 assume will be rarely used except by users of Greek keyboards.  Similarly,
@@ -381,7 +381,7 @@ expression
 * 0j1×%1
 </p>
 
-where the dummy variable %1 refers to a 127-element equal-interval vector
+where the dummy variable %1 refers to a 129-element equal-interval vector
 between 0 and 3π inclusive.
 
 Another example showing two instances of the use of the dummy variable %1
@@ -392,6 +392,27 @@ Another example showing two instances of the use of the dummy variable %1
 
 (Note that the expression here makes use of the lambda convenience functions
 described above.)
+
+Plots may be superimposed over background images:
+
+<p align="center">
+<img src="./images/curvebg.png">
+</p>
+
+Any number of plots can be created simultaneously:
+
+<p align="center">
+<img src="./images/multiplot.png">
+</p>
+
+Curves may be exported in either of two ways, either as XML files that can be
+used to save the curve(s) for future editing, or as images in png, jpg, or bmp
+formats.  XML exports are on the Plot Controls panel under the File menu
+option while image exports are under the File option of the displayed curve.
+When being exported as images, the plots can be scaled to any desired size.
+Note that the scaling is done at the drawing level and not at the pixel
+level&mdasheven when scaled to print-level resolution such as 300dpi, no
+pixelisation will occur.
 
 <h1>Installation</h1>
 

@@ -63,7 +63,8 @@ QValidator::State validate(QString &input, int &pos)
 }
 #endif
 
-void ComplexSpinBox::parseComplex (QString txt)
+void ComplexSpinBox::parseComplex (coord_e &coord_type,
+				   double &real, double &imag, QString txt)
 {
   QRegularExpressionMatch match = rx.match (txt);
   if (match.hasMatch ()) {
@@ -110,7 +111,6 @@ void ComplexSpinBox::parseComplex (QString txt)
 	else
 	coord_type = COORD_RECTANGULAR;
       }
-      Q_EMIT valueChanged ();
     }
   }
 }
@@ -324,7 +324,8 @@ ComplexSpinBox::ComplexSpinBox (QWidget *parent)
 	   [=]() {
 	     QString txt = this->lineEdit ()->text ();
 	     string = txt;
-	     parseComplex (txt);
+	     parseComplex (coord_type, real, imag, txt);
+	     Q_EMIT valueChanged ();
 	   });
   this->installEventFilter(this);
 }

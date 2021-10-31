@@ -188,6 +188,24 @@ void Chart2DWindow::drawCurves ()
     chart->setTitle (pw->getChartTitle ());
   }
 
+#if 0
+  {
+    //    QString fn = chartControls->getChartData ()->getBGFile ();
+    //    QString fn("./images/bgimage.png");
+    QString fn("./images/tangledthreads-02.jpg");
+    if (!fn.isEmpty ()) {
+      QImage gep (fn);
+      gep = gep.scaled (chartView->width (), chartView->height (),
+			// Qt::IgnoreAspectRatio,
+			// Qt::KeepAspectRatio,
+			Qt::KeepAspectRatioByExpanding,
+			Qt::SmoothTransformation);
+      QBrush  brush (gep);
+      chart->setBackgroundBrush (brush);
+    }
+  }
+#endif
+
   // was in drawCurves()
   
   double realIncr   = (pw->getRealFinal () - pw->getRealInit ()) /
