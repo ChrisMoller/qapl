@@ -81,6 +81,8 @@ public:
   // private:
   int		resolution;
   int 		theme;
+  QString 	bgFile;
+  Qt::AspectRatioMode aspectMode;
   QColor	axisColour;
   QFont  	chartTitleFont;
   QColor 	chartTitleColour;

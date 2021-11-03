@@ -32,6 +32,12 @@ public:
   double   getRealFinal () { return plot2DData->rangeFinal.real (); }
   double   getImagInit ()  { return plot2DData->rangeFinal.imag (); }
   double   getImagFinal () { return plot2DData->rangeInit.imag (); }
+  QString  getBGFile () { return plot2DData->bgFile; }
+  void     setBGFile (QString file) { plot2DData->bgFile = file; }
+  Qt::AspectRatioMode getAspectMode () { return plot2DData->aspectMode; }
+  void	   setAspectMode (Qt::AspectRatioMode mode) {
+    plot2DData->aspectMode = mode;
+  }
   int      getResolution () {return plot2DData->resolution; }
   void     setResolution (int res) {plot2DData->resolution = res; }
   QFont	   getAxisLabelFont () { return plot2DData->axisLabelFont; }
@@ -108,6 +114,7 @@ private:
   void setFonts ();
   void exportChart ();
   void dumpXML (QString fileName);
+  void setBGImage ();
 
   bool setupComplete;
   QChartView *chartView;

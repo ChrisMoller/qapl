@@ -188,23 +188,19 @@ void Chart2DWindow::drawCurves ()
     chart->setTitle (pw->getChartTitle ());
   }
 
-#if 0
-  {
+  if (!pw->getBGFile ().isEmpty ()) {
     //    QString fn = chartControls->getChartData ()->getBGFile ();
     //    QString fn("./images/bgimage.png");
-    QString fn("./images/tangledthreads-02.jpg");
-    if (!fn.isEmpty ()) {
-      QImage gep (fn);
-      gep = gep.scaled (chartView->width (), chartView->height (),
-			// Qt::IgnoreAspectRatio,
-			// Qt::KeepAspectRatio,
-			Qt::KeepAspectRatioByExpanding,
-			Qt::SmoothTransformation);
-      QBrush  brush (gep);
-      chart->setBackgroundBrush (brush);
-    }
+    QImage gep (pw->getBGFile ());
+    gep = gep.scaled (chartView->width (), chartView->height (),
+		      // Qt::IgnoreAspectRatio,
+		      // Qt::KeepAspectRatio,
+		      //Qt::KeepAspectRatioByExpanding,
+		      pw->getAspectMode (),
+		      Qt::SmoothTransformation);
+    QBrush  brush (gep);
+    chart->setBackgroundBrush (brush);
   }
-#endif
 
   // was in drawCurves()
   

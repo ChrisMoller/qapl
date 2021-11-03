@@ -98,6 +98,12 @@ doColour (QColor colour, QPen *pen, QPushButton *setColourButton)
 }
 
 static void
+doWidth (double width, QPen *pen)
+{
+  pen->setWidthF (width);
+}
+
+static void
 doStyle (int style, QPen *pen)
 {
   pen->setStyle (static_cast<Qt::PenStyle>(style));
@@ -139,6 +145,24 @@ Plot2DWindow::updatePen (QPen *pen)
   layout->addWidget (lineStyle, row, col++);
   
   row++;
+  col = 0;
+
+  QLabel wlbl ("Pen width");
+  layout->addWidget (&wlbl, row, col++);
+  
+  QDoubleSpinBox *widthBox = new QDoubleSpinBox ();
+  widthBox->setDecimals (4);
+  widthBox->setMinimum (1.0);
+  widthBox->setMaximum (64.0);
+  widthBox->setValue (pen->widthF ());
+  connect(widthBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  [=](double d){
+	    doWidth (d, pen);
+	  });
+  layout->addWidget (widthBox, row, col++);
+
+  row++;
+  col = 0;
 
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   closeButton->setAutoDefault (true);
@@ -347,6 +371,58 @@ void Plot2DWindow::fillTable ( QTableWidget *curvesTable)
   }
 }
 
+void Plot2DWindow::setBGImage ()
+{
+  QFileDialog dialog (this, "Background image", ".",
+                      tr("Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"));
+
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+  QLayout *layout = dialog.layout ();
+  QGroupBox *gbox = new QGroupBox ();
+  QGridLayout *btnlayout = new QGridLayout ();
+  gbox->setLayout (btnlayout);
+
+  QComboBox *aspectComboBox = new QComboBox ();
+  connect (aspectComboBox, QOverload<int>::of(&QComboBox::activated),
+          [=](int index __attribute__((unused)))
+          {
+	    QVariant aspectSel = aspectComboBox->currentData ();
+	    setAspectMode ((Qt::AspectRatioMode)aspectSel.toInt ());
+	     fprintf (stderr, "setting aspect\n");
+	    drawCurves ();
+	  });
+  aspectComboBox->addItem ("Ignore Aspect Ratio",
+			   QVariant(Qt::IgnoreAspectRatio));
+  aspectComboBox->addItem ("Keep Aspect Ratio",
+			   QVariant(Qt::KeepAspectRatio));
+  aspectComboBox->addItem ("Keep Aspect Ratio By Expanding",
+			   QVariant(Qt::KeepAspectRatioByExpanding));
+  int initialIndex = aspectComboBox->findData (QVariant (getAspectMode ()));
+  if (initialIndex != -1) aspectComboBox->setCurrentIndex (initialIndex);
+  btnlayout->addWidget (aspectComboBox, 0, 0);
+
+  QPushButton *clearImageButton
+    = new QPushButton (QObject::tr ("Clear Image"));
+  connect (clearImageButton, &QPushButton::clicked,
+	   [=](){
+	     getBGFile ().clear ();
+	     fprintf (stderr, "clearing image\n");
+	     drawCurves ();
+	   });
+  btnlayout->addWidget (clearImageButton, 0, 1);
+
+  layout->addWidget (gbox);
+
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+
+  int drc = dialog.exec();
+
+  if (drc == QDialog::Accepted) 
+    setBGFile (dialog.selectedFiles().first());
+
+}
+
 void Plot2DWindow::setFonts ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -477,6 +553,29 @@ void Plot2DWindow::setFonts ()
 		    });
   
 
+  
+  row++;
+  col = 0;
+
+
+  QPushButton *axisColourButton =
+    new QPushButton (QObject::tr ("Axis Colour"));
+  layout->addWidget (axisColourButton, row, 1);
+  QObject::connect (axisColourButton, &QPushButton::clicked,
+		    [=](){
+		      QColor colour
+			= QColorDialog::getColor (getAxisColour (),
+						  this,
+						  "Axis colour",
+					  QColorDialog::ShowAlphaChannel);
+		      if (colour.isValid ()) {
+			setAxisColour (colour);
+		      mw->getSettings ()->setValue (SETTINGS_AXIS_COLOUR,
+			    getAxisColour ().name (QColor::HexArgb));
+		      drawCurves ();
+		      }
+		    });
+
   row++;
   col = 0;
 
@@ -504,28 +603,19 @@ void Plot2DWindow::setFonts ()
 	  });
   layout->addWidget(themebox, row, 1);
 
-  
   row++;
   col = 0;
 
 
-  QPushButton *axisColourButton =
-    new QPushButton (QObject::tr ("Axis Colour"));
-  layout->addWidget (axisColourButton, row, 1);
-  QObject::connect (axisColourButton, &QPushButton::clicked,
+  QPushButton *chartBGImageButton =
+    new QPushButton (QObject::tr ("Background Image"));
+  layout->addWidget (chartBGImageButton, row, 1);
+  QObject::connect (chartBGImageButton, &QPushButton::clicked,
 		    [=](){
-		      QColor colour
-			= QColorDialog::getColor (getAxisColour (),
-						  this,
-						  "Axis colour",
-					  QColorDialog::ShowAlphaChannel);
-		      if (colour.isValid ()) {
-			setAxisColour (colour);
-		      mw->getSettings ()->setValue (SETTINGS_AXIS_COLOUR,
-			    getAxisColour ().name (QColor::HexArgb));
-		      drawCurves ();
-		      }
+		      setBGImage ();
+		      //drawCurves ();
 		    });
+  
   
 
   row++;
@@ -846,6 +936,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
 
+  setAspectMode (Qt::KeepAspectRatio);
 
   setupComplete = false;
     
