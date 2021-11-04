@@ -41,7 +41,55 @@ const char *styleStrings[] = {
   STYLE_DASH_DOT_DOT_LINE
 };
 
-void Plot2DWindow::drawCurves ()
+void Plot2DWindow::showPlot2dData (Plot2dData *data)
+{
+  fprintf (stderr, "resolution:\t\t%d\n",	getResolution ());
+  fprintf (stderr, "theme:\t\t\t%d\n",      	getTheme ());
+
+  fprintf (stderr, "chart title font:\t%s\n",
+	   toCString (getChartTitleFont ().toString ()));
+  fprintf (stderr, "chart title colour:\t%s\n",
+	   toCString (getChartTitleColour ().name (QColor::HexArgb)));
+  fprintf (stderr, "axis colour:\t\t%s\n",
+	   toCString (getAxisColour ().name (QColor::HexArgb)));
+  fprintf (stderr, "axis label font:\t%s\n",
+	   toCString (getAxisLabelFont ().toString ()));
+  fprintf (stderr, "axis label colour:\t%s\n",
+	   toCString (getAxisLabelColour ().name (QColor::HexArgb)));
+  fprintf (stderr, "axis title font:\t%s\n",
+	   toCString (getAxisTitleFont ().toString ()));
+  fprintf (stderr, "axis title colour:\t%s\n",
+	   toCString (getAxisTitleColour ().name (QColor::HexArgb)));
+  
+  fprintf (stderr, "chart title:\t\t%s\n",
+	   toCString (getChartTitle ()));
+  fprintf (stderr, "index variable:\t\t%s\n",
+	   toCString (getIndexVariable ()));
+  fprintf (stderr, "x title:\t\t%s\n",
+	   toCString (getXTitle ()));
+  fprintf (stderr, "y title:\t\t%s\n",
+	   toCString (getYTitle ()));
+  fprintf (stderr, "initial:\t\t%gj%g\n",
+	   getRealInit (), getImagInit ());
+  fprintf (stderr, "final:\t\t\t%gj%g\n",
+	   getRealFinal (), getImagFinal ());
+
+  
+  fprintf (stderr, "active aspect:\t\t%d\n",	data->activeCurve.aspect ());
+  fprintf (stderr, "active mode:\t\t%d\n",	data->activeCurve.mode ());
+  fprintf (stderr, "active expression:\t%s\n",
+	   toCString (data->activeCurve.expression ()));
+  fprintf (stderr, "active label:\t\t%s\n",
+	   toCString (data->activeCurve.title ()));
+  QPen *pen = data->activeCurve.pen ();
+  QString colour = pen->brush ().color ().name (QColor::HexArgb);
+  fprintf (stderr, "active pen:\t\t%s %i %g\n",
+	   toCString (colour), pen->style (), pen->widthF ());
+
+  
+}
+
+  void Plot2DWindow::drawCurves ()
 {
   chart2DWindow->drawCurves ();
 }
@@ -892,47 +940,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   this->setWindowTitle ("qapl 2D Plot Controls");
   mw = parent;
 
-#if 0
-  theme = mw->getSettings ()->value (SETTINGS_PLOT_THEME).toInt ();
-  resolution	= 16.0;
-  realInit	= 0.0;
-  realFinal	= 1.0;
-  imagInit	= 0.0;
-  imagFinal	= 0.0;
-
-  QVariant fontVariant;
-  QVariant colourVariant;
-  
-  fontVariant = QVariant (QFont ("Times", 10));
-  axisLabelFont = mw->getSettings ()->value (SETTINGS_AXIS_LABEL_FONT,
-					     fontVariant).toString ();
-
-  fontVariant = QFont ("Times", 12);
-  axisTitleFont = mw->getSettings ()->value (SETTINGS_AXIS_TITLE_FONT,
-					     fontVariant).toString ();
-
-  fontVariant = QFont ("Times", 18);
-  chartTitleFont = mw->getSettings ()->value (SETTINGS_CHART_TITLE_FONT,
-					      fontVariant).toString ();
-
-  colourVariant = QVariant ("white");
-  axisLabelColour = QColor (mw->getSettings ()
-			    ->value (SETTINGS_AXIS_LABEL_COLOUR,
-				     colourVariant).toString ());
-
-  axisColour = QColor (mw->getSettings ()
-		       ->value (SETTINGS_AXIS_COLOUR,
-				colourVariant).toString ());
-
-  axisTitleColour = QColor (mw->getSettings ()
-			    ->value (SETTINGS_AXIS_TITLE_COLOUR,
-				     colourVariant).toString ());
-
-  chartTitleColour = QColor (mw->getSettings ()
-			     ->value (SETTINGS_CHART_TITLE_COLOUR,
-				      colourVariant).toString ());
-#endif
   plot2DData   = (data != nullptr) ? data : new Plot2dData (mw);
+  showPlot2dData (plot2DData);
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
 
@@ -957,6 +966,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
 	    setAplExpression (aplExpression->text ());
 	    if (setupComplete) drawCurves ();
           });
+  aplExpression->setText (getAplExpression ());
   layout->addWidget (aplExpression, row, col, 1, 3);
 
   row++;
@@ -1006,23 +1016,23 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   layout->addWidget (indexVariable, row, col++, 1, 2);
   
   rangeInit = new ComplexSpinBox ();
+  rangeInit->setComplex (getRealInit (), getImagInit ());
   connect (rangeInit,
            &ComplexSpinBox::valueChanged,
           [=](){
 	    plot2DData->rangeInit = rangeInit->getComplex ();
 	    if (setupComplete) drawCurves ();
           });
-  rangeInit->setComplex (0.0, 0.0);
   layout->addWidget (rangeInit, row, col++);
   
   rangeFinal = new ComplexSpinBox ();
+  rangeFinal->setComplex (getRealFinal (), getImagFinal ());
   connect (rangeFinal,
            &ComplexSpinBox::valueChanged,
           [=](){
 	    plot2DData->rangeFinal = rangeFinal->getComplex ();
 	    if (setupComplete) drawCurves ();
           });
-  rangeFinal->setComplex (0.0, 0.0);
   layout->addWidget (rangeFinal, row, col++);
 
 

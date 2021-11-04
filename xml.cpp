@@ -29,12 +29,12 @@
       <active aspect="..." mode="...">
         <expression>....</expression>
         <label>....</label>
-        <pen colour="..." style="..."/>
+        <pen colour="..." style="..." width="..."/>
       </active>
       <stack index="..." aspect="..." mode="...">
         <expression>....</expression>
         <label>....</label>
-        <pen colour="..." style="..."/>
+        <pen colour="..." style="..." width="..."/>
       </stack>
 
       repeat stack...
@@ -109,6 +109,39 @@ bool Plot2DWindow::parseAxesTitle (QXmlStreamReader &stream,
 	ft.fromString (fs);
 	plot2DData->axisTitleFont = QFont (ft);
       }
+    }
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    default:
+      break;
+    }
+  }
+  
+  return rc;
+}
+
+bool Plot2DWindow::parsePen (QXmlStreamReader &stream,
+				   Plot2dData *plot2DData)
+{
+  bool rc = false;
+  bool run = true;
+  while (run) {
+    QXmlStreamAttributes attrs = stream.attributes();
+    if (!attrs.isEmpty ()) {
+      QBrush brush (QColor (attrs.value (xml_tags[XML_colour].tag)));
+      Qt::PenStyle style = (Qt::PenStyle)attrs.value (xml_tags[XML_style].tag).toInt ();
+      double width = attrs.value (xml_tags[XML_width].tag).toFloat ();
+      QPen pen (brush, width, style);
+      plot2DData->activeCurve.setPen (pen);
     }
     QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
@@ -270,19 +303,31 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
   while (run) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
-      plot2DData->chartTitleColour =
-	QColor (attrs.value (xml_tags[XML_colour].tag));
+      plot2DData->activeCurve.setAspect ((aspect_e)((attrs.value (xml_tags[XML_aspect].tag)).toInt ()));
+      plot2DData->activeCurve.setMode ((series_mode_e)((attrs.value (xml_tags[XML_mode].tag)).toInt ()));
     }
     QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
     switch (tt) {
     case QXmlStreamReader::StartElement:
       switch (xmlhash.value (sn)) {
-      case XML_axes:
-	parseAxes (stream, plot2DData);
+      case XML_expression:
+	{
+	  QString exp = stream.readElementText ();
+	  fprintf (stderr, "doing expression \"%s\"\n", toCString (exp));
+	  plot2DData->activeCurve.setExpression (exp);
+	  fprintf (stderr, "check %s\n",
+		   toCString (plot2DData->activeCurve.expression ()));
+	}
+        break;
+      case XML_label:
+	plot2DData->activeCurve.setTitle (stream.readElementText ());
+        break;
+      case XML_pen:
+	parsePen (stream, plot2DData);
         break;
       default:
-	fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
+	fprintf (stderr, "unhandled active value \"%s\"\n", toCString (sn));
 	break;
       }
       break;
@@ -397,10 +442,12 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
       }
       break;
     case QXmlStreamReader::EndElement:
+      fprintf (stderr, "ee\n");
       run = false;
       break;
     case QXmlStreamReader::EndDocument:
-      Plot2DWindow (mw, plot2DData);
+      fprintf (stderr, "ed\n");
+      new Plot2DWindow (mw, plot2DData);
       run = false;
       break;
     case QXmlStreamReader::Invalid:
@@ -533,6 +580,8 @@ void Plot2DWindow::dumpXML (QString fileName)
 			getPen ()->color ().name (QColor::HexArgb));
   stream.writeAttribute(xml_tags[XML_style].tag,
 			QString::number (getPen ()->style ()));
+  stream.writeAttribute(xml_tags[XML_width].tag,
+			QString::number (getPen ()->widthF ()));
   stream.writeEndElement(); // pen
 
   stream.writeEndElement(); // active
@@ -570,6 +619,8 @@ void Plot2DWindow::dumpXML (QString fileName)
 			  pc->pen ()->color ().name (QColor::HexArgb));
     stream.writeAttribute(xml_tags[XML_style].tag,
 			  QString::number (pc->pen ()->style ()));
+    stream.writeAttribute(xml_tags[XML_width].tag,
+			  QString::number (pc->pen ()->widthF ()));
     stream.writeEndElement(); // pen
 
     stream.writeEndElement(); // stack

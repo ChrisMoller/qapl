@@ -87,6 +87,8 @@ public:
     QVariant sel = modeCombo->currentData ();
     return (series_mode_e)sel.toInt ();
   }
+
+  void showPlot2dData (Plot2dData *data);
   
   static void readXML (QString &fileName, MainWindow *mw);
   static bool parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData);
@@ -96,6 +98,7 @@ public:
   static bool parseAxesTitle (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parseActive (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parsePen (QXmlStreamReader &stream, Plot2dData *plot2DData);
 
 private:
   MainWindow *mw;

@@ -43,6 +43,7 @@ xml_def(stack,		0),
 xml_def(style,		0),
 xml_def(theme,		0),
 xml_def(title,		0),
+xml_def(width,		0),
 xml_def(xlabel,		0),
 xml_def(ylabel,		0),
 xml_def(LAST,		0)
