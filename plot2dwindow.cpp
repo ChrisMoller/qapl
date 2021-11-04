@@ -941,7 +941,9 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   mw = parent;
 
   plot2DData   = (data != nullptr) ? data : new Plot2dData (mw);
+#if 0
   showPlot2dData (plot2DData);
+#endif
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
 
@@ -960,13 +962,13 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   
   QLineEdit *aplExpression = new QLineEdit ();
   aplExpression->setPlaceholderText (tr ("APL expression"));
+  aplExpression->setText (getAplExpression ());
   connect (aplExpression,
            &QLineEdit::editingFinished,
           [=](){
 	    setAplExpression (aplExpression->text ());
 	    if (setupComplete) drawCurves ();
           });
-  aplExpression->setText (getAplExpression ());
   layout->addWidget (aplExpression, row, col, 1, 3);
 
   row++;
@@ -974,6 +976,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
 
   QLineEdit *curveTitle = new QLineEdit ();
   curveTitle->setPlaceholderText (tr ("Curve label"));
+  curveTitle->setText (plot2DData->activeCurve.title ());
   connect (curveTitle,
            &QLineEdit::editingFinished,
           [=](){
@@ -982,6 +985,9 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
           });
   layout->addWidget (curveTitle, row, col++);
 
+
+  // fixme -- init from data
+  
   setPen (QColor ("red"));
   QPushButton *setPenButton = new QPushButton (QObject::tr ("Pen"));
   QObject::connect (setPenButton, &QPushButton::clicked,
@@ -1005,6 +1011,7 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   QLineEdit *indexVariable = new QLineEdit ();
   indexVariable->setPlaceholderText ("Index var");
   indexVariable->setMaximumWidth (100);
+  indexVariable->setText (getIndexVariable ());
   connect (indexVariable,
            &QLineEdit::editingFinished,
           [=](){
@@ -1040,6 +1047,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   row++;
   col = 0;
 
+  // fixme -- init from data
+
   aspectCombo = new QComboBox ();
   connect (aspectCombo,
 	   QOverload<int>::of(&QComboBox::activated),
@@ -1055,6 +1064,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   layout->addWidget (aspectCombo, row, col++);
   
   
+  // fixme -- init from data
+
   modeCombo = new QComboBox ();
   connect (modeCombo,
 	   QOverload<int>::of(&QComboBox::activated),

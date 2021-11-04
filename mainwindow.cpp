@@ -435,13 +435,17 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
 
   QStringList pargs = parser.positionalArguments();
   if (0 < pargs.size ()) {
-    for (int i = 0; i <  pargs.size (); i++)
-      readScript (pargs[i]);
+    for (int i = 0; i <  pargs.size (); i++) {
+      if (pargs[i].endsWith (".plot", Qt::CaseInsensitive))
+	Plot2DWindow::readXML (pargs[i], this);
+      else
+	readScript (pargs[i]);
+    }
   }
 
   
-  QString fn ("test.xml");
-  Plot2DWindow::readXML (fn, this);
+  //  QString fn ("test.xml");
+  //  Plot2DWindow::readXML (fn, this);
 }
 
 MainWindow::~MainWindow()
