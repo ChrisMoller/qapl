@@ -240,8 +240,10 @@ qapl has four options:
 * &ndash;L ws
    - load the specified workspace
 
-Following these options, qapl will accept any number of arguments that will
-be interpreted as scripts of the format described below.
+Following these options, qapl will accept any number of arguments that will be
+interpreted as files containing either scripts of the format described below
+or exported XML, also as described below.  Any file ending in ".plot" will be
+interpreted as XML; anything else will be interpreted as a script.
 
 <h4>Initialisation file</h4>
 
