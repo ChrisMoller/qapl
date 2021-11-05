@@ -168,7 +168,8 @@ Plot2DWindow::updatePen (QPen *pen)
   int col = 0;
 
   QPushButton *setColourButton = new QPushButton (QObject::tr ("Pen colour"));
-  QString cmd = QString("background-color: %1;").arg(pen->color().name());
+  QString cmd = QString("background-color: %1;")
+    .arg(pen->color().name(QColor::HexArgb));
   setColourButton->setStyleSheet(cmd);
   connect (setColourButton, &QPushButton::clicked,
 	   [=](){
@@ -238,18 +239,18 @@ Plot2DWindow::updateAspect (PlotCurve *pc)
   row++;
   
   QComboBox *aspectCombo = new QComboBox ();
-  connect(aspectCombo,
-	  QOverload<int>::of(&QComboBox::activated),
-	  [=](int index){
-	    QVariant sel = aspectCombo->itemData (index);
-	    pc->setAspect ((aspect_e)sel.toInt ());
-	  });
   aspectCombo->addItem (STRING_REAL,		QVariant(ASPECT_REAL));
   aspectCombo->addItem (STRING_IMAGINARY,	QVariant(ASPECT_IMAG));
   aspectCombo->addItem (STRING_MAGNITUDE,	QVariant(ASPECT_MAGNITUDE));
   aspectCombo->addItem (STRING_PHASE,		QVariant(ASPECT_PHASE));
   int ap = (int)pc->aspect ();
   aspectCombo->setCurrentIndex (ap);
+  connect(aspectCombo,
+	  QOverload<int>::of(&QComboBox::activated),
+	  [=](int index){
+	    QVariant sel = aspectCombo->itemData (index);
+	    pc->setAspect ((aspect_e)sel.toInt ());
+	  });
   layout->addWidget (aspectCombo, row, col++);
 
   row++;
@@ -871,15 +872,32 @@ Plot2DWindow::setGranularity ()
 void Plot2DWindow::exportChart ()
 {
   QFileDialog dialog (this, "Export As...", ".",
-		      tr("XML Files (*.xml)"));
+		      tr("Plot Files (*.plot)"));
 
   dialog.setOption (QFileDialog::DontUseNativeDialog);
+  dialog.setAcceptMode (QFileDialog::AcceptSave);
+
+  int drc = dialog.exec();
+  
+  if (drc == QDialog::Accepted) {
+    //    currentFile = dialog.selectedFiles().first();
+    dumpXML (currentFile);
+  }
+}
+
+void Plot2DWindow::importChart ()
+{
+  QFileDialog dialog (this, "Export As...", ".",
+		      tr("Plot Files (*.plot)"));
+
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+  dialog.setAcceptMode (QFileDialog::AcceptOpen);
 
    int drc = dialog.exec();
   
   if (drc == QDialog::Accepted) {
     currentFile = dialog.selectedFiles().first();
-    dumpXML (currentFile);
+    readXML (currentFile, mw);
   }
 }
 
@@ -887,6 +905,11 @@ void Plot2DWindow::exportChart ()
 void Plot2DWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+  
+  QAction *importAct =
+    fileMenu->addAction(tr("&Import"), this,
+			    & Plot2DWindow::importChart);
+  importAct->setStatusTip(tr("Import chart"));
   
   QAction *exportAct =
     fileMenu->addAction(tr("&Export"), this,
@@ -987,8 +1010,9 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
 
 
   // fixme -- init from data
+
   
-  setPen (QColor ("red"));
+  //setPen (QColor ("red"));
   QPushButton *setPenButton = new QPushButton (QObject::tr ("Pen"));
   QObject::connect (setPenButton, &QPushButton::clicked,
 		    [=](){
@@ -1050,16 +1074,18 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   // fixme -- init from data
 
   aspectCombo = new QComboBox ();
+  aspectCombo->addItem (STRING_REAL,		QVariant(ASPECT_REAL));
+  aspectCombo->addItem (STRING_IMAGINARY,	QVariant(ASPECT_IMAG));
+  aspectCombo->addItem (STRING_MAGNITUDE,	QVariant(ASPECT_MAGNITUDE));
+  aspectCombo->addItem (STRING_PHASE,		QVariant(ASPECT_PHASE));
+  int ac = (int)(plot2DData->activeCurve.aspect ());
+  aspectCombo->setCurrentIndex (ac);
   connect (aspectCombo,
 	   QOverload<int>::of(&QComboBox::activated),
           [=](int index __attribute__((unused)))
           {
 	    drawCurves ();
 	  });
-  aspectCombo->addItem (STRING_REAL,		QVariant(ASPECT_REAL));
-  aspectCombo->addItem (STRING_IMAGINARY,	QVariant(ASPECT_IMAG));
-  aspectCombo->addItem (STRING_MAGNITUDE,	QVariant(ASPECT_MAGNITUDE));
-  aspectCombo->addItem (STRING_PHASE,		QVariant(ASPECT_PHASE));
 
   layout->addWidget (aspectCombo, row, col++);
   
@@ -1067,15 +1093,17 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   // fixme -- init from data
 
   modeCombo = new QComboBox ();
+  modeCombo->addItem (STRING_SPLINES,	QVariant(MODE_BUTTON_SPLINE));
+  modeCombo->addItem (STRING_LINES,	QVariant(MODE_BUTTON_LINE));
+  modeCombo->addItem (STRING_SCATTER,	QVariant(MODE_BUTTON_SCATTER));
+  int ap = (int)(plot2DData->activeCurve.mode ());
+  modeCombo->setCurrentIndex (ap);
   connect (modeCombo,
 	   QOverload<int>::of(&QComboBox::activated),
           [=](int index __attribute__((unused)))
           {
 	    drawCurves ();
 	  });
-  modeCombo->addItem (STRING_SPLINES,	QVariant(MODE_BUTTON_SPLINE));
-  modeCombo->addItem (STRING_LINES,	QVariant(MODE_BUTTON_LINE));
-  modeCombo->addItem (STRING_SCATTER,	QVariant(MODE_BUTTON_SCATTER));
 
   layout->addWidget (modeCombo, row, col++);
   

@@ -423,6 +423,25 @@ MainWindow::setColours ()
   
   dialog.exec ();
 }
+
+
+void MainWindow::importChart ()
+{
+  QFileDialog dialog (this, "Export As...", ".",
+		      tr("Plot Files (*.plot)"));
+
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+  dialog.setAcceptMode (QFileDialog::AcceptOpen);
+
+   int drc = dialog.exec();
+  
+  if (drc == QDialog::Accepted) {
+    //    currentFile = dialog.selectedFiles().first();
+    QString cf  = dialog.selectedFiles().first();
+    Plot2DWindow::readXML (cf, this);
+  }
+}
+
 void MainWindow::createMenubar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -448,6 +467,13 @@ void MainWindow::createMenubar ()
   saveAsAct->setShortcuts(QKeySequence::SaveAs);
   saveAsAct->setStatusTip(tr("Save workspace with name"));
 
+  fileMenu->addSeparator();
+
+  QAction *importAct =
+    fileMenu->addAction(tr("&Import"), this,
+			    &MainWindow::importChart);
+  importAct->setStatusTip(tr("Import chart"));
+  
   fileMenu->addSeparator();
 
   const QIcon exitIcon =

@@ -184,7 +184,7 @@ bool Plot2DWindow::parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData)
 	parseAxesTitle (stream, plot2DData);
         break;
       default:
-	fprintf (stderr, "unhandled axes value \"%s\"\n", toCString (sn));
+	// fprintf (stderr, "unhandled axes value \"%s\"\n", toCString (sn));
 	break;
       }
       break;
@@ -233,7 +233,7 @@ bool Plot2DWindow::parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData)
 	}
         break;
       default:
-	fprintf (stderr, "unhandled range value \"%s\"\n", toCString (sn));
+	// fprintf (stderr, "unhandled range value \"%s\"\n", toCString (sn));
 	break;
       }
       break;
@@ -277,7 +277,7 @@ bool Plot2DWindow::parseChart (QXmlStreamReader &stream,
 	parseAxes (stream, plot2DData);
         break;
       default:
-	fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
+	// fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
 	break;
       }
       break;
@@ -314,10 +314,7 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
       case XML_expression:
 	{
 	  QString exp = stream.readElementText ();
-	  fprintf (stderr, "doing expression \"%s\"\n", toCString (exp));
 	  plot2DData->activeCurve.setExpression (exp);
-	  fprintf (stderr, "check %s\n",
-		   toCString (plot2DData->activeCurve.expression ()));
 	}
         break;
       case XML_label:
@@ -327,7 +324,7 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
 	parsePen (stream, plot2DData);
         break;
       default:
-	fprintf (stderr, "unhandled active value \"%s\"\n", toCString (sn));
+	// fprintf (stderr, "unhandled active value \"%s\"\n", toCString (sn));
 	break;
       }
       break;
@@ -384,7 +381,7 @@ bool Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData)
 	parseActive (stream, plot2DData);
         break;
       default:
-	fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
+	// fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
 	break;
       }
       break;
@@ -411,6 +408,8 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
     xmlInitialised = true;
   }
 
+  //currentFile = fileName;
+
   Plot2dData *plot2DData =  new Plot2dData (mw);
   
   QFile file (fileName);
@@ -427,6 +426,7 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
       case XML_qapl:
 	parseQapl (stream, plot2DData);
         break;
+#if 0
       case XML_chart:
 	fprintf (stderr, "chart\n");
         break;
@@ -436,17 +436,16 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
       case XML_title:
 	fprintf (stderr, "title\n");
         break;
+#endif
       default:
-	fprintf (stderr, "unhandled top value \"%s\"\n", toCString (sn));
+	// fprintf (stderr, "unhandled top value \"%s\"\n", toCString (sn));
 	break;
       }
       break;
     case QXmlStreamReader::EndElement:
-      fprintf (stderr, "ee\n");
       run = false;
       break;
     case QXmlStreamReader::EndDocument:
-      fprintf (stderr, "ed\n");
       new Plot2DWindow (mw, plot2DData);
       run = false;
       break;
@@ -462,6 +461,7 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
 void Plot2DWindow::dumpXML (QString fileName)
 {
   QFile file (fileName);
+  currentFile = fileName;
   file.open (QIODevice::WriteOnly | QIODevice::Text);
   QXmlStreamWriter stream(&file);
   stream.setAutoFormatting(true);

@@ -99,6 +99,7 @@ public:
   static bool parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parseActive (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parsePen (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  QString currentFile;
 
 private:
   MainWindow *mw;
@@ -116,6 +117,7 @@ private:
   void fillTable (QTableWidget *curvesTable);
   void setFonts ();
   void exportChart ();
+  void importChart ();
   void dumpXML (QString fileName);
   void setBGImage ();
 
@@ -124,7 +126,6 @@ private:
   QChart *chart;
   QComboBox *modeCombo;
   QComboBox *aspectCombo;
-  QString currentFile;
   Chart2DWindow *chart2DWindow;
   ComplexSpinBox *rangeInit;
   ComplexSpinBox *rangeFinal;

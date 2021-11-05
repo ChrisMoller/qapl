@@ -82,6 +82,7 @@ public:
   void printError (QString emsg);
   void closeHW () { HWopen = false; }
   QSettings *getSettings () { return settings; }
+  void importChart ();
 
   QLineEdit *inputLine;
   QTextEdit *outputLog;
