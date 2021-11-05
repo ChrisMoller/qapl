@@ -99,7 +99,7 @@ public:
   static bool parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parseActive (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parsePen (QXmlStreamReader &stream, Plot2dData *plot2DData);
-  QString currentFile;
+  QString currentPlotFile;
 
 private:
   MainWindow *mw;

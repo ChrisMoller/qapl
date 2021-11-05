@@ -880,8 +880,8 @@ void Plot2DWindow::exportChart ()
   int drc = dialog.exec();
   
   if (drc == QDialog::Accepted) {
-    //    currentFile = dialog.selectedFiles().first();
-    dumpXML (currentFile);
+    QString cf =  dialog.selectedFiles().first();
+    dumpXML (cf);
   }
 }
 
@@ -896,8 +896,8 @@ void Plot2DWindow::importChart ()
    int drc = dialog.exec();
   
   if (drc == QDialog::Accepted) {
-    currentFile = dialog.selectedFiles().first();
-    readXML (currentFile, mw);
+    QString cf = dialog.selectedFiles().first();
+    readXML (cf, mw);
   }
 }
 

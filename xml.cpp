@@ -408,9 +408,9 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
     xmlInitialised = true;
   }
 
-  //currentFile = fileName;
 
   Plot2dData *plot2DData =  new Plot2dData (mw);
+  plot2DData->currentPlotFile = fileName;
   
   QFile file (fileName);
   file.open (QIODevice::ReadOnly | QIODevice::Text);
@@ -461,7 +461,6 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw)
 void Plot2DWindow::dumpXML (QString fileName)
 {
   QFile file (fileName);
-  currentFile = fileName;
   file.open (QIODevice::WriteOnly | QIODevice::Text);
   QXmlStreamWriter stream(&file);
   stream.setAutoFormatting(true);

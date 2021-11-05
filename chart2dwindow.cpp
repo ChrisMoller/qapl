@@ -633,8 +633,8 @@ Chart2DWindow::exportImage ()
       doit = showPreview (plotPixmap);
 
     if (doit) {
-      currentFile = dialog.selectedFiles().first();
-      QFile file(currentFile);
+      currentImageExportFile = dialog.selectedFiles().first();
+      QFile file(currentImageExportFile);
       file.open(QIODevice::WriteOnly);
       // bool QPixmap::save(const QString &fileName,
       //   const char *format = nullptr, int quality = -1) const

@@ -42,7 +42,7 @@ public:
   QAbstractSeries *series;
   bool appendSeries (double x, double y, series_mode_e mode,
 		     double &realMax, double &realMin);
-  QString currentFile;
+  QString currentImageExportFile;
   bool showPreview (QPixmap plotPixmap);
   double fontScale;
 

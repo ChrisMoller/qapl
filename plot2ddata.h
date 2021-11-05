@@ -77,6 +77,7 @@ public:
 					colourVariant).toString ());
   };
   ~Plot2dData () {};
+  void setCurrentPlotFile (QString fn) { currentPlotFile = fn; }
 
   // private:
   int		resolution;
@@ -99,6 +100,7 @@ public:
   std::complex<double> rangeInit;
   std::complex<double> rangeFinal;
   MainWindow   *mw;
+  QString 	currentPlotFile;
 };
 
 #endif // PLOT2DDATA_H

@@ -119,7 +119,7 @@ private:
   QVector<qint64>    processList;
   QString 	     libpath;
   save_mode_e        save_mode;                                                 
-  QString    	     curFile;
+  QString    	     currentAPLFile;
   bool		     HWopen;
   
 protected:

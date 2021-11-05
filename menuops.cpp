@@ -162,27 +162,27 @@ MainWindow::wsSaveAs()
   delete gbox;
   if (drc == QDialog::Accepted) {
     QString op;
-    curFile = dialog.selectedFiles().first();
+    currentAPLFile = dialog.selectedFiles().first();
     if (button_save->isChecked ()) {
-      if (!curFile.endsWith (".xml", Qt::CaseInsensitive))
-        curFile.append (".xml");
+      if (!currentAPLFile.endsWith (".xml", Qt::CaseInsensitive))
+        currentAPLFile.append (".xml");
       save_mode = SAVE_MODE_SAVE;
       op = QString (")save");
     }
     else if (button_dump->isChecked ()) {
       save_mode = SAVE_MODE_DUMP;
-      if (!curFile.endsWith (".apl", Qt::CaseInsensitive))
-        curFile.append (".apl");
+      if (!currentAPLFile.endsWith (".apl", Qt::CaseInsensitive))
+        currentAPLFile.append (".apl");
       op = QString (")dump");
     }
     else if (button_out->isChecked ()) {
       save_mode = SAVE_MODE_OUT;
-      if (!curFile.endsWith (".atf", Qt::CaseInsensitive))
-        curFile.append (".atf");
+      if (!currentAPLFile.endsWith (".atf", Qt::CaseInsensitive))
+        currentAPLFile.append (".atf");
       op = QString (")out");
     }
     if (!op.isEmpty ()) {
-      QString cmd = QString ("%1 %2").arg (op).arg (curFile);
+      QString cmd = QString ("%1 %2").arg (op).arg (currentAPLFile);
       processLine (false, cmd);
       rc = true;
     }
@@ -436,7 +436,6 @@ void MainWindow::importChart ()
    int drc = dialog.exec();
   
   if (drc == QDialog::Accepted) {
-    //    currentFile = dialog.selectedFiles().first();
     QString cf  = dialog.selectedFiles().first();
     Plot2DWindow::readXML (cf, this);
   }
