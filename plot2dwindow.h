@@ -79,6 +79,10 @@ public:
   }
   void setTheme (int theme) { plot2DData->theme = theme; }
   QList<PlotCurve *> getPlotCurves () { return plot2DData->plotCurves; }
+#if 1
+  aspect_e  getAspect () { return plot2DData->activeCurve.aspect (); }
+  series_mode_e  getMode () { return plot2DData->activeCurve.mode (); }
+#else
   aspect_e getAspect () {
     QVariant sel = aspectCombo->currentData ();
     return (aspect_e)sel.toInt ();
@@ -88,6 +92,7 @@ public:
     fprintf (stderr, "getting mode %d\n", sel.toInt ());
     return (series_mode_e)sel.toInt ();
   }
+#endif
 
   void showPlot2dData (Plot2dData *data);
   

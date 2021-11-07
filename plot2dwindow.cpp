@@ -106,8 +106,6 @@ void Plot2DWindow::pushExpression ()
   PlotCurve *plotCurve =
     new PlotCurve (aplExpr, aspect, label, pen, mode);
   plot2DData->plotCurves.append(plotCurve);
-  //getPlotCurves ().append (plotCurve);
-  //  setAplExpression ("");
 }
 
 static QComboBox *
@@ -168,9 +166,26 @@ Plot2DWindow::updatePen (QPen *pen)
   int col = 0;
 
   QPushButton *setColourButton = new QPushButton (QObject::tr ("Pen colour"));
+#if 1
+  {
+    QColor bg = getPen ()->brush ().color ();
+    QColor fg = QColor (bg);
+    float hue;
+    float saturation;
+    float lightness;
+    bg.getHslF (&hue, &saturation, &lightness);
+    lightness = (lightness > 0.5) ? 0.0 : 1.0;
+    //    saturation = 1.0;
+    fg.setHslF (hue, saturation, lightness);
+    QString cmd = QString("color: %1; background-color: %2;")
+      .arg (fg.name(QColor::HexArgb)). arg (bg.name(QColor::HexArgb));
+    setColourButton->setStyleSheet(cmd);
+  }
+#else
   QString cmd = QString("background-color: %1;")
     .arg(pen->color().name(QColor::HexArgb));
   setColourButton->setStyleSheet(cmd);
+#endif
   connect (setColourButton, &QPushButton::clicked,
 	   [=](){
 	     doColour (QColorDialog::getColor(pen->color (), nullptr),
@@ -291,8 +306,7 @@ Plot2DWindow::updateMode (PlotCurve *pc)
   modeCombo->addItem (STRING_SPLINES,	QVariant(MODE_BUTTON_SPLINE));
   modeCombo->addItem (STRING_LINES,	QVariant(MODE_BUTTON_LINE));
   modeCombo->addItem (STRING_SCATTER,	QVariant(MODE_BUTTON_SCATTER));
-  QVariant ap ((int)pc->mode ());
-  int idx = modeCombo->findData (ap);
+  int idx =  modeCombo->findData (QVariant (getMode ())); 
   modeCombo->setCurrentIndex (idx);
   layout->addWidget (modeCombo, row, col++);
 
@@ -736,10 +750,6 @@ void Plot2DWindow::setDecorations ()
 
   row++;
   col = 0;
-#if 0
-  QLabel curvesLbl ("Axes Labels");
-  layout->addWidget (&curvesLbl, row, col++);
-#endif
 
   QTableWidget *curvesTable = new QTableWidget (getPlotCurves ().size (),
 						CURVES_COLUMN_LAST, this);
@@ -953,7 +963,6 @@ void Plot2DWindow::createMenubar ()
 void
 Plot2DWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 {
-  //  mw->closeHW ();
   delete this;
 }
 
@@ -964,9 +973,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   mw = parent;
 
   plot2DData   = (data != nullptr) ? data : new Plot2dData (mw);
-#if 0
-  showPlot2dData (plot2DData);
-#endif
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
 
@@ -1009,11 +1015,21 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   layout->addWidget (curveTitle, row, col++);
 
 
-  // fixme -- init from data
-
-  
-  //setPen (QColor ("red"));
   QPushButton *setPenButton = new QPushButton (QObject::tr ("Pen"));
+  {
+    QColor bg = getPen ()->brush ().color ();
+    QColor fg = QColor (bg);
+    float hue;
+    float saturation;
+    float lightness;
+    bg.getHslF (&hue, &saturation, &lightness);
+    lightness = (lightness > 0.5) ? 0.0 : 1.0;
+    //    saturation = 1.0;
+    fg.setHslF (hue, saturation, lightness);
+    QString cmd = QString("color: %1; background-color: %2;")
+      .arg (fg.name(QColor::HexArgb)). arg (bg.name(QColor::HexArgb));
+    setPenButton->setStyleSheet(cmd);
+  }
   QObject::connect (setPenButton, &QPushButton::clicked,
 		    [=](){
 		      updatePen (getPen ());
@@ -1071,8 +1087,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   row++;
   col = 0;
 
-  // fixme -- init from data
-
   aspectCombo = new QComboBox ();
   aspectCombo->addItem (STRING_REAL,		QVariant(ASPECT_REAL));
   aspectCombo->addItem (STRING_IMAGINARY,	QVariant(ASPECT_IMAG));
@@ -1090,13 +1104,12 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   layout->addWidget (aspectCombo, row, col++);
   
   
-  // fixme -- init from data
 
   modeCombo = new QComboBox ();
   modeCombo->addItem (STRING_SPLINES,	QVariant(MODE_BUTTON_SPLINE));
   modeCombo->addItem (STRING_LINES,	QVariant(MODE_BUTTON_LINE));
   modeCombo->addItem (STRING_SCATTER,	QVariant(MODE_BUTTON_SCATTER));
-  int ap = (int)(plot2DData->activeCurve.mode ());
+  int ap =  modeCombo->findData (QVariant (getMode ())); 
   modeCombo->setCurrentIndex (ap);
   connect (modeCombo,
 	   QOverload<int>::of(&QComboBox::activated),
