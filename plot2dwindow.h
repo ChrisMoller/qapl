@@ -85,6 +85,7 @@ public:
   }
   series_mode_e getMode () {
     QVariant sel = modeCombo->currentData ();
+    fprintf (stderr, "getting mode %d\n", sel.toInt ());
     return (series_mode_e)sel.toInt ();
   }
 

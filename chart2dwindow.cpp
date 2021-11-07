@@ -157,8 +157,16 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 
 	  chartView->chart()->addSeries(series);
 	}
-	else
-	  mw->printError (tr ("Index and result vectors are of different lengths."));
+	else {
+#if 1
+	  QString msg = QString ("Index and result vectors \
+are of different lengths: %1 %2").arg (seriesCount).arg (idxVector.size ());
+	  mw->printError (msg);
+#else
+	  mw->printError (tr ("Index and result vectors \
+are of different lengths."));
+#endif
+	}
       }
       else
 	mw->printError (tr ("Expression evaluation error."));
@@ -267,7 +275,6 @@ Using only the real components in the axis."));
 	       realMax, realMin, idxVector);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
       pen = *(pw->getPlotCurves ()[i]->pen ());
-      fprintf (stderr, "drawing stack %d\n", i);
       drawCurve (pw->getPlotCurves ()[i]->expression (),
 		 pw->getPlotCurves ()[i]->aspect (),
 		 pw->getPlotCurves ()[i]->title (),
@@ -374,8 +381,11 @@ Using only the real components in the axis."));
       
 	chart->addAxis(axisX, Qt::AlignBottom);
 	chart->addAxis(axisY, Qt::AlignLeft);
-	series->attachAxis(axisX);
-	series->attachAxis(axisY);
+	QList<QAbstractSeries *> seriesList = chart->series ();
+	for (int i = 0; i < seriesList.size (); i++) {
+	  seriesList[i]->attachAxis(axisX);
+	  seriesList[i]->attachAxis(axisY);
+	}
       }
     }
     

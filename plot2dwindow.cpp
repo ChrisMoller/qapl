@@ -107,7 +107,7 @@ void Plot2DWindow::pushExpression ()
     new PlotCurve (aplExpr, aspect, label, pen, mode);
   plot2DData->plotCurves.append(plotCurve);
   //getPlotCurves ().append (plotCurve);
-  setAplExpression ("");
+  //  setAplExpression ("");
 }
 
 static QComboBox *
