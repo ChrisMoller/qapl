@@ -89,7 +89,7 @@ void Plot2DWindow::showPlot2dData (Plot2dData *data)
   
 }
 
-  void Plot2DWindow::drawCurves ()
+void Plot2DWindow::drawCurves ()
 {
   chart2DWindow->drawCurves ();
 }
@@ -101,10 +101,11 @@ void Plot2DWindow::pushExpression ()
   QVariant sel = aspectCombo->currentData ();
   aspect_e aspect = (aspect_e)sel.toInt ();
   QPen pen = *getPen ();
+  double markerSize = getMarkerSize ();
   sel = modeCombo->currentData ();
   series_mode_e mode = (series_mode_e)sel.toInt ();
   PlotCurve *plotCurve =
-    new PlotCurve (aplExpr, aspect, label, pen, mode);
+    new PlotCurve (aplExpr, aspect, label, pen, mode, markerSize);
   plot2DData->plotCurves.append(plotCurve);
 }
 
@@ -149,6 +150,14 @@ doWidth (double width, QPen *pen)
   pen->setWidthF (width);
 }
 
+#if 0
+static void
+doMarkerSize (double width, QPen *pen)
+{
+  //  pen->setWidthF (width);
+}
+#endif
+
 static void
 doStyle (int style, QPen *pen)
 {
@@ -166,7 +175,6 @@ Plot2DWindow::updatePen (QPen *pen)
   int col = 0;
 
   QPushButton *setColourButton = new QPushButton (QObject::tr ("Pen colour"));
-#if 1
   {
     QColor bg = getPen ()->brush ().color ();
     QColor fg = QColor (bg);
@@ -181,11 +189,6 @@ Plot2DWindow::updatePen (QPen *pen)
       .arg (fg.name(QColor::HexArgb)). arg (bg.name(QColor::HexArgb));
     setColourButton->setStyleSheet(cmd);
   }
-#else
-  QString cmd = QString("background-color: %1;")
-    .arg(pen->color().name(QColor::HexArgb));
-  setColourButton->setStyleSheet(cmd);
-#endif
   connect (setColourButton, &QPushButton::clicked,
 	   [=](){
 	     doColour (QColorDialog::getColor(pen->color (), nullptr),
@@ -224,6 +227,23 @@ Plot2DWindow::updatePen (QPen *pen)
 	    doWidth (d, pen);
 	  });
   layout->addWidget (widthBox, row, col++);
+  
+  row++;
+  col = 0;
+
+  QLabel mlbl ("Marker size");
+  layout->addWidget (&mlbl, row, col++);
+  
+  QDoubleSpinBox *markerSizeBox = new QDoubleSpinBox ();
+  markerSizeBox->setDecimals (4);
+  markerSizeBox->setMinimum (1.0);
+  markerSizeBox->setMaximum (64.0);
+  markerSizeBox->setValue (getMarkerSize ());
+  connect(markerSizeBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  [=](double d){
+	    setMarkerSize (d);
+	  });
+  layout->addWidget (markerSizeBox, row, col++);
 
   row++;
   col = 0;

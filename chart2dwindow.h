@@ -26,7 +26,7 @@ public:
   void drawCurve (QString aplExpr, aspect_e aspect,
 		  QString label, QPen pen, series_mode_e mode,
 		  double &realMax, double &realMin,
-		  std::vector<double> idxVector);
+		  std::vector<double> idxVector, double markerSize);
   void exportImage ();
   
  private:

@@ -26,12 +26,12 @@
         <initial>...</initial
         <final>...</final>
       </range>
-      <active aspect="..." mode="...">
+      <active aspect="..." mode="..." marker="...">
         <expression>....</expression>
         <label>....</label>
         <pen colour="..." style="..." width="..."/>
       </active>
-      <stack index="..." aspect="..." mode="...">
+      <stack index="..." aspect="..." mode="..." marker="...">
         <expression>....</expression>
         <label>....</label>
         <pen colour="..." style="..." width="..."/>
@@ -305,6 +305,7 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
     if (!attrs.isEmpty ()) {
       plot2DData->activeCurve.setAspect ((aspect_e)((attrs.value (xml_tags[XML_aspect].tag)).toInt ()));
       plot2DData->activeCurve.setMode ((series_mode_e)((attrs.value (xml_tags[XML_mode].tag)).toInt ()));
+      plot2DData->activeCurve.setMarkerSize ((attrs.value (xml_tags[XML_marker].tag)).toFloat ());
     }
     QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
@@ -559,6 +560,8 @@ void Plot2DWindow::dumpXML (QString fileName)
 			QString::number (getAspect ()));
   stream.writeAttribute(xml_tags[XML_mode].tag,
 			QString::number (getMode ()));
+  stream.writeAttribute(xml_tags[XML_marker].tag,
+			QString::number (getMarkerSize ()));
 
   /*** expression element ***/
   

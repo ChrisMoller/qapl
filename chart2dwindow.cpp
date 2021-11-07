@@ -41,7 +41,8 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
 void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
 			       QString label, QPen pen, series_mode_e mode,
 			       double &realMax, double &realMin,
-			       std::vector<double> idxVector)
+			       std::vector<double> idxVector,
+			       double markerSize)
 {
   if (!aplExpr.isEmpty ()) {
     switch (mode) {
@@ -53,6 +54,7 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
       break;
     case MODE_BUTTON_SCATTER:
       series = new QScatterSeries ();
+      static_cast<QScatterSeries*>(series)->setMarkerSize (markerSize);
       break;
     default:
       series = nullptr;
@@ -268,11 +270,12 @@ Using only the real components in the axis."));
     aspect_e aspect = pw->getAspect ();
     QString label = pw->getCurveTitle ();
     QPen pen = *(pw->getPen ());
+    double markerSize = pw->getMarkerSize ();
     series_mode_e mode = pw->getMode ();
     double realMax = -MAXDOUBLE;
     double realMin =  MAXDOUBLE;
     drawCurve (aplExpr, aspect, label, pen, mode,
-	       realMax, realMin, idxVector);
+	       realMax, realMin, idxVector, markerSize);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
       pen = *(pw->getPlotCurves ()[i]->pen ());
       drawCurve (pw->getPlotCurves ()[i]->expression (),
@@ -280,7 +283,9 @@ Using only the real components in the axis."));
 		 pw->getPlotCurves ()[i]->title (),
 		 pen,
 		 pw->getPlotCurves ()[i]->mode (),
-		 realMax, realMin, idxVector);
+		 realMax, realMin, idxVector,
+		 pw->getPlotCurves ()[i]->markerSize ()
+		 );
     }
 
     if (series != nullptr) {

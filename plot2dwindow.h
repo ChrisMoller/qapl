@@ -28,6 +28,10 @@ public:
   void     setAplExpression (QString expression) {
     plot2DData->activeCurve.setExpression (expression);
   }
+  double getMarkerSize () { return plot2DData->activeCurve.markerSize (); }
+  void   setMarkerSize (double ms) {
+    plot2DData->activeCurve.setMarkerSize (ms);
+  }
   double   getRealInit ()  { return plot2DData->rangeInit.real (); }
   double   getRealFinal () { return plot2DData->rangeFinal.real (); }
   double   getImagInit ()  { return plot2DData->rangeFinal.imag (); }

@@ -10,13 +10,16 @@ public:
   PlotCurve () {
     a_mode	= MODE_BUTTON_SPLINE;
     a_aspect	= ASPECT_REAL;
+    a_markerSize = 15.0;
   }
-  PlotCurve (QString &e,  aspect_e &a, QString l, QPen p, series_mode_e m) {
+  PlotCurve (QString &e,  aspect_e &a, QString l, QPen p,
+	     series_mode_e m, double ms) {
     a_expression = e;
     a_aspect = a;
     a_pen = p;
     a_title = l;
     a_mode = m;
+    a_markerSize = ms;
   }
   QString title () { return a_title; }
   void setTitle (QString title) { a_title = title; }
@@ -28,6 +31,8 @@ public:
   void setAspect (aspect_e aspect) { a_aspect = aspect; }
   series_mode_e mode () { return a_mode; }
   void setMode (series_mode_e mode) { a_mode = mode; }
+  double markerSize () { return a_markerSize; }
+  void setMarkerSize (double ms) { a_markerSize = ms; }
   
 private:
   QString	a_title;
@@ -35,6 +40,7 @@ private:
   aspect_e	a_aspect;
   QPen		a_pen;
   series_mode_e a_mode;
+  double	a_markerSize;
 };
 
 class Plot2dData {
