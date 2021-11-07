@@ -211,8 +211,6 @@ void Chart2DWindow::drawCurves ()
     QBrush  brush (gep);
     chart->setBackgroundBrush (brush);
   }
-
-  // was in drawCurves()
   
   double realIncr   = (pw->getRealFinal () - pw->getRealInit ()) /
     (double)(pw->getResolution ());

@@ -162,6 +162,39 @@ bool Plot2DWindow::parsePen (QXmlStreamReader &stream,
   return rc;
 }
 
+bool Plot2DWindow::parseStackPen (QXmlStreamReader &stream,
+				  PlotCurve *plotCurve)
+{
+  bool rc = false;
+  bool run = true;
+  while (run) {
+    QXmlStreamAttributes attrs = stream.attributes();
+    if (!attrs.isEmpty ()) {
+      QBrush brush (QColor (attrs.value (xml_tags[XML_colour].tag)));
+      Qt::PenStyle style = (Qt::PenStyle)attrs.value (xml_tags[XML_style].tag).toInt ();
+      double width = attrs.value (xml_tags[XML_width].tag).toFloat ();
+      QPen pen (brush, width, style);
+      plotCurve->setPen (pen);
+    }
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    default:
+      break;
+    }
+  }
+  
+  return rc;
+}
+
 bool Plot2DWindow::parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData)
 {
   bool rc = false;
@@ -343,6 +376,58 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
   return rc;
 }
 
+bool Plot2DWindow::parseStack (QXmlStreamReader &stream,
+			       Plot2dData *plot2DData)
+{
+  bool rc = false;
+  bool run = true;
+  PlotCurve *plotCurve = new PlotCurve ();
+  while (run) {
+    QXmlStreamAttributes attrs = stream.attributes();
+    if (!attrs.isEmpty ()) {
+      plotCurve->setAspect ((aspect_e)((attrs.value (xml_tags[XML_aspect].tag)).toInt ()));
+      plotCurve->setMode ((series_mode_e)((attrs.value (xml_tags[XML_mode].tag)).toInt ()));
+      plotCurve->setMarkerSize ((attrs.value (xml_tags[XML_marker].tag)).toFloat ());
+      // XML_index not used
+    }
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_expression:
+	{
+	  QString exp = stream.readElementText ();
+	  plotCurve->setExpression (exp);
+	}
+        break;
+      case XML_label:
+	plotCurve->setTitle (stream.readElementText ());
+        break;
+      case XML_pen:
+	parseStackPen (stream, plotCurve);
+        break;
+      default:
+	// fprintf (stderr, "unhandled active value \"%s\"\n", toCString (sn));
+	break;
+      }
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    default:
+      break;
+    }
+  }
+
+  plot2DData->plotCurves.append(plotCurve);
+  
+  return rc;
+}
+
 bool Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData)
 {
   bool rc = false;
@@ -380,6 +465,9 @@ bool Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData)
         break;
       case XML_active:
 	parseActive (stream, plot2DData);
+        break;
+      case XML_stack:
+	parseStack (stream, plot2DData);
         break;
       default:
 	// fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));

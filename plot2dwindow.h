@@ -108,7 +108,9 @@ public:
   static bool parseAxesTitle (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parseActive (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseStack (QXmlStreamReader &stream, Plot2dData *plot2DData);
   static bool parsePen (QXmlStreamReader &stream, Plot2dData *plot2DData);
+  static bool parseStackPen (QXmlStreamReader &stream, PlotCurve *plotCurve);
   QString currentPlotFile;
 
 private:
