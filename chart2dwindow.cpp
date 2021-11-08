@@ -18,8 +18,8 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
 				  double &realYMax, double &realYMin)
 {
   bool rc = true;
-  if (realXMax < y) realXMax = x;
-  if (realXMin > y) realXMin = x;
+  if (realXMax < x) realXMax = x;
+  if (realXMin > x) realXMin = x;
   if (realYMax < y) realYMax = y;
   if (realYMin > y) realYMin = y;
   switch (mode) {
@@ -459,16 +459,6 @@ Using only the real components in the axis."));
 	}
       }
     }
-    
-  
-#if 0	
-    QValueAxis *axisX =  QValueAxis ();
-    
-    axisX->setRange(10, 20.5);
-    axisX->setTickCount(10);
-    axisX->setLabelFormat("%.2f");
-    chartView->chart()->setAxisX(axisX, series);
-#endif
   }
   else
     mw->printError (tr ("Index evaluation error."));

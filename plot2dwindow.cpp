@@ -1145,8 +1145,9 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   aspectCombo->setCurrentIndex (ac);
   connect (aspectCombo,
 	   QOverload<int>::of(&QComboBox::activated),
-          [=](int index __attribute__((unused)))
+          [=](int index)
           {
+	    plot2DData->activeCurve.setAspect ((aspect_e)index);
 	    drawCurves ();
 	  });
 
@@ -1162,8 +1163,10 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   modeCombo->setCurrentIndex (ap);
   connect (modeCombo,
 	   QOverload<int>::of(&QComboBox::activated),
-          [=](int index __attribute__((unused)))
+          [=](int index)
           {
+	    QVariant sel = modeCombo->itemData (index);
+	    plot2DData->activeCurve.setMode ((series_mode_e)sel.toInt ());
 	    drawCurves ();
 	  });
 
