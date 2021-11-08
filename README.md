@@ -309,21 +309,50 @@ under the Plot menu, which will get you the following panel:
 <img src="./images/2dcontrols.png">
 </p>
 
-The first entry is the APL expression to be evaluated.  It should be an
-expression that accepts either a real or complex vector (a simple example
-being 1○ix where ix is the numeric vector) and evaluate to a numeric vector.
-The resultant sequence of pairs from ix and the evaluation result are what will
-be plotted.
+2D plots may be created in either of two modes, a function value on the Y axis
+against a linear range on the X axis, or parametrically with independent
+functions on both axes.
 
-The enty "Index var" should contain the variable used in the expression, ix in
+For parametric plots, the first entry in the 2d Plot Controls panel, "cos %1",
+on the image above, is a function that evaluates to a vector of x values while
+the second entry, "sin 2.7×%1", provides the y vector.  (Note that the
+functions use the lambdas described above.)  Both of these functions are
+evaluated against a vector, shown as %1 in the image above.  The significance
+of that will be discussed below.  The following is an example of the
+parametric plot specified above:
+
+<p align="center">
+<img src="./images/lissajous.png">
+</p>
+
+For y-versus-range plots, the first entry is left blank and the function
+specified by the second entry is the APL expression to be evaluated.
+
+In both of these cases, the function specified should be against either a real
+or complex vector (a simple example being "sin %1" where %1 is the numeric
+vector) and evaluate to a numeric vector.  The resultant sequence of pairs
+from ix and the evaluation result are what will be plotted.
+
+The enty "Index var" may contain the variable used in the expression, ix in
 this case, and the two following fields the initial and final values of the
 index vector.  (How that vector is generated will be addressed in a moment.)
 Each of those fields may contain a complex number.
 
-Clicking the up and down arrows increment and decrement the real components
-of the values, and the keyboard up and down arrows and the mouse wheel will do
-the same thing.  Holding down the control key while doing any of that will
-increment or decrement the imaginary portion.
+Use of the "Index var" field will result in a variable of that name left in
+the APL workspace.  That can be useful when experimenting in the workspace
+with the expression to be evaluated, but under some circumatances leaving that
+variable in the workspace may be undesirable.  If that's the case, a
+qapl-generated dummy variable may used instead by leaving the "Index var"
+field empty and replacing references to it in the expressions with "%1".  This
+will result in the temporary creation of a dummy variable and the replacement
+in the expressions of every instance of "%1" with the name of that dummy
+variable.  After the expression is evaluated, the dummy variable is erased.
+
+Clicking the up and down arrows adjacent to the Index var field increment and
+decrement the real components of the values, and the keyboard up and down
+arrows and the mouse wheel will do the same thing.  Holding down the control
+key while doing any of that will increment or decrement the imaginary portion.
+If no index variable is specified, the range is set to the dummy variable.
 
 Values may be entered manually, in any normally accepted fixed or floating
 point format, with the extra feature that a value affixed with a 'p' (or 'P')
@@ -341,16 +370,6 @@ the initial and final real and imaginary values.  The default interpolation
 interval is 16, which can be changed under the Settings sub-menu.  (Due to
 sampling issues, the resultant curves can vary significantly depending on that
 interval.)
-
-Use of the "Index var" field will result in a variable of that name left in
-the APL workspace.  That can be useful when experimenting in the workspace
-with the expression to be evaluated, but under some circumatances leaving that
-variable in the workspace may be undesirable.  If that's the case, a
-qapl-generated dummy variable may used instead by leaving the "Index var"
-field empty and replacing references to it in the expression with "%1".  This
-will result in the temporary creation of a dummy variable and the replacement
-in the expression of every instance of "%1" with the name of that dummy
-variable.  After the expression is evaluated, the dummy variable is erased.
 
 (The index dummy variable is named "idxvarλ", which contains a "λ", which I
 assume will be rarely used except by users of Greek keyboards.  Similarly,
@@ -391,9 +410,6 @@ Another example showing two instances of the use of the dummy variable %1
 <p align="center">
 <img src="./images/amplitude.png">
 </p>
-
-(Note that the expression here makes use of the lambda convenience functions
-described above.)
 
 Plots may be superimposed over background images:
 
