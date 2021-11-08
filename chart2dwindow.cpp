@@ -9,15 +9,19 @@
 #include <values.h>
 #include <apl/libapl.h>
 
-#define PLOTVAR "plotvarλ"
+#define PLOTVARX "plotvarxλ"
+#define PLOTVARY "plotvaryλ"
 #define IDXVAR  "idxvarλ"
 
 bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
-				  double &realMax, double &realMin)
+				  double &realXMax, double &realXMin,
+				  double &realYMax, double &realYMin)
 {
   bool rc = true;
-  if (realMax < y) realMax = y;
-  if (realMin > y) realMin = y;
+  if (realXMax < y) realXMax = x;
+  if (realXMin > y) realXMin = x;
+  if (realYMax < y) realYMax = y;
+  if (realYMin > y) realYMin = y;
   switch (mode) {
   case MODE_BUTTON_SPLINE:
     static_cast<QSplineSeries*>(series)->append(x, y);
@@ -40,8 +44,10 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
 
 void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
 			       aspect_e aspect, QString label, QPen pen,
-			       series_mode_e mode, double &realMax,
-			       double &realMin, std::vector<double> idxVector,
+			       series_mode_e mode,
+			       double &realXMax, double &realXMin,
+			       double &realYMax, double &realYMin,
+			       std::vector<double> idxVector,
 			       double markerSize)
 {
   if (!aplYExpr.isEmpty ()) {
@@ -67,61 +73,119 @@ void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
     }
   
     aplYExpr.replace (QString ("%1"), QString (IDXVAR));
-    QString cmd = QString ("%1←%2").arg (PLOTVAR, aplYExpr);
+    QString cmd = QString ("%1←%2").arg (PLOTVARY, aplYExpr);
     mw->processLine (false, cmd);
-    QString pv (PLOTVAR);
-    APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
+    QString pv (PLOTVARY);
+    APL_value resulty = get_var_value (pv.toUtf8 (), "drawCurve.result");
 
-    if (result != nullptr) {
-      int resultElementCount = get_element_count (result);
+    APL_value resultx = nullptr;
+    if (!aplXExpr.isEmpty ()) {
+      aplXExpr.replace (QString ("%1"), QString (IDXVAR));
+      QString cmd = QString ("%1←%2").arg (PLOTVARX, aplXExpr);
+      mw->processLine (false, cmd);
+      QString pv (PLOTVARX);
+      resultx = get_var_value (pv.toUtf8 (), "drawCurve.result");
+    }
+
+    if (resulty != nullptr) {
+      int resultElementCount = get_element_count (resulty);
       bool resultValid = true;
       bool run = true;
+      if (resultx != nullptr) {
+	int rec = get_element_count (resultx);
+	if (rec != resultElementCount) {
+	  mw->printError (tr ("X and Y vectors are of different length."));
+	  run = false;
+	}
+      }
 
       for (int i = 0; run && i < resultElementCount; i++) {
-	int type = get_type (result, i);
+	double xVal = 0.0;
+	if (resultx != nullptr) {
+	  int type = get_type (resultx, i);
+	  switch(type) {
+	  case CCT_CHAR:
+	  case CCT_POINTER:
+	    resultValid = false;
+	    break;
+	  case CCT_INT:
+	    xVal = (double)get_int (resultx, i);
+	    break;
+	  case CCT_FLOAT:
+	    xVal = get_real (resultx, i);
+	    break;
+	  case CCT_COMPLEX:
+	    switch (aspect) {
+	    case ASPECT_REAL:
+	      xVal = get_real (resultx, i);
+	      break;
+	    case ASPECT_IMAG:
+	      xVal = get_imag (resultx, i);
+	      break;
+	    case ASPECT_MAGNITUDE:
+	      {
+		std::complex<double> val (get_real (resultx, i),
+					  get_imag (resultx, i));
+		xVal = std::abs (val);
+	      }
+	      break;
+	    case ASPECT_PHASE:
+	      {
+		std::complex<double> val (get_real (resultx, i),
+					  get_imag (resultx, i));
+		xVal = std::arg (val);
+	      }
+	      break;
+	    }
+	    break;
+	  }
+	}
+	else xVal = idxVector[i];
+	
+	int type = get_type (resulty, i);
 	switch(type) {
 	case CCT_CHAR:
 	case CCT_POINTER:
 	  resultValid = false;
 	  break;
 	case CCT_INT:
-	  if (!appendSeries (idxVector[i],
-			     (double)get_int (result, i), mode,
-			     realMax, realMin))
+	  if (!appendSeries (xVal,
+			     (double)get_int (resulty, i), mode,
+			     realXMax, realXMin, realYMax, realYMin))
 	    run = false;
 	  break;
 	case CCT_FLOAT:
-	  if (!appendSeries (idxVector[i], get_real (result, i), mode,
-			     realMax, realMin))
+	  if (!appendSeries (xVal, get_real (resulty, i), mode,
+			     realXMax, realXMin, realYMax, realYMin))
 	    run = false;
 	  break;
 	case CCT_COMPLEX:
 	  {
 	    switch (aspect) {
 	    case ASPECT_REAL:
-	      if (!appendSeries (idxVector[i], get_real (result, i), mode,
-				 realMax, realMin))
+	      if (!appendSeries (xVal, get_real (resulty, i), mode,
+				 realXMax, realXMin, realYMax, realYMin))
 		run = false;
 	      break;
 	    case ASPECT_IMAG:
-	      if (!appendSeries (idxVector[i], get_imag (result, i), mode,
-				 realMax, realMin))
+	      if (!appendSeries (xVal, get_imag (resulty, i), mode,
+				 realXMax, realXMin, realYMax, realYMin))
 		run = false;
 	      break;
 	    case ASPECT_MAGNITUDE:
 	      {
-		std::complex<double> val (get_real (result, i),
-					  get_imag (result, i));
-		if (!appendSeries (idxVector[i], std::abs (val), mode,
-				   realMax, realMin))
+		std::complex<double> val (get_real (resulty, i),
+					  get_imag (resulty, i));
+		if (!appendSeries (xVal, std::abs (val), mode,
+				   realXMax, realXMin, realYMax, realYMin))
 		  run = false;
 	      }
 	      break;
 	    case ASPECT_PHASE:
-	      std::complex<double> val (get_real (result, i),
-					get_imag (result, i));
-	      if (!appendSeries (idxVector[i], std::arg (val), mode,
-				 realMax, realMin))
+	      std::complex<double> val (get_real (resulty, i),
+					get_imag (resulty, i));
+	      if (!appendSeries (xVal, std::arg (val), mode,
+				 realXMax, realXMin, realYMax, realYMin))
 		run = false;
 	      break;
 	    }
@@ -160,14 +224,9 @@ void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
 	  chartView->chart()->addSeries(series);
 	}
 	else {
-#if 1
 	  QString msg = QString ("Index and result vectors \
 are of different lengths: %1 %2").arg (seriesCount).arg (idxVector.size ());
 	  mw->printError (msg);
-#else
-	  mw->printError (tr ("Index and result vectors \
-are of different lengths."));
-#endif
 	}
       }
       else
@@ -176,7 +235,7 @@ are of different lengths."));
     else
       mw->printError (tr ("Expression evaluation error."));
 
-    cmd = QString (")erase %1").arg (PLOTVAR);
+    cmd = QString (")erase %1").arg (PLOTVARY);
     mw->processLine (false, cmd);
   }
 }
@@ -271,10 +330,13 @@ Using only the real components in the axis."));
     QPen pen = *(pw->getPen ());
     double markerSize = pw->getMarkerSize ();
     series_mode_e mode = pw->getMode ();
-    double realMax = -MAXDOUBLE;
-    double realMin =  MAXDOUBLE;
+    double realXMax = -MAXDOUBLE;
+    double realXMin =  MAXDOUBLE;
+    double realYMax = -MAXDOUBLE;
+    double realYMin =  MAXDOUBLE;
     drawCurve (aplXExpr, aplYExpr, aspect, label, pen, mode,
-	       realMax, realMin, idxVector, markerSize);
+	       realXMax, realXMin, realYMax, realYMin,
+	       idxVector, markerSize);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
       pen = *(pw->getPlotCurves ()[i]->pen ());
       drawCurve (pw->getPlotCurves ()[i]->Xexpression (),
@@ -283,7 +345,9 @@ Using only the real components in the axis."));
 		 pw->getPlotCurves ()[i]->title (),
 		 pen,
 		 pw->getPlotCurves ()[i]->mode (),
-		 realMax, realMin, idxVector,
+		 realXMax, realXMin,
+		 realYMax, realYMin,
+		 idxVector,
 		 pw->getPlotCurves ()[i]->markerSize ()
 		 );
     }
@@ -379,10 +443,12 @@ Using only the real components in the axis."));
 	// axisY->setShadesBrush(QBrush(QColor(0x99, 0xcc, 0xcc, 0x55)));
 	// axisY->setShadesVisible(true);
       
-	double dx = 0.075 * (idxVector.back () - idxVector.front ());
-	double dy = 0.075 * (realMax - realMin);
-	axisY->setRange(realMin - dy, realMax + dy);
-	axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
+	//	double dx = 0.075 * (idxVector.back () - idxVector.front ());
+	double dx = 0.075 * (realXMax - realXMin);
+	double dy = 0.075 * (realYMax - realYMin);
+	axisX->setRange(realXMin - dx, realXMax + dx);
+	axisY->setRange(realYMin - dy, realYMax + dy);
+	// axisX->setRange(idxVector.front () - dx, idxVector.back () + dx);
       
 	chart->addAxis(axisX, Qt::AlignBottom);
 	chart->addAxis(axisY, Qt::AlignLeft);

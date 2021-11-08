@@ -25,7 +25,8 @@ public:
   void drawCurves ();
   void drawCurve (QString aplXExpr, QString aplYExpr,aspect_e aspect,
 		  QString label, QPen pen, series_mode_e mode,
-		  double &realMax, double &realMin,
+		  double &realXMax, double &realXMin,
+		  double &realYMax, double &realYMin,
 		  std::vector<double> idxVector, double markerSize);
   void exportImage ();
   
@@ -41,7 +42,8 @@ public:
   QChart *chart;
   QAbstractSeries *series;
   bool appendSeries (double x, double y, series_mode_e mode,
-		     double &realMax, double &realMin);
+		     double &realXMax, double &realXMin,
+		     double &realYMax, double &realYMin);
   QString currentImageExportFile;
   bool showPreview (QPixmap plotPixmap);
   double fontScale;
