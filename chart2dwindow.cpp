@@ -38,13 +38,13 @@ bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
   return rc;
 }
 
-void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
-			       QString label, QPen pen, series_mode_e mode,
-			       double &realMax, double &realMin,
-			       std::vector<double> idxVector,
+void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
+			       aspect_e aspect, QString label, QPen pen,
+			       series_mode_e mode, double &realMax,
+			       double &realMin, std::vector<double> idxVector,
 			       double markerSize)
 {
-  if (!aplExpr.isEmpty ()) {
+  if (!aplYExpr.isEmpty ()) {
     switch (mode) {
     case MODE_BUTTON_SPLINE:
       series = new QSplineSeries ();
@@ -66,8 +66,8 @@ void Chart2DWindow::drawCurve (QString aplExpr, aspect_e aspect,
       pen.setWidth ((int)(10.0 * fontScale * (double)pen.width ()));
     }
   
-    aplExpr.replace (QString ("%1"), QString (IDXVAR));
-    QString cmd = QString ("%1←%2").arg (PLOTVAR, aplExpr);
+    aplYExpr.replace (QString ("%1"), QString (IDXVAR));
+    QString cmd = QString ("%1←%2").arg (PLOTVAR, aplYExpr);
     mw->processLine (false, cmd);
     QString pv (PLOTVAR);
     APL_value result = get_var_value (pv.toUtf8 (), "drawCurve.result");
@@ -264,7 +264,8 @@ void Chart2DWindow::drawCurves ()
       mw->printError (tr ("Index contains imaginary components.  \
 Using only the real components in the axis."));
       
-    QString aplExpr = pw->getAplExpression ();
+    QString aplXExpr = pw->getAplXExpression ();
+    QString aplYExpr = pw->getAplYExpression ();
     aspect_e aspect = pw->getAspect ();
     QString label = pw->getCurveTitle ();
     QPen pen = *(pw->getPen ());
@@ -272,11 +273,12 @@ Using only the real components in the axis."));
     series_mode_e mode = pw->getMode ();
     double realMax = -MAXDOUBLE;
     double realMin =  MAXDOUBLE;
-    drawCurve (aplExpr, aspect, label, pen, mode,
+    drawCurve (aplXExpr, aplYExpr, aspect, label, pen, mode,
 	       realMax, realMin, idxVector, markerSize);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
       pen = *(pw->getPlotCurves ()[i]->pen ());
-      drawCurve (pw->getPlotCurves ()[i]->expression (),
+      drawCurve (pw->getPlotCurves ()[i]->Xexpression (),
+		 pw->getPlotCurves ()[i]->Yexpression (),
 		 pw->getPlotCurves ()[i]->aspect (),
 		 pw->getPlotCurves ()[i]->title (),
 		 pen,

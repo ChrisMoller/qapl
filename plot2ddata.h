@@ -12,9 +12,10 @@ public:
     a_aspect	= ASPECT_REAL;
     a_markerSize = 15.0;
   }
-  PlotCurve (QString &e,  aspect_e &a, QString l, QPen p,
+  PlotCurve (QString &ex,  QString &ey, aspect_e &a, QString l, QPen p,
 	     series_mode_e m, double ms) {
-    a_expression = e;
+    x_expression = ex;
+    y_expression = ey;
     a_aspect = a;
     a_pen = p;
     a_title = l;
@@ -23,8 +24,10 @@ public:
   }
   QString title () { return a_title; }
   void setTitle (QString title) { a_title = title; }
-  QString expression () { return a_expression; }
-  void setExpression (QString expression) { a_expression = expression; }
+  QString Xexpression () { return x_expression; }
+  void setXExpression (QString expression) { x_expression = expression; }
+  QString Yexpression () { return y_expression; }
+  void setYExpression (QString expression) { y_expression = expression; }
   QPen *pen () { return &a_pen; }
   void setPen (QPen pen) { a_pen = pen; }
   aspect_e aspect () { return a_aspect; }
@@ -36,7 +39,8 @@ public:
   
 private:
   QString	a_title;
-  QString	a_expression;
+  QString	x_expression;
+  QString	y_expression;
   aspect_e	a_aspect;
   QPen		a_pen;
   series_mode_e a_mode;

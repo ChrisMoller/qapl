@@ -77,8 +77,10 @@ void Plot2DWindow::showPlot2dData (Plot2dData *data)
   
   fprintf (stderr, "active aspect:\t\t%d\n",	data->activeCurve.aspect ());
   fprintf (stderr, "active mode:\t\t%d\n",	data->activeCurve.mode ());
-  fprintf (stderr, "active expression:\t%s\n",
-	   toCString (data->activeCurve.expression ()));
+  fprintf (stderr, "active X expression:\t%s\n",
+	   toCString (data->activeCurve.Xexpression ()));
+  fprintf (stderr, "active Y expression:\t%s\n",
+	   toCString (data->activeCurve.Yexpression ()));
   fprintf (stderr, "active label:\t\t%s\n",
 	   toCString (data->activeCurve.title ()));
   QPen *pen = data->activeCurve.pen ();
@@ -96,7 +98,8 @@ void Plot2DWindow::drawCurves ()
 
 void Plot2DWindow::pushExpression ()
 {
-  QString aplExpr = getAplExpression ();
+  QString aplXExpr = getAplXExpression ();
+  QString aplYExpr = getAplYExpression ();
   QString label = getCurveTitle ();
   QVariant sel = aspectCombo->currentData ();
   aspect_e aspect = (aspect_e)sel.toInt ();
@@ -105,7 +108,7 @@ void Plot2DWindow::pushExpression ()
   sel = modeCombo->currentData ();
   series_mode_e mode = (series_mode_e)sel.toInt ();
   PlotCurve *plotCurve =
-    new PlotCurve (aplExpr, aspect, label, pen, mode, markerSize);
+    new PlotCurve (aplXExpr, aplYExpr, aspect, label, pen, mode, markerSize);
   plot2DData->plotCurves.append(plotCurve);
 }
 
@@ -401,7 +404,8 @@ QString Plot2DWindow::getAspectString (int idx)
 
 enum {
   CURVES_COLUMN_LABEL,
-  CURVES_COLUMN_EXPRESSION,
+  CURVES_COLUMN_X_EXPRESSION,
+  CURVES_COLUMN_Y_EXPRESSION,
   CURVES_COLUMN_ASPECT,
   CURVES_COLUMN_PEN,
   CURVES_COLUMN_MODE,
@@ -417,9 +421,13 @@ void Plot2DWindow::fillTable ( QTableWidget *curvesTable)
     QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
     curvesTable->setItem (i, CURVES_COLUMN_LABEL, labelItem);
     
-    QTableWidgetItem *exprItem
-      = new QTableWidgetItem (getPlotCurves ()[i]->expression ());
-    curvesTable->setItem (i, CURVES_COLUMN_EXPRESSION, exprItem);
+    QTableWidgetItem *XexprItem
+      = new QTableWidgetItem (getPlotCurves ()[i]->Xexpression ());
+    curvesTable->setItem (i, CURVES_COLUMN_X_EXPRESSION, XexprItem);
+    
+    QTableWidgetItem *YexprItem
+      = new QTableWidgetItem (getPlotCurves ()[i]->Yexpression ());
+    curvesTable->setItem (i, CURVES_COLUMN_Y_EXPRESSION, YexprItem);
 
     QString aspectString = getAspectString (i);
     QTableWidgetItem *aspectItem = new QTableWidgetItem (aspectString);
@@ -796,10 +804,16 @@ void Plot2DWindow::setDecorations ()
 	       getPlotCurves ()[row]->setTitle (newLabel);
 	       drawCurves ();
 	     }
-	     else if (column == CURVES_COLUMN_EXPRESSION) {
-	       QTableWidgetItem *expItem = curvesTable->item (row, column);
-	       QString newExp = expItem->text ();
-	       plot2DData->plotCurves[row]->setExpression (newExp);
+	     else if (column == CURVES_COLUMN_X_EXPRESSION) {
+	       QTableWidgetItem *XexpItem = curvesTable->item (row, column);
+	       QString newExp = XexpItem->text ();
+	       plot2DData->plotCurves[row]->setXExpression (newExp);
+	       drawCurves ();
+	     }
+	     else if (column == CURVES_COLUMN_Y_EXPRESSION) {
+	       QTableWidgetItem *YexpItem = curvesTable->item (row, column);
+	       QString newExp = YexpItem->text ();
+	       plot2DData->plotCurves[row]->setYExpression (newExp);
 	       drawCurves ();
 	     }
 	   });
@@ -839,7 +853,8 @@ void Plot2DWindow::setDecorations ()
 
   QStringList headers = {
     "Label",
-    "Expression",
+    "X Expression",
+    "Y Expression",
     "Aspect",
     "Pen",
     "Mode",
@@ -1009,16 +1024,30 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   int row = 0;
   int col = 0;
   
-  QLineEdit *aplExpression = new QLineEdit ();
-  aplExpression->setPlaceholderText (tr ("APL expression"));
-  aplExpression->setText (getAplExpression ());
-  connect (aplExpression,
+  QLineEdit *aplXExpression = new QLineEdit ();
+  aplXExpression->setPlaceholderText (tr ("APL X expression"));
+  aplXExpression->setText (getAplXExpression ());
+  connect (aplXExpression,
            &QLineEdit::editingFinished,
           [=](){
-	    setAplExpression (aplExpression->text ());
+	    setAplXExpression (aplXExpression->text ());
 	    if (setupComplete) drawCurves ();
           });
-  layout->addWidget (aplExpression, row, col, 1, 3);
+  layout->addWidget (aplXExpression, row, col, 1, 3);
+
+  row++;
+  col = 0;
+  
+  QLineEdit *aplYExpression = new QLineEdit ();
+  aplYExpression->setPlaceholderText (tr ("APL Y expression"));
+  aplYExpression->setText (getAplYExpression ());
+  connect (aplYExpression,
+           &QLineEdit::editingFinished,
+          [=](){
+	    setAplYExpression (aplYExpression->text ());
+	    if (setupComplete) drawCurves ();
+          });
+  layout->addWidget (aplYExpression, row, col, 1, 3);
 
   row++;
   col = 0;

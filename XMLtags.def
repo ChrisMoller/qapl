@@ -11,7 +11,8 @@ xml_def(dashdot,	Qt::DashDotLine),			// style
 xml_def(dashdotdot,	Qt::DashDotDotLine),			// style
 xml_def(degrees,	COORD_POLAR_DEGREES),			// format
 xml_def(dot,		Qt::DotLine),				// style
-xml_def(expression,	0),
+xml_def(Xexpression,	0),
+xml_def(Yexpression,	0),
 xml_def(final,		0),
 xml_def(font,		0),
 xml_def(icy,		QChart::ChartThemeBlueIcy),		// theme

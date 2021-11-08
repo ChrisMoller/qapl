@@ -27,12 +27,14 @@
         <final>...</final>
       </range>
       <active aspect="..." mode="..." marker="...">
-        <expression>....</expression>
+        <Xexpression>....</Xexpression>
+        <Yexpression>....</Yexpression>
         <label>....</label>
         <pen colour="..." style="..." width="..."/>
       </active>
       <stack index="..." aspect="..." mode="..." marker="...">
-        <expression>....</expression>
+        <Xexpression>....</Xexpression>
+        <Yexpression>....</Yexpression>
         <label>....</label>
         <pen colour="..." style="..." width="..."/>
       </stack>
@@ -345,10 +347,16 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
     switch (tt) {
     case QXmlStreamReader::StartElement:
       switch (xmlhash.value (sn)) {
-      case XML_expression:
+      case XML_Xexpression:
 	{
 	  QString exp = stream.readElementText ();
-	  plot2DData->activeCurve.setExpression (exp);
+	  plot2DData->activeCurve.setXExpression (exp);
+	}
+        break;
+      case XML_Yexpression:
+	{
+	  QString exp = stream.readElementText ();
+	  plot2DData->activeCurve.setYExpression (exp);
 	}
         break;
       case XML_label:
@@ -395,10 +403,16 @@ bool Plot2DWindow::parseStack (QXmlStreamReader &stream,
     switch (tt) {
     case QXmlStreamReader::StartElement:
       switch (xmlhash.value (sn)) {
-      case XML_expression:
+      case XML_Xexpression:
 	{
 	  QString exp = stream.readElementText ();
-	  plotCurve->setExpression (exp);
+	  plotCurve->setXExpression (exp);
+	}
+        break;
+      case XML_Yexpression:
+	{
+	  QString exp = stream.readElementText ();
+	  plotCurve->setYExpression (exp);
 	}
         break;
       case XML_label:
@@ -651,10 +665,14 @@ void Plot2DWindow::dumpXML (QString fileName)
   stream.writeAttribute(xml_tags[XML_marker].tag,
 			QString::number (getMarkerSize ()));
 
-  /*** expression element ***/
+  /*** expression elements ***/
   
-  stream.writeStartElement(xml_tags[XML_expression].tag);
-  stream.writeCharacters(getAplExpression ());
+  stream.writeStartElement(xml_tags[XML_Xexpression].tag);
+  stream.writeCharacters(getAplXExpression ());
+  stream.writeEndElement(); // expression
+  
+  stream.writeStartElement(xml_tags[XML_Yexpression].tag);
+  stream.writeCharacters(getAplYExpression ());
   stream.writeEndElement(); // expression
 
   /*** label element ***/
@@ -690,10 +708,14 @@ void Plot2DWindow::dumpXML (QString fileName)
     stream.writeAttribute(xml_tags[XML_mode].tag,
 			  QString::number (pc->mode ()));
 
-    /*** expression element ***/
+    /*** expression elements ***/
   
-    stream.writeStartElement(xml_tags[XML_expression].tag);
-    stream.writeCharacters(pc->expression ());
+    stream.writeStartElement(xml_tags[XML_Xexpression].tag);
+    stream.writeCharacters(pc->Xexpression ());
+    stream.writeEndElement(); // expression
+  
+    stream.writeStartElement(xml_tags[XML_Yexpression].tag);
+    stream.writeCharacters(pc->Yexpression ());
     stream.writeEndElement(); // expression
 
     /*** label element ***/

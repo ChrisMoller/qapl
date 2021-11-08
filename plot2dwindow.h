@@ -24,9 +24,17 @@ class Plot2DWindow : public QMainWindow
 public:
   Plot2DWindow (MainWindow *parent, Plot2dData *data);
   ~Plot2DWindow ();
-  QString  getAplExpression () { return plot2DData->activeCurve.expression (); }
-  void     setAplExpression (QString expression) {
-    plot2DData->activeCurve.setExpression (expression);
+  QString  getAplXExpression () {
+    return plot2DData->activeCurve.Xexpression ();
+  }
+  void     setAplXExpression (QString expression) {
+    plot2DData->activeCurve.setXExpression (expression);
+  }
+  QString  getAplYExpression () {
+    return plot2DData->activeCurve.Yexpression ();
+  }
+  void     setAplYExpression (QString expression) {
+    plot2DData->activeCurve.setYExpression (expression);
   }
   double getMarkerSize () { return plot2DData->activeCurve.markerSize (); }
   void   setMarkerSize (double ms) {
