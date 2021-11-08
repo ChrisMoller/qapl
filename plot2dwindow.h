@@ -82,6 +82,8 @@ public:
   void     setChartTitle (QString title) { plot2DData->chartTitle = title; }
   QPen    *getPen () { return plot2DData->activeCurve.pen (); }
   void     setPen (QPen pen) { plot2DData->activeCurve.setPen (pen); }
+  bool     getPolar () { return plot2DData->doPolar; }
+  void     setPolar (bool polar) { plot2DData->doPolar = polar; }
   QString  getCurveTitle () { return plot2DData->activeCurve.title (); }
   void     setCurveTitle (QString title) {
     plot2DData->activeCurve.setTitle (title);

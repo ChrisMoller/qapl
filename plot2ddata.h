@@ -90,6 +90,7 @@ public:
   void setCurrentPlotFile (QString fn) { currentPlotFile = fn; }
 
   // private:
+  bool		doPolar;
   int		resolution;
   int 		theme;
   QString 	bgFile;

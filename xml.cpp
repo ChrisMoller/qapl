@@ -5,7 +5,7 @@
 
 /***
                          // SETTINGS_PLOT_THEME
-    <qapl resolution="..." theme="...">
+    <qapl resolution="..." theme="..." polar="...">
 	                 // SETTINGS_CHART_TITLE_FONT
 	                 // SETTINGS_CHART_TITLE_COLOUR
       <chart font="..." colour="...">
@@ -453,6 +453,8 @@ bool Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData)
 	(attrs.value (xml_tags[XML_resolution].tag)).toInt ();
       plot2DData->theme =
 	(attrs.value (xml_tags[XML_theme].tag)).toInt ();
+      plot2DData->doPolar =
+	(attrs.value (xml_tags[XML_polar].tag)).toInt ();
     }
     QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
@@ -576,6 +578,8 @@ void Plot2DWindow::dumpXML (QString fileName)
 			QString::number (getResolution ()));
   stream.writeAttribute(xml_tags[XML_theme].tag,
 			QString::number (getTheme ()));
+  stream.writeAttribute(xml_tags[XML_polar].tag,
+			QString::number (getPolar ()));
 
   /*** chart element ***/
   

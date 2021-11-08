@@ -30,6 +30,7 @@ xml_def(none,		0),
 xml_def(pen,		0),
 xml_def(phase,		ASPECT_PHASE),				// aspect
 xml_def(pi,		COORD_POLAR_PI),   			// format
+xml_def(polar,		0),					// qapl
 xml_def(qapl,		0),
 xml_def(qt,		QChart::ChartThemeQt),
 xml_def(radians,	COORD_POLAR),				// format

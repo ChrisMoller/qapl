@@ -1171,6 +1171,19 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
 	  });
 
   layout->addWidget (modeCombo, row, col++);
+
+
+  
+  QCheckBox *polarCheck = new QCheckBox (tr ("Polar"));
+  polarCheck->setCheckState (plot2DData->doPolar ? Qt::Checked : Qt::Unchecked);
+  connect (polarCheck,
+           &QCheckBox::stateChanged,
+          [=](int index)
+          {
+	    plot2DData->doPolar = (index == Qt::Checked) ? true : false;
+	    drawCurves ();
+	  });
+  layout->addWidget (polarCheck, row, col++);
   
   setupComplete = true;
 

@@ -2,6 +2,7 @@
 
 #include <QScatterSeries>
 #include <QCategoryAxis>
+#include <QPolarChart>
 
 #include "mainwindow.h"
 #include "plot2dwindow.h"
@@ -244,7 +245,7 @@ void Chart2DWindow::drawCurves ()
 {
   series = nullptr;
   QChart *oldChart = chartView->chart ();
-  chart = new QChart ();
+  chart = pw->getPolar () ? new QPolarChart () : new QChart ();
   chartView->setChart (chart);
   if (oldChart != nullptr)
     delete oldChart;
