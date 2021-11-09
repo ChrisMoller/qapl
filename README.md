@@ -432,6 +432,14 @@ Note that the scaling is done at the drawing level and not at the pixel
 level&mdash;even when scaled to print-level resolution such as 300dpi, no
 pixelisation will occur.
 
+In addition to the cut/copy/paste operations usually available in text entry
+fields, the qapl chart title and curve title fields have an additional
+right-click context menu entry, "Insert char," that pops up a dialog that
+allows the insertion of Greek characters and any arbitrary Unicode characters.
+Unicode characters may be entered in any of the standard C forms, 0x???? for
+hexadecimal, 0????  for octal, or standard decimal.  For Greek Character
+insertion, the shift keys do what you expect.
+
 <h1>Installation</h1>
 
 Step Zero, if you don't have Qt installed, is to install it.  I'm running
