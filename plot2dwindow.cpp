@@ -738,7 +738,7 @@ void Plot2DWindow::setDecorations ()
   QLabel chartTitileLbl ("Title");
   layout->addWidget (&chartTitileLbl, row, col++);
 
-  QLineEdit *chartTitleBox = new QLineEdit ();
+  GreekLineEdit *chartTitleBox = new GreekLineEdit ();
   chartTitleBox->setText (getChartTitle ());
   connect (chartTitleBox,
            &QLineEdit::editingFinished,
@@ -755,7 +755,7 @@ void Plot2DWindow::setDecorations ()
   QLabel xLbl ("Axes Labels");
   layout->addWidget (&xLbl, row, col++);
 
-  QLineEdit *xTitleBox = new QLineEdit ();
+  GreekLineEdit *xTitleBox = new GreekLineEdit ();
   xTitleBox->setText (getXTitle ());
   connect (xTitleBox,
            &QLineEdit::editingFinished,
@@ -766,7 +766,7 @@ void Plot2DWindow::setDecorations ()
   xTitleBox->setPlaceholderText ("X label");
   layout->addWidget (xTitleBox, row, col++);
 
-  QLineEdit *yTitleBox = new QLineEdit ();
+  GreekLineEdit *yTitleBox = new GreekLineEdit ();
   yTitleBox->setText (getYTitle ());
   connect (yTitleBox,
            &QLineEdit::editingFinished,
@@ -1004,39 +1004,6 @@ Plot2DWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 
 //https://doc.qt.io/qt-5/qlineedit.html#contextMenuEvent
 
-#if 0
-QString PlotInputLineFilter::insertCharDialog ()
-{
-  QDialog dialog (nullptr, Qt::Dialog);
-  QGridLayout *layout = new QGridLayout;
-  dialog.setLayout (layout);
-
-  QLabel *resolutionLbl = new QLabel (tr ("Resolution:"));
-  layout->addWidget (resolutionLbl, 0, 0);
-
-  dialog.exec ();
-  
-  QString s = QChar(0x3B8);
-  return s;
-}
-
-bool
-PlotInputLineFilter::eventFilter(QObject *obj, QEvent *event)
-{
-  if (obj == watched) {
-    if (event->type() == QEvent::MouseButtonPress) {
-      QMouseEvent * mouseEvent = static_cast<QMouseEvent *>(event);
-      if (mouseEvent->button () == Qt::RightButton) {
-	fprintf (stderr, "b3\n");
-	QString s = insertCharDialog ();
-	watched->insert (s);
-	return false;
-      }
-    }
-  }
-  return QObject::eventFilter(obj, event);
-}
-#endif
 
 Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   : QMainWindow(parent)
