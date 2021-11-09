@@ -1062,16 +1062,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   int col = 0;
 
   QLineEdit *aplXExpression = new QLineEdit ();
-  //  aplXExpression->setEnabled (true);
-
-#if 0
-  QMenu *cmenu = aplXExpression->createStandardContextMenu();
-
-  PlotInputLineFilter *XIinputLineFilter
-    = new PlotInputLineFilter (aplXExpression, this);
-  aplXExpression->installEventFilter(XIinputLineFilter);
-#endif
-
   aplXExpression->setPlaceholderText (tr ("APL X expression"));
   aplXExpression->setText (getAplXExpression ());
   connect (aplXExpression,
@@ -1099,7 +1089,6 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   row++;
   col = 0;
 
-  //QLineEdit *curveTitle = new QLineEdit ();
   GreekLineEdit *curveTitle = new GreekLineEdit ();
   curveTitle->setPlaceholderText (tr ("Curve label"));
   curveTitle->setText (plot2DData->activeCurve.title ());

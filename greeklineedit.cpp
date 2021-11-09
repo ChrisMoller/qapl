@@ -5,6 +5,13 @@
 
 // https://doc.qt.io/qt-5/qlineedit.html#contextMenuEvent
 
+GreekDialog::GreekDialog (QWidget *parent, Qt::WindowFlags f,
+			  QGridLayout *bl)
+  : QDialog (parent, f)
+{
+  buttonLayout = bl;
+}
+
 typedef struct {
   const char *name;
   const char *upperCase;
@@ -42,18 +49,40 @@ greek_s greek[] = {
 
 #define toCString(v)       ((v).toStdString ().c_str ())
 
+void GreekDialog::keyPressEvent(QKeyEvent *keyEvent)
+{
+  int offset = 0;
+  for (int row = 0; row < 4; row++) {
+    for (int col = 0; col < 6; col++, offset++) {
+      QLayoutItem *li = buttonLayout->itemAtPosition (row, col);
+      QPushButton *character = static_cast<QPushButton *>(li->widget ());
+      character->setText (QString (greek[offset].upperCase));
+    }
+  }
+  QDialog::keyPressEvent(keyEvent);
+}
+
+void GreekDialog::keyReleaseEvent(QKeyEvent *keyEvent)
+{
+  int offset = 0;
+  for (int row = 0; row < 4; row++) {
+    for (int col = 0; col < 6; col++, offset++) {
+      QLayoutItem *li = buttonLayout->itemAtPosition (row, col);
+      QPushButton *character = static_cast<QPushButton *>(li->widget ());
+      character->setText (QString (greek[offset].lowerCase));
+    }
+  }
+  QDialog::keyPressEvent(keyEvent);
+}
+
 void GreekLineEdit::insertChar ()
 {
-  QDialog dialog (this, Qt::Dialog);
-#if 0
-  QLayout *dialogLlayout = dialog.layout ();
-#else
+  QGridLayout *buttonLayout = new QGridLayout;
+  GreekDialog dialog (this, Qt::Dialog, buttonLayout);
   QVBoxLayout *dialogLayout = new QVBoxLayout ();
   dialog.setLayout (dialogLayout);
-#endif
 
   QGroupBox *gbox = new QGroupBox ();
-  QGridLayout *buttonLayout = new QGridLayout;
   gbox->setLayout (buttonLayout);
   int offset = 0;
   for (int row = 0; row < 4; row++) {
@@ -97,8 +126,8 @@ void GreekLineEdit::insertChar ()
                     &dialog, &QDialog::accept);
 
   dialog.exec ();
-  
-  QString s = QChar(0x3B8);
+
+  emit editingFinished ();
 }
 
 void GreekLineEdit::contextMenuEvent(QContextMenuEvent *event)
