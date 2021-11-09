@@ -15,6 +15,7 @@
 #include "plot2dwindow.h"
 #include "plot2ddata.h"
 #include "chart2dwindow.h"
+#include "greeklineedit.h"
 
 #define STYLE_NO_PEN		""
 #define STYLE_SOLID_LINE	"Solid Line"
@@ -1001,6 +1002,42 @@ Plot2DWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
   delete this;
 }
 
+//https://doc.qt.io/qt-5/qlineedit.html#contextMenuEvent
+
+#if 0
+QString PlotInputLineFilter::insertCharDialog ()
+{
+  QDialog dialog (nullptr, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  QLabel *resolutionLbl = new QLabel (tr ("Resolution:"));
+  layout->addWidget (resolutionLbl, 0, 0);
+
+  dialog.exec ();
+  
+  QString s = QChar(0x3B8);
+  return s;
+}
+
+bool
+PlotInputLineFilter::eventFilter(QObject *obj, QEvent *event)
+{
+  if (obj == watched) {
+    if (event->type() == QEvent::MouseButtonPress) {
+      QMouseEvent * mouseEvent = static_cast<QMouseEvent *>(event);
+      if (mouseEvent->button () == Qt::RightButton) {
+	fprintf (stderr, "b3\n");
+	QString s = insertCharDialog ();
+	watched->insert (s);
+	return false;
+      }
+    }
+  }
+  return QObject::eventFilter(obj, event);
+}
+#endif
+
 Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   : QMainWindow(parent)
 {
@@ -1023,8 +1060,18 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
 
   int row = 0;
   int col = 0;
-  
+
   QLineEdit *aplXExpression = new QLineEdit ();
+  //  aplXExpression->setEnabled (true);
+
+#if 0
+  QMenu *cmenu = aplXExpression->createStandardContextMenu();
+
+  PlotInputLineFilter *XIinputLineFilter
+    = new PlotInputLineFilter (aplXExpression, this);
+  aplXExpression->installEventFilter(XIinputLineFilter);
+#endif
+
   aplXExpression->setPlaceholderText (tr ("APL X expression"));
   aplXExpression->setText (getAplXExpression ());
   connect (aplXExpression,
@@ -1052,7 +1099,8 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   row++;
   col = 0;
 
-  QLineEdit *curveTitle = new QLineEdit ();
+  //QLineEdit *curveTitle = new QLineEdit ();
+  GreekLineEdit *curveTitle = new GreekLineEdit ();
   curveTitle->setPlaceholderText (tr ("Curve label"));
   curveTitle->setText (plot2DData->activeCurve.title ());
   connect (curveTitle,

@@ -9,7 +9,6 @@
 
 #define MOUSE_BUTTON_DELAY 100
 
-#if 1
 #define RE_SEPARATOR "[j<]*"
 #define RE_COORD_TYPE "[drp○]*"
 static QString cpxval
@@ -30,32 +29,6 @@ static QString cpxval
 
 static QRegularExpression rx(cpxval,
 			     QRegularExpression::CaseInsensitiveOption);
-#else
-#define RE_FP "([-+]?([0-9]+(\\.[0-9]+)?|\\.[0-9]+))([eE]([-+]?[0-9]+))?"
-static QString cpxval = QString ("(%1)(([j<])(%1)([drp○])?)?").arg (RE_FP);
-static QRegularExpression rx(cpxval,
-			     QRegularExpression::CaseInsensitiveOption);
-
-/***
-list[0]  = 7.6e9j77		// whole thing
-list[1]  = 7.6e9			// real
-list[2]  = 7.6			// real mant
-list[3]  = 7.6			// real mant
-list[4]  = .6
-list[5]  = e9
-list[6]  = 9			// real exp
-list[7]  = 
-list[8]  = <			// separator
-list[9]  =  			// imag
-list[10] =			// imag mant
-list[11] = 			// imag mant
-list[12] = 			
-list[13] = 			
-list[14] =			// imag exp
-list[15] = d			//coord type
- ***/
-#endif
-
 #if 0
 QValidator::State validate(QString &input, int &pos)
 {
@@ -69,16 +42,12 @@ void ComplexSpinBox::parseComplex (coord_e &coord_type,
   QRegularExpressionMatch match = rx.match (txt);
   if (match.hasMatch ()) {
     if (match.lastCapturedIndex() >= 2) {
-#if 1
       QString realString = match.captured (MATCH_REAL).trimmed ();
       if (realString.endsWith (QChar ('p'), Qt::CaseInsensitive)) {
 	realString.chop (1);
 	real = M_PI * realString.toFloat ();
       }
       else real = realString.toFloat ();
-#else
-      real = match.captured (MATCH_REAL).toFloat ();
-#endif
       imag = 0.0;
       coord_type = COORD_RECTANGULAR;
       if (match.lastCapturedIndex() >= 5) {

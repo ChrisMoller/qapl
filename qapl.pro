@@ -17,6 +17,7 @@ SOURCES += \
     chart2dwindow.cpp \
     complexspinbox.cpp \
     edif.cpp \
+    greeklineedit.cpp \
     helpwindow.cpp \
     history.cpp \
     main.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     chart2dwindow.h \
     complexspinbox.h \
     enums.h \
+    greeklineedit.h \
     helpwindow.h \
     history.h \
     mainwindow.h \

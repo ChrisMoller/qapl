@@ -16,6 +16,29 @@ class Chart2DWindow;
 #include "enums.h"
 
 class MainWindow;
+class Plot2DWindow;
+
+#if 0
+class PlotInputLineFilter : public QObject
+{
+    Q_OBJECT
+
+public:
+  PlotInputLineFilter (QLineEdit *obj, Plot2DWindow *pw)
+  {watched = obj; plotwin = pw;}
+
+  static QString insertCharDialog ();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+private:
+  Plot2DWindow  *plotwin;
+  QLineEdit     *watched;
+};
+#endif
+
+
 
 class Plot2DWindow : public QMainWindow
 {
