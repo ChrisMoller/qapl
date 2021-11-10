@@ -200,15 +200,18 @@ void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
 	int seriesCount = -1;
 	switch (pw->getMode ()) {
 	case MODE_BUTTON_SPLINE:
-	  seriesCount = static_cast<QSplineSeries*>(series)->count ();
+	  seriesCount = (series == nullptr) ? 0
+	    : static_cast<QSplineSeries*>(series)->count ();
 	  static_cast<QSplineSeries*>(series)->setPen (pen);
 	  break;
 	case MODE_BUTTON_LINE:
-	  seriesCount = static_cast<QLineSeries*>(series)->count ();
+	  seriesCount = (series == nullptr) ? 0
+	    : static_cast<QLineSeries*>(series)->count ();
 	  static_cast<QLineSeries*>(series)->setPen (pen);
 	  break;
 	case MODE_BUTTON_SCATTER:
-	  seriesCount = static_cast<QScatterSeries*>(series)->count ();
+	  seriesCount = (series == nullptr) ? 0
+	    : static_cast<QScatterSeries*>(series)->count ();
 	  static_cast<QScatterSeries*>(series)->setPen (pen);
 	  break;
 	default:
@@ -329,9 +332,9 @@ Using only the real components in the axis."));
     aplYExpr.replace (QString ("%1"), QString (IDXVAR));
     
     for (int i = 0; i < pw->getPlotParameters ().size (); i++) {
-      double  real  = pw->getPlotParameters ()[i]->real ();
-      double  imag  = pw->getPlotParameters ()[i]->imag ();
-      QString vname = pw->getPlotParameters ()[i]->vname ();
+      double  real  = pw->getPlotParameters ().at (i)->real ();
+      double  imag  = pw->getPlotParameters ().at (i)->imag ();
+      QString vname = pw->getPlotParameters ().at (i)->vname ();
       if (vname.isEmpty ()) {
 	vname = QString ("%1%2").arg (PARMVAR).arg (i);
 	QString tgt = QString ("$%1").arg (i);
@@ -355,17 +358,17 @@ Using only the real components in the axis."));
 	       realXMax, realXMin, realYMax, realYMin,
 	       idxVector, markerSize);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
-      pen = *(pw->getPlotCurves ()[i]->pen ());
-      drawCurve (pw->getPlotCurves ()[i]->Xexpression (),
-		 pw->getPlotCurves ()[i]->Yexpression (),
-		 pw->getPlotCurves ()[i]->aspect (),
-		 pw->getPlotCurves ()[i]->title (),
+      pen = *(pw->getPlotCurves ().at (i)->pen ());
+      drawCurve (pw->getPlotCurves ().at (i)->Xexpression (),
+		 pw->getPlotCurves ().at (i)->Yexpression (),
+		 pw->getPlotCurves ().at (i)->aspect (),
+		 pw->getPlotCurves ().at (i)->title (),
 		 pen,
-		 pw->getPlotCurves ()[i]->mode (),
+		 pw->getPlotCurves ().at (i)->mode (),
 		 realXMax, realXMin,
 		 realYMax, realYMin,
 		 idxVector,
-		 pw->getPlotCurves ()[i]->markerSize ()
+		 pw->getPlotCurves ().at (i)->markerSize ()
 		 );
     }
 
@@ -421,7 +424,6 @@ Using only the real components in the axis."));
 	axisX->setTitleText (pw->getXTitle ());
 	axisY->setTitleText (pw->getYTitle ());
 	      
-	QFont ufont (pw->getAxisLabelFont ());
 #if 1
 	if (fontScale != 1.0) {
 	  QString family = pw->getAxisLabelFont ().family ();
@@ -439,6 +441,7 @@ Using only the real components in the axis."));
 	  axisY->setLabelsFont ((pw->getAxisLabelFont ()));
 	}
 #else
+	QFont ufont (pw->getAxisLabelFont ());
 	// fprintf (stderr, "label before %g\n", ufont.pointSizeF ());
 	psf = fontScale * ufont.pointSizeF ();
 	ufont.setPointSizeF (psf);
@@ -487,7 +490,7 @@ Using only the real components in the axis."));
   }
 
   for (int i = 0; i < pw->getPlotParameters ().size (); i++) {
-    QString vname = pw->getPlotParameters ()[i]->vname ();
+    QString vname = pw->getPlotParameters ().at(i)->vname ();
     if (vname.isEmpty ()) {
       vname = QString ("%1%2").arg (PARMVAR).arg (i);
       cmd = QString (")erase %1").arg (vname);
@@ -690,7 +693,7 @@ Chart2DWindow::exportAsImage ()
     /**** adjust legend font size ****/
 
     QLegend *legend = chart->legend ();
-    QFont legendFont = legend->font ();
+    //    QFont legendFont = legend->font ();
     psf = font.pointSizeF ();
     //    bool legendFontChanged = false;
     if (psf < 0.0) {
@@ -730,7 +733,7 @@ Chart2DWindow::exportAsImage ()
       doit = showPreview (plotPixmap);
 
     if (doit) {
-      currentImageExportFile = dialog.selectedFiles().first();
+      currentImageExportFile = dialog.selectedFiles().at(0);
       QFile file(currentImageExportFile);
       file.open(QIODevice::WriteOnly);
       // bool QPixmap::save(const QString &fileName,

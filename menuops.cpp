@@ -65,7 +65,7 @@ MainWindow::wsLoad ()
     do_load = button_load->isChecked();
     protect =
       (button_protected->checkState() == Qt::Checked) ? true : false;
-    QString fn = dialog.selectedFiles().first();
+    QString fn = dialog.selectedFiles().at (0);
     if (fn.endsWith (QString (".xml"),Qt::CaseInsensitive)) {
       if (do_load && protect) {
         QMessageBox msgBox;
@@ -162,7 +162,7 @@ MainWindow::wsSaveAs()
   delete gbox;
   if (drc == QDialog::Accepted) {
     QString op;
-    currentAPLFile = dialog.selectedFiles().first();
+    currentAPLFile = dialog.selectedFiles().at (0);
     if (button_save->isChecked ()) {
       if (!currentAPLFile.endsWith (".xml", Qt::CaseInsensitive))
         currentAPLFile.append (".xml");
@@ -436,7 +436,7 @@ void MainWindow::importChart ()
    int drc = dialog.exec();
   
   if (drc == QDialog::Accepted) {
-    QString cf  = dialog.selectedFiles().first();
+    QString cf  = dialog.selectedFiles().at (0);
     Plot2DWindow::readXML (cf, this, doTrace);
   }
 }
@@ -455,7 +455,7 @@ void MainWindow::createMenubar ()
   const QIcon saveIcon =
     QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
   QAction *saveAct = 
-    fileMenu->addAction(openIcon, tr("&Save"), this, &MainWindow::wsSave);
+    fileMenu->addAction(saveIcon, tr("&Save"), this, &MainWindow::wsSave);
   saveAct->setShortcuts(QKeySequence::Save);
   saveAct->setStatusTip(tr("Save workspace"));
 

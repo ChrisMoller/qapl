@@ -282,7 +282,7 @@ ComplexSpinBox::ComplexSpinBox (QWidget *parent)
   
   QLineEdit *line = new QLineEdit ();
   line->setValidator(validator);
-  QString txt = QString ("%1j%2").arg (real).arg (imag);
+  //  QString txt = QString ("%1j%2").arg (real).arg (imag);
   formatValue ();
   //  line->setText (txt);
   this->setLineEdit (line);

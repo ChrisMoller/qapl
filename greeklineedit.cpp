@@ -15,8 +15,8 @@ GreekDialog::GreekDialog (QWidget *parent, Qt::WindowFlags f,
 typedef struct {
   const char *name;
   const char *upperCase;
-  uint        upperUnicode;
   const char *lowerCase;
+  uint        upperUnicode;
   uint        lowerUnicode;
 } greek_s;
 
