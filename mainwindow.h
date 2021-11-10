@@ -121,6 +121,7 @@ private:
   save_mode_e        save_mode;                                                 
   QString    	     currentAPLFile;
   bool		     HWopen;
+  bool		     doTrace;
   
 protected:
   void closeEvent(QCloseEvent *event) override;

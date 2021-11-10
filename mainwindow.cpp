@@ -433,11 +433,12 @@ MainWindow::MainWindow(QCommandLineParser &parser, QWidget *parent)
     processLine (false, cmd);
   }
 
+  doTrace = parser.isSet (OPT_TRACE) ? true : false;
   QStringList pargs = parser.positionalArguments();
   if (0 < pargs.size ()) {
     for (int i = 0; i <  pargs.size (); i++) {
       if (pargs[i].endsWith (".plot", Qt::CaseInsensitive))
-	Plot2DWindow::readXML (pargs[i], this);
+	Plot2DWindow::readXML (pargs[i], this, doTrace);
       else
 	readScript (pargs[i]);
     }

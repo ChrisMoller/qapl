@@ -943,7 +943,7 @@ void Plot2DWindow::importChart ()
   
   if (drc == QDialog::Accepted) {
     QString cf = dialog.selectedFiles().first();
-    readXML (cf, mw);
+    readXML (cf, mw, false);
   }
 }
 

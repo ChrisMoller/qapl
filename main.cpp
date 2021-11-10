@@ -29,6 +29,9 @@ int main(int argc, char *argv[])
   QCommandLineOption noINIT (OPT_noINIT, "Skip initialisation script.");
   parser.addOption(noINIT);
 
+  QCommandLineOption doTRACE (OPT_TRACE, "Enable trace.");
+  parser.addOption(doTRACE);
+
   QCommandLineOption loadws(OPT_L, "Workspace to load.", "<ws>");
   loadws.setFlags(QCommandLineOption::ShortOptionStyle);
   parser.addOption(loadws);
