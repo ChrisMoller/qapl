@@ -523,7 +523,7 @@ bool Chart2DWindow::showPreview (QPixmap plotPixmap)
 }
 
 void
-Chart2DWindow::exportImage ()
+Chart2DWindow::exportAsImage ()
 {
   QFileDialog dialog (this, "Export As...", ".",
 		      tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
@@ -540,7 +540,7 @@ Chart2DWindow::exportImage ()
   QLabel widthLbl(tr ("Width"));
   btnlayout->addWidget (&widthLbl, row, col++);
 
-  static double currentWidth = 640.0;
+  //  static double currentWidth = 640.0;
   QDoubleSpinBox *widthBox = new QDoubleSpinBox ();
   widthBox->setDecimals (4);
   widthBox->setMinimum (16.0);
@@ -561,7 +561,7 @@ Chart2DWindow::exportImage ()
   QLabel heightLbl(tr ("Height"));
   btnlayout->addWidget (&heightLbl, row, col++);
 
-  static double currentHeight = 640.0;
+  //  static double currentHeight = 640.0;
   QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
   heightBox->setDecimals (4);
   heightBox->setMinimum (16.0);
@@ -750,7 +750,7 @@ void Chart2DWindow::createMenubar ()
   
   QAction *exportAct =
     fileMenu->addAction(tr("&Export..."), this,
-			    &Chart2DWindow::exportImage);
+			    &Chart2DWindow::exportAsImage);
   exportAct->setStatusTip(tr("Export chart"));
 }
 
@@ -761,6 +761,8 @@ Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
   pw = parent;
   mw = mainWin;
   fontScale = 1.0;
+  currentWidth = 640.0;
+  currentHeight = 640.0;
 
   QWidget *hw = new QWidget ();
   this->setCentralWidget(hw);

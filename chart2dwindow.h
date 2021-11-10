@@ -28,7 +28,8 @@ public:
 		  double &realXMax, double &realXMin,
 		  double &realYMax, double &realYMin,
 		  std::vector<double> idxVector, double markerSize);
-  void exportImage ();
+  //  void exportImage ();
+  void exportAsImage ();
   
  private:
 
@@ -47,6 +48,8 @@ public:
   QString currentImageExportFile;
   bool showPreview (QPixmap plotPixmap);
   double fontScale;
+  double currentWidth;
+  double currentHeight;
 
 };
 
