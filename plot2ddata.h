@@ -8,6 +8,8 @@
 class PlotParameter {
 public:
   PlotParameter () {
+    a_real = 0.0;
+    a_imag = 0.0;
   }
 
   PlotParameter (QString vn, double r, double i) {

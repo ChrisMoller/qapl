@@ -739,6 +739,34 @@ enum {
   PARAMETERS_COLUMN_LAST
 };
 
+void Plot2DWindow::fillParametersTable ( QTableWidget *parametersTable)
+{
+  for (int i = 0; i < getPlotParameters ().size (); i++) {
+    QTableWidgetItem *vhdrItem =
+      new QTableWidgetItem (QString::number (i));
+    parametersTable->setVerticalHeaderItem (i, vhdrItem);
+    
+    QTableWidgetItem *labelItem =
+      new QTableWidgetItem (getPlotParameters ()[i]->vname ());
+    parametersTable->setItem (i, PARAMETERS_COLUMN_LABEL, labelItem);
+    
+    QString valueString = QString ("%1j%2")
+      .arg (getPlotParameters ()[i]->real ())
+      .arg (getPlotParameters ()[i]->imag ());
+    QTableWidgetItem *valueItem = new QTableWidgetItem (valueString);
+    parametersTable->setItem (i, PARAMETERS_COLUMN_VALUE, valueItem);
+
+    
+    QTableWidgetItem *deleteItem = new QTableWidgetItem ("Delete");
+    Qt::ItemFlags deleteFlags = deleteItem->flags ();
+    deleteFlags &= ~Qt::ItemIsEditable;
+    deleteItem->setFlags (deleteFlags);
+    QBrush deleteBrush ("red");
+    deleteItem->setBackground (deleteBrush);
+    parametersTable->setItem (i, PARAMETERS_COLUMN_DELETE, deleteItem);
+  }
+}
+
 void Plot2DWindow::setParameters ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -759,11 +787,11 @@ void Plot2DWindow::setParameters ()
 	    [=](int row, int column)
 	    {
 	      if (column == PARAMETERS_COLUMN_DELETE) {
-		deleteStackEntry (row);
+		deleteParameterEntry (row);
 		int rc = parametersTable->rowCount ();
 		parametersTable->setRowCount (0);
 		parametersTable->setRowCount (rc - 1);
-		//		fillTable (curvesTable);
+		fillParametersTable (parametersTable);
 		drawCurves ();
 	      }
 	    });
@@ -800,15 +828,12 @@ void Plot2DWindow::setParameters ()
 
   parametersTable->setHorizontalHeaderLabels (headers);
 
-  for (int i = 0; i < getPlotParameters ().size (); i++) {
 #if 1
+  fillParametersTable (parametersTable);
+#else
+  for (int i = 0; i < getPlotParameters ().size (); i++) {
     QTableWidgetItem *labelItem =
       new QTableWidgetItem (getPlotParameters ()[i]->vname ());
-#else
-    QString labelString = getPlotParameters ()[i]->vname ().isEmpty () ?
-      QString ("---") : getPlotParameters ()[i]->vname ();
-    QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
-#endif
     parametersTable->setItem (i, PARAMETERS_COLUMN_LABEL, labelItem);
     
     QString valueString = QString ("%1j%2")
@@ -826,11 +851,12 @@ void Plot2DWindow::setParameters ()
     deleteItem->setBackground (deleteBrush);
     parametersTable->setItem (i, PARAMETERS_COLUMN_DELETE, deleteItem);
   }
-
+#endif
   
   layout->addWidget (parametersTable, row, col++, 1, 3);
 
   row++;
+  col = 0;
 
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   closeButton->setAutoDefault (true);
@@ -838,6 +864,17 @@ void Plot2DWindow::setParameters ()
   layout->addWidget (closeButton, row, 2);
   QObject::connect (closeButton, &QPushButton::clicked,
                     &dialog, &QDialog::accept);
+
+  QPushButton *addEtyButton = new QPushButton (QObject::tr ("Add entry"));
+  layout->addWidget (addEtyButton, row, 1);
+  QObject::connect (addEtyButton, &QPushButton::clicked,
+		    [=]() {
+		      PlotParameter *plotParameter = new PlotParameter ();
+		      plot2DData->plotParameters.append(plotParameter);
+		      int rc = parametersTable->rowCount ();
+		      parametersTable->setRowCount (rc + 1);
+		      fillParametersTable (parametersTable);
+		    });
 
 
   dialog.exec ();

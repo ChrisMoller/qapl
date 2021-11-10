@@ -156,6 +156,7 @@ private:
   void deleteStackEntry (int row);
   void deleteParameterEntry (int row);
   void fillTable (QTableWidget *curvesTable);
+  void fillParametersTable (QTableWidget *parametersTable);
   void setFonts ();
   void exportChart ();
   void exportAsChart ();
