@@ -94,6 +94,11 @@ int Plot2DWindow::parseAxesLabel (QXmlStreamReader &stream,
     case QXmlStreamReader::EndElement:
       run = false;
       break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
+      break;
     default:
       break;
     }
@@ -137,6 +142,11 @@ int Plot2DWindow::parseAxesTitle (QXmlStreamReader &stream,
     case QXmlStreamReader::EndElement:
       run = false;
       break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
+      break;
     default:
       break;
     }
@@ -174,6 +184,11 @@ int Plot2DWindow::parsePen (QXmlStreamReader &stream,
       break;
     case QXmlStreamReader::EndElement:
       run = false;
+      break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
       break;
     default:
       break;
@@ -213,6 +228,11 @@ int Plot2DWindow::parseStackPen (QXmlStreamReader &stream,
       break;
     case QXmlStreamReader::EndElement:
       run = false;
+      break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
       break;
     default:
       break;
@@ -260,6 +280,11 @@ int Plot2DWindow::parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData,
       break;
     case QXmlStreamReader::EndElement:
       run = false;
+      break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
       break;
     default:
       break;
@@ -318,6 +343,11 @@ int Plot2DWindow::parseRange (QXmlStreamReader &stream,
     case QXmlStreamReader::EndElement:
       run = false;
       break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
+      break;
     default:
       break;
     }
@@ -370,6 +400,11 @@ int Plot2DWindow::parseChart (QXmlStreamReader &stream,
       break;
     case QXmlStreamReader::EndElement:
       run = false;
+      break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
       break;
     default:
       break;
@@ -443,6 +478,11 @@ int Plot2DWindow::parseActive (QXmlStreamReader &stream,
     case QXmlStreamReader::EndElement:
       run = false;
       break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
+      break;
     default:
       break;
     }
@@ -509,6 +549,11 @@ int Plot2DWindow::parseStack (QXmlStreamReader &stream,
     case QXmlStreamReader::EndElement:
       run = false;
       break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
+      break;
     default:
       break;
     }
@@ -522,7 +567,6 @@ int Plot2DWindow::parseStack (QXmlStreamReader &stream,
 int Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			 bool trace)
 {
-  static int errcnt = 0;
   if (trace) fprintf (stderr, "parseQapl\n");
   int rc = XML_OK;
   bool run = true;
@@ -590,12 +634,9 @@ int Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
       }
       break;
     case QXmlStreamReader::Invalid:
-      fprintf (stderr, "invalid %d %s %d %d\n",
-	       (int)stream.error (),
-	       toCString (stream.errorString ()),
-	       (int)stream.lineNumber (),
-	       (int)stream.columnNumber ());
-      if (errcnt++ >6) exit (1);
+      run = false;
+      rc = XML_pen;
+      showError (stream);
       break;
     case QXmlStreamReader::EndDocument:
       run = false;
@@ -610,6 +651,18 @@ int Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
   
   return rc;
 }
+
+ void Plot2DWindow::showError (QXmlStreamReader &stream)
+ {
+   QString msg = QString ("%1 at line %2, column %3")
+     .arg (stream.errorString ())
+     .arg (stream.lineNumber ())
+     .arg (stream.columnNumber ());
+   QMessageBox msgBox (QMessageBox::Critical,
+		       "Parsing error",
+		       msg);
+   msgBox.exec();
+ }
 
 void Plot2DWindow::readXML (QString &fileName, MainWindow *mw, bool trace)
 {
@@ -652,9 +705,12 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw, bool trace)
       new Plot2DWindow (mw, plot2DData);
       run = false;
       break;
-    case QXmlStreamReader::Invalid:
-      break;
     case QXmlStreamReader::StartDocument:
+      break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_pen;
+      showError (stream);
       break;
     default:
       if (trace)
@@ -663,8 +719,10 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw, bool trace)
       break;
     }
   }
+#if 0
   if (rc != XML_OK)
     fprintf (stderr, "parsing error %d\n", rc);  // fixme--message box
+#endif
 }
 
 void Plot2DWindow::dumpXML (QString fileName)

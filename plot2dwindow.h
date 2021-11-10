@@ -110,7 +110,8 @@ public:
 #endif
 
   void showPlot2dData (Plot2dData *data);
-  
+
+  static void showError (QXmlStreamReader &stream);
   static void readXML (QString &fileName, MainWindow *mw, bool trace);
   static int parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			 bool trace);
@@ -163,28 +164,6 @@ private:
   ComplexSpinBox *rangeInit;
   ComplexSpinBox *rangeFinal;
   Plot2dData *plot2DData;
-
-  // QLineEdit *aplExpression;
-  // QLineEdit *indexVariable;
-  // QLineEdit *curveTitle;
-  // int resolution;
-  // double realInit;
-  // double realFinal;
-  // double imagInit;
-  // double imagFinal;
-  // QList<PlotCurve *> plotCurves;
-  // QString chartTitle;
-  // QString xTitle;
-  // QString yTitle;
-  // int theme;
-  // QPen activePen;
-  // QFont  axisLabelFont;
-  // QColor axisLabelColour;
-  // QFont  axisTitleFont;
-  // QColor axisTitleColour;
-  // QColor axisColour;
-  // QFont  chartTitleFont;
-  // QColor chartTitleColour;
   
 protected:
   void closeEvent(QCloseEvent *event) override;
