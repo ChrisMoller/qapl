@@ -133,7 +133,6 @@ public:
 			bool trace);
   static int parseStackPen (QXmlStreamReader &stream, PlotCurve *plotCurve,
 			     bool trace, int index);
-  QString currentPlotFile;
 
 private:
   MainWindow *mw;
@@ -151,6 +150,7 @@ private:
   void fillTable (QTableWidget *curvesTable);
   void setFonts ();
   void exportChart ();
+  void exportAsChart ();
   void importChart ();
   void dumpXML (QString fileName);
   void setBGImage ();

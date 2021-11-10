@@ -915,7 +915,7 @@ Plot2DWindow::setGranularity ()
   dialog.exec ();
 }
 
-void Plot2DWindow::exportChart ()
+void Plot2DWindow::exportAsChart ()
 {
   QFileDialog dialog (this, "Export As...", ".",
 		      tr("Plot Files (*.plot)"));
@@ -929,6 +929,12 @@ void Plot2DWindow::exportChart ()
     QString cf =  dialog.selectedFiles().first();
     dumpXML (cf);
   }
+}
+
+void Plot2DWindow::exportChart ()
+{
+  if (plot2DData->currentPlotFile.isEmpty ()) exportAsChart ();
+  else dumpXML (plot2DData->currentPlotFile);
 }
 
 void Plot2DWindow::importChart ()
@@ -957,10 +963,15 @@ void Plot2DWindow::createMenubar ()
 			    & Plot2DWindow::importChart);
   importAct->setStatusTip(tr("Import chart"));
   
+  QAction *exportAsAct =
+    fileMenu->addAction(tr("&Export As"), this,
+			    & Plot2DWindow::exportAsChart);
+  exportAsAct->setStatusTip(tr("Export chart to new file"));
+  
   QAction *exportAct =
     fileMenu->addAction(tr("&Export"), this,
 			    & Plot2DWindow::exportChart);
-  exportAct->setStatusTip(tr("Export chart"));
+  exportAct->setStatusTip(tr("Export chart to current file"));
 
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
 
