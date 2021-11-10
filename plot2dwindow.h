@@ -94,6 +94,10 @@ public:
   }
   void setTheme (int theme) { plot2DData->theme = theme; }
   QList<PlotCurve *> getPlotCurves () { return plot2DData->plotCurves; }
+  QList<PlotParameter *> getPlotParameters ()
+  {
+    return plot2DData->plotParameters;
+  }
 #if 1
   aspect_e  getAspect () { return plot2DData->activeCurve.aspect (); }
   series_mode_e  getMode () { return plot2DData->activeCurve.mode (); }
@@ -139,7 +143,8 @@ private:
   void drawCurves ();
   void createMenubar ();
   void setGranularity ();
-  void setDecorations ();
+  void setControls ();
+  void setParameters ();
   void pushExpression ();
   void updatePen (QPen *pen);
   void updateAspect (PlotCurve *pc);

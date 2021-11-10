@@ -5,6 +5,23 @@
 #include "chart2dwindow.h"
 #include "complexspinbox.h"
 
+class PlotParameter {
+public:
+  PlotParameter () {
+  }
+
+  PlotParameter (QString vn, double r, double i) {
+    vname = vn;
+    real = r;
+    imag = i;
+  }
+  
+private:
+  QString vname;
+  double real;
+  double imag;
+};
+
 class PlotCurve {
 public:
   PlotCurve () {
@@ -108,6 +125,7 @@ public:
   QString 	indexVariable;
   PlotCurve	activeCurve;
   QList<PlotCurve *> plotCurves;
+  QList<PlotParameter *> plotParameters;
   std::complex<double> rangeInit;
   std::complex<double> rangeFinal;
   MainWindow   *mw;

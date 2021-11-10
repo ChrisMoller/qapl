@@ -722,9 +722,54 @@ void Plot2DWindow::setFonts ()
 
   dialog.exec ();
 }
-  
 
-void Plot2DWindow::setDecorations ()
+enum {
+  PARAMETERS_COLUMN_LABEL,
+  PARAMETERS_COLUMN_VALUE,
+  PARAMETERS_COLUMN_DELETE,
+  PARAMETERS_COLUMN_LAST
+};
+
+void Plot2DWindow::setParameters ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  dialog.setWindowTitle ("qapl parameters");
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  int col = 0;
+
+  QTableWidget *parameterssTable =
+    new QTableWidget (getPlotParameters ().size (),
+		      PARAMETERS_COLUMN_LAST, this);
+  QStringList headers = {
+    "Label",
+    "Value"
+    "Delete"
+  };
+  curvesTable->setHorizontalHeaderLabels (headers);
+
+
+  // fill table
+
+  
+  layout->addWidget (parametersTable, row, col++, 1, 4);
+
+  row++;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 3);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+
+
+  dialog.exec ();
+}
+
+void Plot2DWindow::setControls ()
 {
   QDialog dialog (this, Qt::Dialog);
   dialog.setMinimumWidth (640);
@@ -980,10 +1025,15 @@ void Plot2DWindow::createMenubar ()
 			    & Plot2DWindow::setGranularity);
   resolutionAct->setStatusTip(tr("Set resolution"));
 
-  QAction *decorationsAct =
+  QAction *controlsAct =
     settingsMenu->addAction(tr("&Controls"), this,
-			    & Plot2DWindow::setDecorations);
-  decorationsAct->setStatusTip(tr("Set plot decorations"));
+			    & Plot2DWindow::setControls);
+  controlsAct->setStatusTip(tr("Set plot controls"));
+
+  QAction *parametersAct =
+    settingsMenu->addAction(tr("&Parameters"), this,
+			    & Plot2DWindow::setParameters);
+  parametersAct->setStatusTip(tr("Set plot parameters"));
 
   QAction *fontsAct =
     settingsMenu->addAction(tr("&Appearance"), this,
