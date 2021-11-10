@@ -15,6 +15,20 @@
 
 class Plot2DWindow;
 
+// https://doc.qt.io/qt-5/qabstractscrollarea.html
+
+class QaplChartView : public QChartView
+{
+  Q_OBJECT
+  
+public:
+  QaplChartView(QWidget *parent);
+  ~QaplChartView () {}
+
+protected:
+  void	mouseMoveEvent(QMouseEvent *e) override;
+};
+
 class Chart2DWindow : public QMainWindow
 {
   Q_OBJECT

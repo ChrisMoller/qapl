@@ -782,6 +782,20 @@ void Chart2DWindow::createMenubar ()
   exportAct->setStatusTip(tr("Export chart"));
 }
 
+QaplChartView::QaplChartView (QWidget *parent)
+  : QChartView (parent)
+{
+}
+
+void QaplChartView::mouseMoveEvent(QMouseEvent *event)
+{
+  QPoint p = event->pos ();
+  auto const scenePos = mapToScene(p);
+  auto const chartItemPos = chart()->mapFromScene(scenePos); 
+  auto const valueGivenSeries = chart()->mapToValue(chartItemPos); 
+  qDebug() << "valSeries:" << valueGivenSeries;
+}
+
 Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
   : QMainWindow(parent)
 {
@@ -798,7 +812,10 @@ Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
 
   createMenubar ();
 
-  chartView = new QChartView (this);
+  // https://stackoverflow.com/questions/44067831/get-mouse-coordinates-in-qchartviews-axis-system
+  
+  //  chartView = new QChartView (this);
+  chartView = new QaplChartView (this);
   chartView->setMinimumWidth (650);
   chartView->setMinimumHeight (420);
 
