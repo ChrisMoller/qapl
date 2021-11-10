@@ -154,6 +154,7 @@ private:
   QString getAspectString (int idx);
   QString getModeString (int idx);
   void deleteStackEntry (int row);
+  void deleteParameterEntry (int row);
   void fillTable (QTableWidget *curvesTable);
   void setFonts ();
   void exportChart ();

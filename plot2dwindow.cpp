@@ -355,12 +355,21 @@ void Plot2DWindow:: deleteStackEntry (int row)
   msgBox.setDefaultButton(QMessageBox::Cancel);
   int ret = msgBox.exec();
   if (ret == QMessageBox::Yes) {
-    fprintf (stderr, "got a yes\n");
-    if (row >= 0 && row < getPlotCurves ().size ()) {
-      fprintf (stderr, "removing row %d\n", row);
+    if (row >= 0 && row < getPlotCurves ().size ())
       plot2DData->plotCurves.removeAt (row);
-      //      getPlotCurves ().removeAt (row);
-    }
+  }
+}
+
+void Plot2DWindow:: deleteParameterEntry (int row)
+{
+  QMessageBox msgBox;
+  msgBox.setText(tr ("Are you sure?"));
+  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+  msgBox.setDefaultButton(QMessageBox::Cancel);
+  int ret = msgBox.exec();
+  if (ret == QMessageBox::Yes) {
+    if (row >= 0 && row < getPlotParameters ().size ())
+      plot2DData->plotParameters.removeAt (row);
   }
 }
 
@@ -745,6 +754,44 @@ void Plot2DWindow::setParameters ()
     new QTableWidget (getPlotParameters ().size (),
 		      PARAMETERS_COLUMN_LAST, this);
 
+   connect (parametersTable,
+	    QOverload<int, int>::of(&QTableWidget::cellDoubleClicked),
+	    [=](int row, int column)
+	    {
+	      if (column == PARAMETERS_COLUMN_DELETE) {
+		deleteStackEntry (row);
+		int rc = parametersTable->rowCount ();
+		parametersTable->setRowCount (0);
+		parametersTable->setRowCount (rc - 1);
+		//		fillTable (curvesTable);
+		drawCurves ();
+	      }
+	    });
+  connect (parametersTable,
+	   QOverload<int, int>::of(&QTableWidget::cellChanged),
+	   [=](int row, int column)
+	   {
+	     if (column == PARAMETERS_COLUMN_LABEL) {
+	       QTableWidgetItem *labelItem =
+		 parametersTable->item (row, column);
+	       QString newLabel = labelItem->text ();
+	       getPlotParameters ()[row]->setVname (newLabel);
+	       drawCurves ();
+	     }
+	     if (column == PARAMETERS_COLUMN_VALUE) {
+	       QTableWidgetItem *valueItem =
+		 parametersTable->item (row, column);
+	       QString newValue = valueItem->text ();
+	       coord_e type;
+	       double real;
+	       double imag;
+	       ComplexSpinBox::parseComplex (type, real, imag, newValue);
+	       getPlotParameters ()[row]->setReal (real);
+	       getPlotParameters ()[row]->setImag (imag);
+	       drawCurves ();
+	     }
+	   });
+
   QStringList headers = {
     "Label",
     "Value",
@@ -754,9 +801,14 @@ void Plot2DWindow::setParameters ()
   parametersTable->setHorizontalHeaderLabels (headers);
 
   for (int i = 0; i < getPlotParameters ().size (); i++) {
+#if 1
+    QTableWidgetItem *labelItem =
+      new QTableWidgetItem (getPlotParameters ()[i]->vname ());
+#else
     QString labelString = getPlotParameters ()[i]->vname ().isEmpty () ?
       QString ("---") : getPlotParameters ()[i]->vname ();
     QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
+#endif
     parametersTable->setItem (i, PARAMETERS_COLUMN_LABEL, labelItem);
     
     QString valueString = QString ("%1j%2")
