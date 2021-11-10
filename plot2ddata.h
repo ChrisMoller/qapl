@@ -11,15 +11,21 @@ public:
   }
 
   PlotParameter (QString vn, double r, double i) {
-    vname = vn;
-    real = r;
-    imag = i;
+    a_vname = vn;
+    a_real = r;
+    a_imag = i;
   }
+  QString vname () { return a_vname; }
+  void setVname (QString v) { a_vname = v; }
+  double  real ()  { return a_real; }
+  void setReal (double r) { a_real = r; }
+  double  imag ()  { return a_imag; }
+  void setImag (double i) { a_imag = i; }
   
 private:
-  QString vname;
-  double real;
-  double imag;
+  QString a_vname;
+  double  a_real;
+  double  a_imag;
 };
 
 class PlotCurve {

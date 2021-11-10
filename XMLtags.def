@@ -17,6 +17,7 @@ xml_def(Yexpression,	0),
 xml_def(final,		0),
 xml_def(font,		0),
 xml_def(icy,		QChart::ChartThemeBlueIcy),		// theme
+xml_def(imag,		0),
 xml_def(imaginary,	ASPECT_IMAG),				// aspect
 xml_def(index,		0),
 xml_def(initial,	0),
@@ -29,6 +30,7 @@ xml_def(mode,		0),					// mode
 xml_def(ncs,		QChart::ChartThemeBlueNcs),		// theme
 xml_def(none,		0),
 xml_def(pen,		0),
+xml_def(parameter,	0),
 xml_def(phase,		ASPECT_PHASE),				// aspect
 xml_def(pi,		COORD_POLAR_PI),   			// format
 xml_def(polar,		0),					// qapl

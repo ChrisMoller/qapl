@@ -40,6 +40,10 @@
       </stack>
 
       repeat stack...
+
+      <parameter index="..." real="..." imag="...">...</parameter>
+
+      repeat parameter...
       
     </qapl>
  ***/
@@ -491,6 +495,70 @@ int Plot2DWindow::parseActive (QXmlStreamReader &stream,
   return rc;
 }
 
+
+int Plot2DWindow::parseParameter (QXmlStreamReader &stream,
+				  Plot2dData *plot2DData, bool trace)
+{
+  if (trace) fprintf (stderr, "parseParameter\n");
+  int rc = XML_OK;
+  bool run = true;
+  int index = -1;
+  PlotParameter *plotParameter = new PlotParameter ();
+  while (run && rc == XML_OK) {
+    QXmlStreamAttributes attrs = stream.attributes();
+    if (!attrs.isEmpty ()) {
+      if (!attrs.isEmpty ()) {
+	index = ((attrs.value (xml_tags[XML_index].tag)).toInt ());
+	plotParameter->setReal ((attrs.value (xml_tags[XML_real].tag)).toFloat ());
+	plotParameter->setImag ((attrs.value (xml_tags[XML_imag].tag)).toFloat ());
+      }
+      if (trace)
+	fprintf (stderr, "parameter %d, real %g, imag %g\n",
+		 index,
+		 plotParameter->real (),
+		 plotParameter->imag ());
+    }
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_Xexpression:
+	{
+	  QString name = stream.readElementText ();
+	  plotParameter->setVname (name);
+	  if (trace)
+	    fprintf (stderr, "vname: %s\n", toCString (name));
+	}
+        break;
+      default:
+	if (trace)
+	  fprintf (stderr, "unhandled parameter value \"%s\"\n", toCString (sn));
+	rc = XML_parameter;
+	break;
+      }
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    case QXmlStreamReader::Invalid:
+      run = false;
+      rc = XML_parameter;
+      showError (stream);
+      break;
+    default:
+      break;
+    }
+  }
+
+  plot2DData->plotParameters.append(plotParameter);
+    
+  return rc;
+}
+
 int Plot2DWindow::parseStack (QXmlStreamReader &stream,
 			       Plot2dData *plot2DData, bool trace)
 {
@@ -502,7 +570,7 @@ int Plot2DWindow::parseStack (QXmlStreamReader &stream,
   while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
-      index = ((attrs.value (xml_tags[XML_aspect].tag)).toInt ());
+      index = ((attrs.value (xml_tags[XML_index].tag)).toInt ());
       plotCurve->setAspect ((aspect_e)((attrs.value (xml_tags[XML_aspect].tag)).toInt ()));
       plotCurve->setMode ((series_mode_e)((attrs.value (xml_tags[XML_mode].tag)).toInt ()));
       plotCurve->setMarkerSize ((attrs.value (xml_tags[XML_marker].tag)).toFloat ());
@@ -902,6 +970,26 @@ void Plot2DWindow::dumpXML (QString fileName)
     stream.writeEndElement(); // pen
 
     stream.writeEndElement(); // stack
+  }
+
+  for (int i = 0; i < getPlotParameters ().size (); i++) {
+
+    /*** parameter element ***/
+
+    PlotParameter *pp = getPlotParameters ()[i];
+
+    stream.writeStartElement(xml_tags[XML_parameter].tag);
+    stream.writeAttribute(xml_tags[XML_index].tag,
+			  QString::number (i));
+    stream.writeAttribute(xml_tags[XML_real].tag,
+			  QString::number (pp->real ()));
+    stream.writeAttribute(xml_tags[XML_imag].tag,
+			  QString::number (pp->imag ()));
+    
+    stream.writeCharacters(pp->vname ());
+
+    stream.writeEndElement(); // parameter
+
   }
 
 

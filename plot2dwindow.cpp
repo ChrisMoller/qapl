@@ -733,6 +733,7 @@ enum {
 void Plot2DWindow::setParameters ()
 {
   QDialog dialog (this, Qt::Dialog);
+  dialog.setMinimumWidth (360);
   dialog.setWindowTitle ("qapl parameters");
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
@@ -740,28 +741,49 @@ void Plot2DWindow::setParameters ()
   int row = 0;
   int col = 0;
 
-  QTableWidget *parameterssTable =
+  QTableWidget *parametersTable =
     new QTableWidget (getPlotParameters ().size (),
 		      PARAMETERS_COLUMN_LAST, this);
+
   QStringList headers = {
     "Label",
-    "Value"
+    "Value",
     "Delete"
   };
-  curvesTable->setHorizontalHeaderLabels (headers);
 
+  parametersTable->setHorizontalHeaderLabels (headers);
 
-  // fill table
+  for (int i = 0; i < getPlotParameters ().size (); i++) {
+    QString labelString = getPlotParameters ()[i]->vname ().isEmpty () ?
+      QString ("---") : getPlotParameters ()[i]->vname ();
+    QTableWidgetItem *labelItem = new QTableWidgetItem (labelString);
+    parametersTable->setItem (i, PARAMETERS_COLUMN_LABEL, labelItem);
+    
+    QString valueString = QString ("%1j%2")
+      .arg (getPlotParameters ()[i]->real ())
+      .arg (getPlotParameters ()[i]->imag ());
+    QTableWidgetItem *valueItem = new QTableWidgetItem (valueString);
+    parametersTable->setItem (i, PARAMETERS_COLUMN_VALUE, valueItem);
+
+    
+    QTableWidgetItem *deleteItem = new QTableWidgetItem ("Delete");
+    Qt::ItemFlags deleteFlags = deleteItem->flags ();
+    deleteFlags &= ~Qt::ItemIsEditable;
+    deleteItem->setFlags (deleteFlags);
+    QBrush deleteBrush ("red");
+    deleteItem->setBackground (deleteBrush);
+    parametersTable->setItem (i, PARAMETERS_COLUMN_DELETE, deleteItem);
+  }
 
   
-  layout->addWidget (parametersTable, row, col++, 1, 4);
+  layout->addWidget (parametersTable, row, col++, 1, 3);
 
   row++;
 
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   closeButton->setAutoDefault (true);
   closeButton->setDefault (true);
-  layout->addWidget (closeButton, row, 3);
+  layout->addWidget (closeButton, row, 2);
   QObject::connect (closeButton, &QPushButton::clicked,
                     &dialog, &QDialog::accept);
 

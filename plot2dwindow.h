@@ -137,6 +137,8 @@ public:
 			bool trace);
   static int parseStackPen (QXmlStreamReader &stream, PlotCurve *plotCurve,
 			     bool trace, int index);
+  static int parseParameter (QXmlStreamReader &stream, Plot2dData *plot2DData,
+			     bool trace);
 
 private:
   MainWindow *mw;
