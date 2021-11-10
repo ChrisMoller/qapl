@@ -518,40 +518,13 @@ int Plot2DWindow::parseParameter (QXmlStreamReader &stream,
 		 plotParameter->real (),
 		 plotParameter->imag ());
     }
-    QXmlStreamReader::TokenType tt = stream.readNext ();
-    QString sn = stream.name ().toString ();
-    switch (tt) {
-    case QXmlStreamReader::StartElement:
-      switch (xmlhash.value (sn)) {
-      case XML_Xexpression:
-	{
-	  QString name = stream.readElementText ();
-	  plotParameter->setVname (name);
-	  if (trace)
-	    fprintf (stderr, "vname: %s\n", toCString (name));
-	}
-        break;
-      default:
-	if (trace)
-	  fprintf (stderr, "unhandled parameter value \"%s\"\n", toCString (sn));
-	rc = XML_parameter;
-	break;
-      }
-      break;
-    case QXmlStreamReader::EndDocument:
-      run = false;
-      break;
-    case QXmlStreamReader::EndElement:
-      run = false;
-      break;
-    case QXmlStreamReader::Invalid:
-      run = false;
-      rc = XML_parameter;
-      showError (stream);
-      break;
-    default:
-      break;
+    {
+      QString name = stream.readElementText ();
+      plotParameter->setVname (name);
+      if (trace)
+	fprintf (stderr, "vname %d: %s\n", index, toCString (name));
     }
+    run = false;
   }
 
   plot2DData->plotParameters.append(plotParameter);
@@ -693,6 +666,9 @@ int Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
         break;
       case XML_stack:
 	rc = parseStack (stream, plot2DData, trace);
+        break;
+      case XML_parameter:
+	rc = parseParameter (stream, plot2DData, trace);
         break;
       default:
 	if (trace)

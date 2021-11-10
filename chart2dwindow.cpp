@@ -13,6 +13,7 @@
 #define PLOTVARX "plotvarxλ"
 #define PLOTVARY "plotvaryλ"
 #define IDXVAR  "idxvarλ"
+#define PARMVAR  "parmvarλ"
 
 bool Chart2DWindow::appendSeries (double x, double y, series_mode_e mode,
 				  double &realXMax, double &realXMin,
@@ -73,7 +74,6 @@ void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
       pen.setWidth ((int)(10.0 * fontScale * (double)pen.width ()));
     }
   
-    aplYExpr.replace (QString ("%1"), QString (IDXVAR));
     QString cmd = QString ("%1←%2").arg (PLOTVARY, aplYExpr);
     mw->processLine (false, cmd);
     QString pv (PLOTVARY);
@@ -81,7 +81,6 @@ void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
 
     APL_value resultx = nullptr;
     if (!aplXExpr.isEmpty ()) {
-      aplXExpr.replace (QString ("%1"), QString (IDXVAR));
       QString cmd = QString ("%1←%2").arg (PLOTVARX, aplXExpr);
       mw->processLine (false, cmd);
       QString pv (PLOTVARX);
@@ -323,9 +322,26 @@ void Chart2DWindow::drawCurves ()
     if (idxComplex)		// fixme
       mw->printError (tr ("Index contains imaginary components.  \
 Using only the real components in the axis."));
-      
+    
     QString aplXExpr = pw->getAplXExpression ();
+    aplXExpr.replace (QString ("%1"), QString (IDXVAR));
     QString aplYExpr = pw->getAplYExpression ();
+    aplYExpr.replace (QString ("%1"), QString (IDXVAR));
+    
+    for (int i = 0; i < pw->getPlotParameters ().size (); i++) {
+      double  real  = pw->getPlotParameters ()[i]->real ();
+      double  imag  = pw->getPlotParameters ()[i]->imag ();
+      QString vname = pw->getPlotParameters ()[i]->vname ();
+      if (vname.isEmpty ()) {
+	vname = QString ("%1%2").arg (PARMVAR).arg (i);
+	QString tgt = QString ("$%1").arg (i);
+	aplXExpr.replace (tgt, QString (vname));
+	aplYExpr.replace (tgt, QString (vname));
+      }
+      QString cmd = QString ("%1←%2j%3").arg (vname).arg (real).arg (imag);
+      mw->processLine (false, cmd);
+    }
+    
     aspect_e aspect = pw->getAspect ();
     QString label = pw->getCurveTitle ();
     QPen pen = *(pw->getPen ());
@@ -468,6 +484,15 @@ Using only the real components in the axis."));
   if (autoIdx) {
     cmd = QString (")erase %1").arg (IDXVAR);
     mw->processLine (false, cmd);
+  }
+
+  for (int i = 0; i < pw->getPlotParameters ().size (); i++) {
+    QString vname = pw->getPlotParameters ()[i]->vname ();
+    if (vname.isEmpty ()) {
+      vname = QString ("%1%2").arg (PARMVAR).arg (i);
+      cmd = QString (")erase %1").arg (vname);
+      mw->processLine (false, cmd);
+    }
   }
 }
 
