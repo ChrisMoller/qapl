@@ -1,3 +1,4 @@
+xml_def(OK,		0),
 xml_def(active,		0),
 xml_def(aspect,		0),
 xml_def(axes,		0),

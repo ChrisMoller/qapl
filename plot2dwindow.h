@@ -112,25 +112,25 @@ public:
   void showPlot2dData (Plot2dData *data);
   
   static void readXML (QString &fileName, MainWindow *mw, bool trace);
-  static bool parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			 bool trace);
-  static bool parseChart (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseChart (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			  bool trace);
-  static bool parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			 bool trace);
-  static bool parseAxesLabel (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseAxesLabel (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			      bool trace);
-  static bool parseAxesTitle (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseAxesTitle (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			      bool trace);
-  static bool parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseRange (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			  bool trace);
-  static bool parseActive (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseActive (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			   bool trace);
-  static bool parseStack (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parseStack (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			  bool trace);
-  static bool parsePen (QXmlStreamReader &stream, Plot2dData *plot2DData,
+  static int parsePen (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			bool trace);
-  static bool parseStackPen (QXmlStreamReader &stream, PlotCurve *plotCurve,
+  static int parseStackPen (QXmlStreamReader &stream, PlotCurve *plotCurve,
 			     bool trace, int index);
   QString currentPlotFile;
 

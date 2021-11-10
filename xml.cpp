@@ -59,12 +59,13 @@ xml_tag_s xml_tags[] = {
 
 static QHash<const QString, int> xmlhash;
 
-bool Plot2DWindow::parseAxesLabel (QXmlStreamReader &stream,
+int Plot2DWindow::parseAxesLabel (QXmlStreamReader &stream,
 				   Plot2dData *plot2DData, bool trace)
 {
-  bool rc = true;
+  if (trace) fprintf (stderr, "parseAxesLabel\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run && rc) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       plot2DData->axisLabelColour =
@@ -101,12 +102,13 @@ bool Plot2DWindow::parseAxesLabel (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parseAxesTitle (QXmlStreamReader &stream,
+int Plot2DWindow::parseAxesTitle (QXmlStreamReader &stream,
 				   Plot2dData *plot2DData, bool trace)
 {
-  bool rc = true;
+  if (trace) fprintf (stderr, "parseAxesTitle\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run && rc) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       plot2DData->axisTitleColour =
@@ -143,12 +145,13 @@ bool Plot2DWindow::parseAxesTitle (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parsePen (QXmlStreamReader &stream,
+int Plot2DWindow::parsePen (QXmlStreamReader &stream,
 			     Plot2dData *plot2DData, bool trace)
 {
-  bool rc = true;
+  if (trace) fprintf (stderr, "parsePen\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run && rc) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       QBrush brush (QColor (attrs.value (xml_tags[XML_colour].tag)));
@@ -180,12 +183,13 @@ bool Plot2DWindow::parsePen (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parseStackPen (QXmlStreamReader &stream,
+int Plot2DWindow::parseStackPen (QXmlStreamReader &stream,
 				  PlotCurve *plotCurve, bool trace, int index)
 {
-  bool rc = true;
+  if (trace) fprintf (stderr, "parseStackPenl\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run && rc) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       QBrush brush (QColor (attrs.value (xml_tags[XML_colour].tag)));
@@ -218,12 +222,13 @@ bool Plot2DWindow::parseStackPen (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData,
+int Plot2DWindow::parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			      bool trace)
 {
-  bool rc = true;
+  if (trace) fprintf (stderr, "parseAxes\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run && rc) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       plot2DData->axisColour =
@@ -238,14 +243,15 @@ bool Plot2DWindow::parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData,
     case QXmlStreamReader::StartElement:
       switch (xmlhash.value (sn)) {
       case XML_label:
-	parseAxesLabel (stream, plot2DData, trace);
+	rc = parseAxesLabel (stream, plot2DData, trace);
         break;
       case XML_title:
-	parseAxesTitle (stream, plot2DData, trace);
+	rc  =parseAxesTitle (stream, plot2DData, trace);
         break;
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled axes value \"%s\"\n", toCString (sn));
+	rc = XML_axes;
 	break;
       }
       break;
@@ -263,12 +269,13 @@ bool Plot2DWindow::parseAxes (QXmlStreamReader &stream, Plot2dData *plot2DData,
   return rc;
 }
 
-bool Plot2DWindow::parseRange (QXmlStreamReader &stream,
+int Plot2DWindow::parseRange (QXmlStreamReader &stream,
 			       Plot2dData *plot2DData, bool trace)
 {
-  bool rc = false;
+  if (trace) fprintf (stderr, "parseRange\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run) {
+  while (run && rc == XML_OK) {
     QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
     switch (tt) {
@@ -301,6 +308,7 @@ bool Plot2DWindow::parseRange (QXmlStreamReader &stream,
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled range value \"%s\"\n", toCString (sn));
+	rc = XML_range;
 	break;
       }
       break;
@@ -318,12 +326,13 @@ bool Plot2DWindow::parseRange (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parseChart (QXmlStreamReader &stream,
+int Plot2DWindow::parseChart (QXmlStreamReader &stream,
 			       Plot2dData *plot2DData, bool trace)
 {
-  bool rc = false;
+  if (trace) fprintf (stderr, "parseChart\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       plot2DData->chartTitleColour =
@@ -347,11 +356,12 @@ bool Plot2DWindow::parseChart (QXmlStreamReader &stream,
     case QXmlStreamReader::StartElement:
       switch (xmlhash.value (sn)) {
       case XML_axes:
-	parseAxes (stream, plot2DData, trace);
+	rc= parseAxes (stream, plot2DData, trace);
         break;
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
+	rc = XML_chart;
 	break;
       }
       break;
@@ -369,12 +379,13 @@ bool Plot2DWindow::parseChart (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
+int Plot2DWindow::parseActive (QXmlStreamReader &stream,
 				Plot2dData *plot2DData, bool trace)
 {
-  bool rc = false;
+  if (trace) fprintf (stderr, "parseActive\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       plot2DData->activeCurve.setAspect ((aspect_e)((attrs.value (xml_tags[XML_aspect].tag)).toInt ()));
@@ -417,11 +428,12 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
 		   toCString (plot2DData->activeCurve.title ()));
         break;
       case XML_pen:
-	parsePen (stream, plot2DData, trace);
+	rc = parsePen (stream, plot2DData, trace);
         break;
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled active value \"%s\"\n", toCString (sn));
+	rc = XML_active;
 	break;
       }
       break;
@@ -439,14 +451,15 @@ bool Plot2DWindow::parseActive (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parseStack (QXmlStreamReader &stream,
+int Plot2DWindow::parseStack (QXmlStreamReader &stream,
 			       Plot2dData *plot2DData, bool trace)
 {
-  bool rc = false;
+  if (trace) fprintf (stderr, "parseStack\n");
+  int rc = XML_OK;
   bool run = true;
   int index = -1;
   PlotCurve *plotCurve = new PlotCurve ();
-  while (run) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       index = ((attrs.value (xml_tags[XML_aspect].tag)).toInt ());
@@ -481,11 +494,12 @@ bool Plot2DWindow::parseStack (QXmlStreamReader &stream,
 	plotCurve->setTitle (stream.readElementText ());
         break;
       case XML_pen:
-	parseStackPen (stream, plotCurve, trace, index);
+	rc = parseStackPen (stream, plotCurve, trace, index);
         break;
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled active value \"%s\"\n", toCString (sn));
+	rc = XML_stack;
 	break;
       }
       break;
@@ -505,12 +519,14 @@ bool Plot2DWindow::parseStack (QXmlStreamReader &stream,
   return rc;
 }
 
-bool Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
+int Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			 bool trace)
 {
-  bool rc = false;
+  static int errcnt = 0;
+  if (trace) fprintf (stderr, "parseQapl\n");
+  int rc = XML_OK;
   bool run = true;
-  while (run) {
+  while (run && rc == XML_OK) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
       plot2DData->resolution =
@@ -531,7 +547,7 @@ bool Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
     case QXmlStreamReader::StartElement:
       switch (xmlhash.value (sn)) {
       case XML_chart:
-	parseChart (stream, plot2DData, trace);
+	rc = parseChart (stream, plot2DData, trace);
         break;
       case XML_title:
 	plot2DData->chartTitle = stream.readElementText ();
@@ -558,19 +574,28 @@ bool Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
 		   toCString (plot2DData->yTitle));
         break;
       case XML_range:
-	parseRange (stream, plot2DData, trace);
+	rc = parseRange (stream, plot2DData, trace);
         break;
       case XML_active:
-	parseActive (stream, plot2DData, trace);
+	rc = parseActive (stream, plot2DData, trace);
         break;
       case XML_stack:
-	parseStack (stream, plot2DData, trace);
+	rc = parseStack (stream, plot2DData, trace);
         break;
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
+	rc = XML_qapl;
 	break;
       }
+      break;
+    case QXmlStreamReader::Invalid:
+      fprintf (stderr, "invalid %d %s %d %d\n",
+	       (int)stream.error (),
+	       toCString (stream.errorString ()),
+	       (int)stream.lineNumber (),
+	       (int)stream.columnNumber ());
+      if (errcnt++ >6) exit (1);
       break;
     case QXmlStreamReader::EndDocument:
       run = false;
@@ -595,7 +620,6 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw, bool trace)
     xmlInitialised = true;
   }
 
-
   Plot2dData *plot2DData =  new Plot2dData (mw);
   plot2DData->currentPlotFile = fileName;
   
@@ -604,18 +628,20 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw, bool trace)
   QXmlStreamReader stream(&file);
 
   bool run = true;
-  while (run) {
+  int rc = XML_OK;
+  while (run && rc == XML_OK) {
     QXmlStreamReader::TokenType tt = stream.readNext();
     QString sn = stream.name ().toString ();
     switch (tt) {
     case QXmlStreamReader::StartElement:
       switch (xmlhash.value (sn)) {
       case XML_qapl:
-	parseQapl (stream, plot2DData, trace);
+	rc = parseQapl (stream, plot2DData, trace);
         break;
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled top value \"%s\"\n", toCString (sn));
+	rc = XML_LAST;
 	break;
       }
       break;
@@ -628,12 +654,17 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw, bool trace)
       break;
     case QXmlStreamReader::Invalid:
       break;
+    case QXmlStreamReader::StartDocument:
+      break;
     default:
       if (trace)
 	fprintf (stderr, "unhandled ttt %d \"%s\"\n", tt, toCString (sn));
+      rc = XML_LAST;
       break;
     }
   }
+  if (rc != XML_OK)
+    fprintf (stderr, "parsing error %d\n", rc);  // fixme--message box
 }
 
 void Plot2DWindow::dumpXML (QString fileName)
