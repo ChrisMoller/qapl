@@ -232,7 +232,7 @@ void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
     mousePressActive = true;
   }
   if (handled) {
-    // wait 1 sec.  if mouse button still active, repeat
+    // fixme wait 1 sec.  if mouse button still active, repeat
     QTime dieTime= QTime::currentTime().addSecs(1);
     while (QTime::currentTime() < dieTime)
       QCoreApplication::processEvents(QEventLoop::AllEvents,

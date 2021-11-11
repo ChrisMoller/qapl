@@ -767,6 +767,51 @@ void Plot2DWindow::fillParametersTable ( QTableWidget *parametersTable)
   }
 }
 
+void
+Plot2DWindow::updatParmValue (int idx, QTableWidget *parametersTable)
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  PlotParameter *pp = plot2DData->plotParameters[idx];
+  
+  int row = 0;
+  int col = 0;
+
+ 
+  ComplexSpinBox *value = new ComplexSpinBox ();
+  value->setComplex (pp->real (), pp->imag ());
+  connect (value,
+           &ComplexSpinBox::valueChanged,
+          [=](){
+	    std::complex<double> vv = value->getComplex ();
+	    pp->setReal (vv.real ());
+	    pp->setImag (vv.imag ());
+	    QString valueString = QString ("%1j%2")
+	      .arg (vv.real ())
+	      .arg (vv.imag ());
+	    QTableWidgetItem *valueItem = new QTableWidgetItem (valueString);
+	    parametersTable->setItem (idx,
+				      PARAMETERS_COLUMN_VALUE, valueItem);
+	    drawCurves ();
+          });
+  layout->addWidget (value, row, col++);
+  
+  
+  row++;
+  col = 0;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+  
+  dialog.exec ();
+}
+  
 void Plot2DWindow::setParameters ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -791,7 +836,6 @@ void Plot2DWindow::setParameters ()
 		int rc = parametersTable->rowCount ();
 		parametersTable->setRowCount (0);
 		parametersTable->setRowCount (rc - 1);
-		fillParametersTable (parametersTable);
 		drawCurves ();
 	      }
 	    });
@@ -819,6 +863,13 @@ void Plot2DWindow::setParameters ()
 	       drawCurves ();
 	     }
 	   });
+  connect (parametersTable,
+	   QOverload<int, int>::of(&QTableWidget::cellClicked),
+	   [=](int row, int column __attribute__((unused)))
+	   {
+	     updatParmValue (row, parametersTable);
+	     drawCurves ();
+	   });
 
   QStringList headers = {
     "Label",
@@ -828,30 +879,7 @@ void Plot2DWindow::setParameters ()
 
   parametersTable->setHorizontalHeaderLabels (headers);
 
-#if 1
   fillParametersTable (parametersTable);
-#else
-  for (int i = 0; i < getPlotParameters ().size (); i++) {
-    QTableWidgetItem *labelItem =
-      new QTableWidgetItem (getPlotParameters ()[i]->vname ());
-    parametersTable->setItem (i, PARAMETERS_COLUMN_LABEL, labelItem);
-    
-    QString valueString = QString ("%1j%2")
-      .arg (getPlotParameters ()[i]->real ())
-      .arg (getPlotParameters ()[i]->imag ());
-    QTableWidgetItem *valueItem = new QTableWidgetItem (valueString);
-    parametersTable->setItem (i, PARAMETERS_COLUMN_VALUE, valueItem);
-
-    
-    QTableWidgetItem *deleteItem = new QTableWidgetItem ("Delete");
-    Qt::ItemFlags deleteFlags = deleteItem->flags ();
-    deleteFlags &= ~Qt::ItemIsEditable;
-    deleteItem->setFlags (deleteFlags);
-    QBrush deleteBrush ("red");
-    deleteItem->setBackground (deleteBrush);
-    parametersTable->setItem (i, PARAMETERS_COLUMN_DELETE, deleteItem);
-  }
-#endif
   
   layout->addWidget (parametersTable, row, col++, 1, 3);
 
@@ -932,6 +960,12 @@ void Plot2DWindow::setControls ()
           });
   yTitleBox->setPlaceholderText ("Y Label");
   layout->addWidget (yTitleBox, row, col++);
+
+  row++;
+  col = 0;
+  
+  QLabel yrLbl ("Y range");
+  layout->addWidget (&yrLbl, row, col++);
 
   row++;
   col = 0;

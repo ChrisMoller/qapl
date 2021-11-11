@@ -149,6 +149,7 @@ private:
   void setParameters ();
   void pushExpression ();
   void updatePen (QPen *pen);
+  void updatParmValue (int idx, QTableWidget *parametersTable);
   void updateAspect (PlotCurve *pc);
   void updateMode (PlotCurve *pc);
   QString getAspectString (int idx);
