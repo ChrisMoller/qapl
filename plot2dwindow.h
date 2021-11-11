@@ -86,6 +86,8 @@ public:
   bool     getPolar () { return plot2DData->doPolar; }
   void     setPolar (bool polar) { plot2DData->doPolar = polar; }
   QString  getCurveTitle () { return plot2DData->activeCurve.title (); }
+  void     setYmin (double v) {yMin = v;}
+  void     setYmax (double v) {yMax = v;}
   void     setCurveTitle (QString title) {
     plot2DData->activeCurve.setTitle (title);
   }
@@ -164,6 +166,8 @@ private:
   void importChart ();
   void dumpXML (QString fileName);
   void setBGImage ();
+  double yMin;
+  double yMax;
 
   bool setupComplete;
   QChartView *chartView;

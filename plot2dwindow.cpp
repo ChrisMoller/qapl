@@ -967,6 +967,33 @@ void Plot2DWindow::setControls ()
   QLabel yrLbl ("Y range");
   layout->addWidget (&yrLbl, row, col++);
 
+  
+  QDoubleSpinBox *minBox = new QDoubleSpinBox ();
+  minBox->setDecimals (4);
+  minBox->setMaximum (MAXDOUBLE);
+  minBox->setMinimum (-MAXDOUBLE);
+  minBox->setValue (yMin);
+  connect(minBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  [=](double d){
+	    yMin = d;
+	    drawCurves ();
+	  });
+  layout->addWidget (minBox, row, col++);
+  
+  QDoubleSpinBox *maxBox = new QDoubleSpinBox ();
+  maxBox->setDecimals (4);
+  maxBox->setMaximum (MAXDOUBLE);
+  maxBox->setMinimum (-MAXDOUBLE);
+  maxBox->setValue (yMax);
+  connect(maxBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  [=](double d){
+	    yMax = d;
+	    drawCurves ();
+	  });
+  layout->addWidget (maxBox, row, col++);
+
+  
+
   row++;
   col = 0;
 
@@ -1211,6 +1238,9 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   chart2DWindow = new Chart2DWindow (this, mw);
 
   setAspectMode (Qt::KeepAspectRatio);
+
+  yMin =  MAXDOUBLE;
+  yMax = -MAXDOUBLE;
 
   setupComplete = false;
     
