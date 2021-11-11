@@ -1164,6 +1164,10 @@ void Plot2DWindow::createMenubar ()
   exportAct->setStatusTip(tr("Export chart to current file"));
 
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
+  QString cmd = QString("min-width: 100;");
+  //  QString cmd = QString("background-color: red;");
+  //  QString cmd = QString("QMenu::item { background-color: red; }");
+  settingsMenu->setStyleSheet(cmd);
 
   QAction *resolutionAct =
     settingsMenu->addAction(tr("&Resolution"), this,
@@ -1183,21 +1187,6 @@ void Plot2DWindow::createMenubar ()
   QAction *fontsAct =
     settingsMenu->addAction(tr("&Appearance"), this,
 			    & Plot2DWindow::setFonts);
-  {
-    QFont font = fontsAct->font ();
-    int pixelSize = font.pixelSize ();
-    if (pixelSize != -1) {
-      font.setPixelSize ((2 * pixelSize) / 3);
-      fontsAct->setFont (font);
-    }
-    else {
-      double pointSize = font.pointSizeF ();
-      if (pointSize != -1.0) {
-	font.setPointSizeF (pointSize * 0.667);
-	fontsAct->setFont (font);
-      }
-    }
-  }
   fontsAct->setStatusTip(tr("Set fonts"));
 
 }
