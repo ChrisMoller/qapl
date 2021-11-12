@@ -6,6 +6,7 @@
 #include <QChart>
 #include <QChartView>
 #include <QSplineSeries>
+#include <QRubberBand>
 
 #include "mainwindow.h"
 #include "plot2dwindow.h"
@@ -36,6 +37,12 @@ public:
 
 protected:
   void	mouseMoveEvent(QMouseEvent *e) override;
+  void	mousePressEvent(QMouseEvent *e) override;
+  void	mouseReleaseEvent(QMouseEvent *e) override;
+
+private:
+  QPoint origin;
+  QRubberBand *rubberBand;
 };
 
 class Chart2DWindow : public QMainWindow
@@ -73,7 +80,6 @@ public:
   double fontScale;
   double currentWidth;
   double currentHeight;
-
 };
 
 #endif // CHART2DWINDOW_H

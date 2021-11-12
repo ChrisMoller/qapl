@@ -795,15 +795,52 @@ void Chart2DWindow::createMenubar ()
 QaplChartView::QaplChartView (QWidget *parent)
   : QChartView (parent)
 {
+  rubberBand = nullptr;
+}
+
+void QaplChartView::mousePressEvent(QMouseEvent *event)
+{
+    origin = event->pos();
+    if (!rubberBand)
+      rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+
+    //const QRect newGeom = QRect(QPoint(origin.x(), 0),
+    //				QSize ());
+    
+    rubberBand->setGeometry(QRect(origin, QSize()));
+    //rubberBand->setGeometry(newGeom);
+    rubberBand->show();
 }
 
 void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 {
+#if 1
+  if (rubberBand) {
+    rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+    auto const scenePos1 = mapToScene(origin);
+    auto const chartItemPos1 = chart()->mapFromScene(scenePos1); 
+    QPointF p1 = chart()->mapToValue(chartItemPos1);
+    auto const scenePos2 = mapToScene(event->pos ());
+    auto const chartItemPos2 = chart()->mapFromScene(scenePos2); 
+    QPointF p2 = chart()->mapToValue(chartItemPos2);
+    fprintf (stderr, "x: %g -> %g, y:  %g -> %g\n",
+	     p1.x (), p2.x (), p1.y (), p2.y ());
+  }
+#else
   QPoint p = event->pos ();
   auto const scenePos = mapToScene(p);
   auto const chartItemPos = chart()->mapFromScene(scenePos); 
   auto const valueGivenSeries = chart()->mapToValue(chartItemPos); 
   qDebug() << "valSeries:" << valueGivenSeries;
+#endif
+}
+
+void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
+{
+    rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+    rubberBand->hide();
+    // determine selection, for example using QRect::intersects()
+    // and QRect::contains().
 }
 
 Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
