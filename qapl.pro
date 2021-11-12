@@ -25,6 +25,7 @@ SOURCES += \
     menuops.cpp \
     plot2dwindow.cpp \
     processline.cpp \
+    scidoublespinbox.cpp \
     xml.cpp
 
 HEADERS += \
@@ -40,6 +41,7 @@ HEADERS += \
     plot2ddata.h \
     plot2dwindow.h \
     processline.h \
+    scidoublespinbox.h \
     xml.h \
     XMLtags.def
 

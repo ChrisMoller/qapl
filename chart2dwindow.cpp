@@ -464,6 +464,16 @@ Using only the real components in the axis."));
 	// axisY->setShadesVisible(true);
       
 	//	double dx = 0.075 * (idxVector.back () - idxVector.front ());
+	if (!pw->getyMinLocked ()) {
+	  pw->setYmin (realYMin);
+	  if (pw->getYminBox ()) pw->getYminBox ()->setValue (realYMin);
+	}
+	else realYMin = pw->getYmin ();
+	if (!pw->getyMaxLocked ()) {
+	  pw->setYmax (realYMax);
+	  if (pw->getYmaxBox ()) pw->getYmaxBox ()->setValue (realYMax);
+	}
+	else realYMax = pw->getYmax ();
 	double dx = 0.075 * (realXMax - realXMin);
 	double dy = 0.075 * (realYMax - realYMin);
 	axisX->setRange(realXMin - dx, realXMax + dx);

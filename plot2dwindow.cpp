@@ -12,6 +12,7 @@
 
 #include "mainwindow.h"
 #include "complexspinbox.h"
+#include "scidoublespinbox.h"
 #include "plot2dwindow.h"
 #include "plot2ddata.h"
 #include "chart2dwindow.h"
@@ -968,29 +969,63 @@ void Plot2DWindow::setControls ()
   layout->addWidget (&yrLbl, row, col++);
 
   
-  QDoubleSpinBox *minBox = new QDoubleSpinBox ();
-  minBox->setDecimals (4);
-  minBox->setMaximum (MAXDOUBLE);
-  minBox->setMinimum (-MAXDOUBLE);
+  minBox = new SciDoubleSpinBox (SciDoubleSpinBox::Min);
   minBox->setValue (yMin);
-  connect(minBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-	  [=](double d){
-	    yMin = d;
-	    drawCurves ();
+  connect(minBox, 
+	  &SciDoubleSpinBox::destroyed,
+	  [=](){
+	    minBox = nullptr;
 	  });
   layout->addWidget (minBox, row, col++);
-  
-  QDoubleSpinBox *maxBox = new QDoubleSpinBox ();
-  maxBox->setDecimals (4);
-  maxBox->setMaximum (MAXDOUBLE);
-  maxBox->setMinimum (-MAXDOUBLE);
-  maxBox->setValue (yMax);
-  connect(maxBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-	  [=](double d){
-	    yMax = d;
+
+  QCheckBox *minCheck = new QCheckBox (tr ("Locked"));
+  minCheck->setCheckState (Qt::Unchecked);
+  connect (minCheck,
+	   &QCheckBox::stateChanged,
+	   [=](int index)
+	   {
+	     yMinLocked = (index == Qt::Checked) ? true : false;
+	     drawCurves ();
+	   });
+  connect(minBox,
+	  &SciDoubleSpinBox::valueChanged,
+	  [=](){
+	    yMin = minBox->getValue ();
+	    setYmin (yMin);
+	    yMinLocked = true;
+	    minCheck->setCheckState (Qt::Checked);
 	    drawCurves ();
 	  });
+  layout->addWidget (minCheck, row, col++);
+  
+  maxBox = new SciDoubleSpinBox (SciDoubleSpinBox::Max);
+  maxBox->setValue (yMax);
+  connect(maxBox, 
+	  &SciDoubleSpinBox::destroyed,
+	  [=](){
+	    maxBox = nullptr;
+	  });
   layout->addWidget (maxBox, row, col++);
+
+  QCheckBox *maxCheck = new QCheckBox (tr ("Locked"));
+  maxCheck->setCheckState (Qt::Unchecked);
+  connect (maxCheck,
+	   &QCheckBox::stateChanged,
+	   [=](int index)
+	   {
+	     yMaxLocked = (index == Qt::Checked) ? true : false;
+	     drawCurves ();
+	   });
+  connect(maxBox, 
+	  &SciDoubleSpinBox::valueChanged,
+	  [=](){
+	    yMax = maxBox->getValue ();
+	    setYmax (yMax);
+	    yMaxLocked = true;
+	    maxCheck->setCheckState (Qt::Checked);
+	    drawCurves ();
+	  });
+  layout->addWidget (maxCheck, row, col++);
 
   
 
@@ -1237,10 +1272,14 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
 
-  setAspectMode (Qt::KeepAspectRatio);
+  yMin = nan ("NaN");
+  yMax = nan ("NaN");
+  yMinLocked = false;
+  yMaxLocked = false;
+  minBox = nullptr;
+  maxBox = nullptr;
 
-  yMin =  MAXDOUBLE;
-  yMax = -MAXDOUBLE;
+  setAspectMode (Qt::KeepAspectRatio);
 
   setupComplete = false;
     

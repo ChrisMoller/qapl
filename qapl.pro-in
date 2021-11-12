@@ -17,6 +17,7 @@ SOURCES += \
     chart2dwindow.cpp \
     complexspinbox.cpp \
     edif.cpp \
+    greeklineedit.cpp \
     helpwindow.cpp \
     history.cpp \
     main.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
     menuops.cpp \
     plot2dwindow.cpp \
     processline.cpp \
+    scidoublespinbox.cpp \
     xml.cpp
 
 HEADERS += \
@@ -31,6 +33,7 @@ HEADERS += \
     chart2dwindow.h \
     complexspinbox.h \
     enums.h \
+    greeklineedit.h \
     helpwindow.h \
     history.h \
     mainwindow.h \
@@ -38,6 +41,7 @@ HEADERS += \
     plot2ddata.h \
     plot2dwindow.h \
     processline.h \
+    scidoublespinbox.h \
     xml.h \
     XMLtags.def
 

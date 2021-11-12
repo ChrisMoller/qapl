@@ -1,4 +1,5 @@
 #include <QtWidgets>
+#include <values.h>
 
 #include "enums.h"
 #include "complexspinbox.h"
@@ -225,7 +226,7 @@ void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
 
     int y = mouseEvent->pos ().y ();
     int hgt = this->height ();
-    incr = (y < hgt / 2) ? 1.0 : -1.0;
+    incr = (y > hgt / 2) ? 1.0 : -1.0;
 
     incdecValue (which, incr);
     handled = true;

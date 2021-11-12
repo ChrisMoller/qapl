@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "chart2dwindow.h"
 #include "complexspinbox.h"
+#include "scidoublespinbox.h"
 #include "plot2ddata.h"
 
 class Chart2DWindow;
@@ -88,6 +89,12 @@ public:
   QString  getCurveTitle () { return plot2DData->activeCurve.title (); }
   void     setYmin (double v) {yMin = v;}
   void     setYmax (double v) {yMax = v;}
+  double   getYmin () { return yMin; }
+  double   getYmax () { return yMax; }
+  SciDoubleSpinBox *getYminBox () { return minBox; }
+  SciDoubleSpinBox *getYmaxBox () { return maxBox; }
+  bool     getyMinLocked () { return yMinLocked; }
+  bool     getyMaxLocked () { return yMaxLocked; }
   void     setCurveTitle (QString title) {
     plot2DData->activeCurve.setTitle (title);
   }
@@ -168,6 +175,8 @@ private:
   void setBGImage ();
   double yMin;
   double yMax;
+  bool yMinLocked;
+  bool yMaxLocked;
 
   bool setupComplete;
   QChartView *chartView;
@@ -178,6 +187,8 @@ private:
   ComplexSpinBox *rangeInit;
   ComplexSpinBox *rangeFinal;
   Plot2dData *plot2DData;
+  SciDoubleSpinBox *minBox;
+  SciDoubleSpinBox *maxBox;
   
 protected:
   void closeEvent(QCloseEvent *event) override;
