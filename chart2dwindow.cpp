@@ -853,104 +853,90 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
   }
 
   pc->pw->drawCurves ();
+  event->accept ();
 }
 
 void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
-  origin = event->pos();
-  origin.setY (0);
-  currentPoint = event->pos();
-  if (!rubberBand)
-    rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+  Qt::MouseButton button = event->button();
+  if (button == Qt::RightButton) {	// pop up label stuff
+    //Qt::KeyboardModifiers mods = event->modifiers ();
+    //bool ctl = (0 == (mods & Qt::ControlModifier));
+    // unctl, use world coords
+    // ctl, use window coords as pct of window size
+    event->accept ();
+  }
+  else {
+    origin = event->pos();
+    origin.setY (0);
+    currentPoint = event->pos();
+    if (!rubberBand)
+      rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
 
-  rubberBand->setGeometry(QRect(origin, QSize()));
-  rubberBand->show();
+    rubberBand->setGeometry(QRect(origin, QSize()));
+    rubberBand->show();
+    event->accept ();
+  }
 }
 
 void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 {
+  currentPoint = event->pos();
+  QPointF pt = coordinateTransform (currentPoint);
+  QString pts = QString ("%1, %2")
+    .arg (QString::number (pt.x (), 'g', 3))
+    .arg (QString::number (pt.y (), 'g', 3));
+  pc->readout->setText (pts);
+  
   if (rubberBand && !rubberBand->isHidden ()) {
-    currentPoint = event->pos();
-    QPointF pt = coordinateTransform (currentPoint);
-    QString pts = QString ("%1, %2")
-      .arg (QString::number (pt.x (), 'g', 3))
-      .arg (QString::number (pt.y (), 'g', 3));
-    pc->readout->setText (pts);
     currentPoint.setY (this->height ());
     rubberBand->setGeometry(QRect(origin, currentPoint).normalized());
+    event->accept ();
   }
+  else event->ignore ();
 }
 
 void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
 {
-  if (rubberBand && !rubberBand->isHidden () && (origin != currentPoint)) {
-    rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
-    rubberBand->hide();
-
-    QPointF initP  = coordinateTransform (origin);
-    QPointF finalP = coordinateTransform (currentPoint);
-
-    double initReal  = pc->pw->getRealInit ();
-    double initImag  = pc->pw->getImagInit ();
-    double finalReal = pc->pw->getRealFinal ();
-    double finalImag = pc->pw->getImagFinal ();
-
-#if 0
-    double ymin = pc->pw->getYmin ();
-    double ymax = pc->pw->getYmax ();
-#endif
-
-    /****
-                    p1x
-		     |
-		     |		             v
-                     |                      p2x
-		     |			     |
-		     v		             v
-	 |----------------------------------------------|
-      initR                                          finalR
-
-      fracI = (p1x - initR) / (finalR - initR)
-      fracF = (p2x - initR) / (finalR - initR)
-      initR'  = p1x
-      finalR' = p2x
-      initI'  = initI + fracI * (finalI - initI)
-      finalI' = initI + fracF * (finalI - initI)
-      
-     ****/
-
-    double ipx = initP.x ();
-    double fpx = finalP.x ();
-    if (ipx > fpx) {double tmp = ipx; ipx = fpx; fpx = tmp; }
-    double fracIx = (initP.x ()  - initReal) / (finalReal - initReal);
-    double fracFx = (finalP.x () - initReal) / (finalReal - initReal);
-    double imagIx = initImag + fracIx * (finalImag - initImag);
-    double imagFx = initImag + fracFx * (finalImag - initImag);
-    double realIx = initP.x ();
-    double realFx = finalP.x ();
-
-    ComplexSpinBox *ibox =  pc->pw->getRangeInit ();
-    ComplexSpinBox *fbox =  pc->pw->getRangeFinal ();
-    ibox->setComplex (realIx, imagIx);
-    fbox->setComplex (realFx, imagFx);
-
-#if 0
-    double ipy = initP.y ();
-    double fpy = finalP.y ();
-    if (ipy > fpy) {double tmp = ipy; ipy = fpy; fpy = tmp; }
-    fprintf (stderr, "ipy fpy: %g %g\n", ipy, fpy);
-    
-    fprintf (stderr, "ymin ymax: %g %g\n", ymin, ymax);
-    double fracMinY = (ipy - ymin) / (ymax - ymin);
-    double fracMaxY = (fpy - ymin) / (ymax - ymin);
-    fprintf (stderr, "frac %g %g\n", fracMinY, fracMaxY);
-#endif
-    
-    pc->pw->drawCurves ();
-
-    // determine selection, for example using QRect::intersects()
-    // and QRect::contains().
+  Qt::MouseButton button = event->button();
+  if (button == Qt::RightButton) {	// do nothing--for lbl popup
+    event->accept ();
   }
+  else
+    if (rubberBand && !rubberBand->isHidden () && (origin != currentPoint)) {
+      rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+      rubberBand->hide();
+
+      QPointF initP  = coordinateTransform (origin);
+      QPointF finalP = coordinateTransform (currentPoint);
+
+      double initReal  = pc->pw->getRealInit ();
+      double initImag  = pc->pw->getImagInit ();
+      double finalReal = pc->pw->getRealFinal ();
+      double finalImag = pc->pw->getImagFinal ();
+
+      double ipx = initP.x ();
+      double fpx = finalP.x ();
+      if (ipx > fpx) {double tmp = ipx; ipx = fpx; fpx = tmp; }
+      double fracIx = (initP.x ()  - initReal) / (finalReal - initReal);
+      double fracFx = (finalP.x () - initReal) / (finalReal - initReal);
+      double imagIx = initImag + fracIx * (finalImag - initImag);
+      double imagFx = initImag + fracFx * (finalImag - initImag);
+      double realIx = initP.x ();
+      double realFx = finalP.x ();
+      
+      ComplexSpinBox *ibox =  pc->pw->getRangeInit ();
+      ComplexSpinBox *fbox =  pc->pw->getRangeFinal ();
+      ibox->setComplex (realIx, imagIx);
+      fbox->setComplex (realFx, imagFx);
+
+      pc->pw->drawCurves ();
+
+      // determine selection, for example using QRect::intersects()
+      // and QRect::contains().
+      event->accept ();
+    }
+    else event->ignore ();
 }
 
 Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
