@@ -799,6 +799,13 @@ QaplChartView::QaplChartView (Chart2DWindow *parent)
   rubberBand = nullptr;
 }
 
+QPointF QaplChartView::coordinateTransform (QPoint d)
+{
+  auto const scenePos1 = mapToScene(d);
+  auto const chartItemPos1 = chart()->mapFromScene(scenePos1); 
+  return chart()->mapToValue(chartItemPos1);
+}
+
 void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
   origin = event->pos();
@@ -806,38 +813,16 @@ void QaplChartView::mousePressEvent(QMouseEvent *event)
   if (!rubberBand)
     rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
 
-  //const QRect newGeom = QRect(QPoint(origin.x(), 0),
-  //				QSize ());
-    
   rubberBand->setGeometry(QRect(origin, QSize()));
-  //rubberBand->setGeometry(newGeom);
   rubberBand->show();
 }
 
 void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 {
-#if 1
   currentPoint = event->pos();
   if (rubberBand) {
     rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
-#if 0
-    auto const scenePos1 = mapToScene(origin);
-    auto const chartItemPos1 = chart()->mapFromScene(scenePos1); 
-    QPointF p1 = chart()->mapToValue(chartItemPos1);
-    auto const scenePos2 = mapToScene(event->pos ());
-    auto const chartItemPos2 = chart()->mapFromScene(scenePos2); 
-    QPointF p2 = chart()->mapToValue(chartItemPos2);
-    fprintf (stderr, "x: %g -> %g, y:  %g -> %g\n",
-	     p1.x (), p2.x (), p1.y (), p2.y ());
-#endif
   }
-#else
-  QPoint p = event->pos ();
-  auto const scenePos = mapToScene(p);
-  auto const chartItemPos = chart()->mapFromScene(scenePos); 
-  auto const valueGivenSeries = chart()->mapToValue(chartItemPos); 
-  qDebug() << "valSeries:" << valueGivenSeries;
-#endif
 }
 
 void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
@@ -846,29 +831,13 @@ void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
     rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
     rubberBand->hide();
 
-    auto const scenePos1 = mapToScene(origin);
-    auto const chartItemPos1 = chart()->mapFromScene(scenePos1); 
-    QPointF initP = chart()->mapToValue(chartItemPos1);
-    auto const scenePos2 = mapToScene(currentPoint);
-    auto const chartItemPos2 = chart()->mapFromScene(scenePos2); 
-    QPointF finalP = chart()->mapToValue(chartItemPos2);
-#if 0
-    fprintf (stderr, "rubber: %g %g\n",
-	     initP.x (), finalP.x ());
-#endif
+    QPointF initP  = coordinateTransform (origin);
+    QPointF finalP = coordinateTransform (currentPoint);
 
     double initReal  = pc->pw->getRealInit ();
     double initImag  = pc->pw->getImagInit ();
     double finalReal = pc->pw->getRealFinal ();
     double finalImag = pc->pw->getImagFinal ();
-
-#if 0
-    fprintf (stderr, "range: init = %g, %g, final = %g %g\n",
-	     initReal, 
-	     initImag, 
-	     finalReal, 
-	     finalImag); 
-#endif
 
     /****
                     p1x
@@ -889,26 +858,21 @@ void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
       
      ****/
 
-    double fracI = (initP.x ()  - initReal) / (finalReal - initReal);
-    double fracF = (finalP.x () - initReal) / (finalReal - initReal);
-    double imagI = initImag + fracI * (finalImag - initImag);
-    double imagF = initImag + fracF * (finalImag - initImag);
-    double realI = initP.x ();
-    double realF = finalP.x ();
-
-#if 0
-    fprintf (stderr, "new range: init = %g, %g, final = %g %g\n",
-	     realI, 
-	     imagI, 
-	     realF, 
-	     imagF);
-#endif
+    double fracIx = (initP.x ()  - initReal) / (finalReal - initReal);
+    double fracFx = (finalP.x () - initReal) / (finalReal - initReal);
+    double imagIx = initImag + fracIx * (finalImag - initImag);
+    double imagFx = initImag + fracFx * (finalImag - initImag);
+    double realIx = initP.x ();
+    double realFx = finalP.x ();
 
     ComplexSpinBox *ibox =  pc->pw->getRangeInit ();
     ComplexSpinBox *fbox =  pc->pw->getRangeFinal ();
-    ibox->setComplex (realI, imagI);
-    fbox->setComplex (realF, imagF);
+    ibox->setComplex (realIx, imagIx);
+    fbox->setComplex (realFx, imagFx);
+
+    
     pc->pw->drawCurves ();
+
     // determine selection, for example using QRect::intersects()
     // and QRect::contains().
   }

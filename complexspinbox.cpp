@@ -226,7 +226,7 @@ void ComplexSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
 
     int y = mouseEvent->pos ().y ();
     int hgt = this->height ();
-    incr = (y > hgt / 2) ? 1.0 : -1.0;
+    incr = (y < hgt / 2) ? 1.0 : -1.0;
 
     incdecValue (which, incr);
     handled = true;
@@ -262,7 +262,7 @@ void ComplexSpinBox::wheelEvent(QWheelEvent *wheelEvent)
   which_e which = ctl ? WHICH_REAL : WHICH_IMAG;
 
   int y = wheelEvent->angleDelta().y();
-  double incr = (0 < y) ? 1.0 : -1.0;
+  double incr = (0 > y) ? 1.0 : -1.0;
 
   incdecValue (which, incr);
 }

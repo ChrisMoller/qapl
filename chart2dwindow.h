@@ -35,6 +35,7 @@ class QaplChartView : public QChartView
 public:
   QaplChartView(Chart2DWindow *parent);
   ~QaplChartView () {}
+  QPointF coordinateTransform (QPoint d);
 
 protected:
   void	mouseMoveEvent(QMouseEvent *e) override;

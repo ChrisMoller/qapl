@@ -94,6 +94,16 @@ void SciDoubleSpinBox::keyPressEvent(QKeyEvent *keyEvent)
     QAbstractSpinBox::keyPressEvent(keyEvent);
 }
 
+void SciDoubleSpinBox::wheelEvent(QWheelEvent *wheelEvent)
+{
+  int y = wheelEvent->angleDelta().y();
+  double incr = (0 > y) ? 1.0 : -1.0;
+
+  value += incr;
+  this->lineEdit ()->setText (QString::number (value));
+  Q_EMIT valueChanged ();
+}
+
 void SciDoubleSpinBox::mousePressEvent(QMouseEvent *mouseEvent)
 {
   bool handled = false;

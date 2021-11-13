@@ -29,6 +29,7 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
     bool eventFilter(QObject *object, QEvent *event);
     
  private:
