@@ -869,21 +869,21 @@ void QaplChartView::mousePressEvent(QMouseEvent *event)
 
 void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 {
-  currentPoint = event->pos();
-  QPointF pt = coordinateTransform (currentPoint);
-  QString pts = QString ("%1, %2")
-    .arg (QString::number (pt.x (), 'g', 3))
-    .arg (QString::number (pt.y (), 'g', 3));
-  pc->readout->setText (pts);
-  currentPoint.setY (this->height ());
-  if (rubberBand) {
+  if (rubberBand && !rubberBand->isHidden ()) {
+    currentPoint = event->pos();
+    QPointF pt = coordinateTransform (currentPoint);
+    QString pts = QString ("%1, %2")
+      .arg (QString::number (pt.x (), 'g', 3))
+      .arg (QString::number (pt.y (), 'g', 3));
+    pc->readout->setText (pts);
+    currentPoint.setY (this->height ());
     rubberBand->setGeometry(QRect(origin, currentPoint).normalized());
   }
 }
 
 void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
 {
-  if (origin != currentPoint) {
+  if (rubberBand && !rubberBand->isHidden () && (origin != currentPoint)) {
     rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
     rubberBand->hide();
 
