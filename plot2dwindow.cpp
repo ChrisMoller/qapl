@@ -912,7 +912,7 @@ void Plot2DWindow::setParameters ()
 void Plot2DWindow::setControls ()
 {
   QDialog dialog (this, Qt::Dialog);
-  dialog.setMinimumWidth (640);
+  dialog.setMinimumWidth (820);
   dialog.setWindowTitle ("qapl controls");
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
@@ -979,7 +979,7 @@ void Plot2DWindow::setControls ()
   layout->addWidget (minBox, row, col++);
 
   QCheckBox *minCheck = new QCheckBox (tr ("Locked"));
-  minCheck->setCheckState (Qt::Unchecked);
+  minCheck->setCheckState (yMinLocked ? Qt::Checked : Qt::Unchecked );
   connect (minCheck,
 	   &QCheckBox::stateChanged,
 	   [=](int index)
@@ -1008,7 +1008,7 @@ void Plot2DWindow::setControls ()
   layout->addWidget (maxBox, row, col++);
 
   QCheckBox *maxCheck = new QCheckBox (tr ("Locked"));
-  maxCheck->setCheckState (Qt::Unchecked);
+  maxCheck->setCheckState (yMaxLocked ? Qt::Checked : Qt::Unchecked );
   connect (maxCheck,
 	   &QCheckBox::stateChanged,
 	   [=](int index)
@@ -1126,7 +1126,7 @@ void Plot2DWindow::setControls ()
   closeButton->setDefault (true);
   layout->addWidget (closeButton, row, 3);
   QObject::connect (closeButton, &QPushButton::clicked,
-                    &dialog, &QDialog::accept);
+                    &dialog, &QDialog::reject);
 
 
   dialog.exec ();

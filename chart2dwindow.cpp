@@ -839,6 +839,11 @@ void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
     double finalReal = pc->pw->getRealFinal ();
     double finalImag = pc->pw->getImagFinal ();
 
+#if 0
+    double ymin = pc->pw->getYmin ();
+    double ymax = pc->pw->getYmax ();
+#endif
+
     /****
                     p1x
 		     |
@@ -858,6 +863,9 @@ void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
       
      ****/
 
+    double ipx = initP.x ();
+    double fpx = finalP.x ();
+    if (ipx > fpx) {double tmp = ipx; ipx = fpx; fpx = tmp; }
     double fracIx = (initP.x ()  - initReal) / (finalReal - initReal);
     double fracFx = (finalP.x () - initReal) / (finalReal - initReal);
     double imagIx = initImag + fracIx * (finalImag - initImag);
@@ -870,6 +878,17 @@ void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
     ibox->setComplex (realIx, imagIx);
     fbox->setComplex (realFx, imagFx);
 
+#if 0
+    double ipy = initP.y ();
+    double fpy = finalP.y ();
+    if (ipy > fpy) {double tmp = ipy; ipy = fpy; fpy = tmp; }
+    fprintf (stderr, "ipy fpy: %g %g\n", ipy, fpy);
+    
+    fprintf (stderr, "ymin ymax: %g %g\n", ymin, ymax);
+    double fracMinY = (ipy - ymin) / (ymax - ymin);
+    double fracMaxY = (fpy - ymin) / (ymax - ymin);
+    fprintf (stderr, "frac %g %g\n", fracMinY, fracMaxY);
+#endif
     
     pc->pw->drawCurves ();
 
