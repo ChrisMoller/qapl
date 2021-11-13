@@ -42,6 +42,8 @@ public:
   void   setMarkerSize (double ms) {
     plot2DData->activeCurve.setMarkerSize (ms);
   }
+  ComplexSpinBox *getRangeInit ()  { return rangeInit; }
+  ComplexSpinBox *getRangeFinal ()  { return rangeFinal; }
   double   getRealInit ()  { return plot2DData->rangeInit.real (); }
   double   getRealFinal () { return plot2DData->rangeFinal.real (); }
   double   getImagInit ()  { return plot2DData->rangeFinal.imag (); }
@@ -123,6 +125,7 @@ public:
 #endif
 
   void showPlot2dData (Plot2dData *data);
+  void drawCurves ();
 
   static void showError (QXmlStreamReader &stream);
   static void readXML (QString &fileName, MainWindow *mw, bool trace);
@@ -151,7 +154,6 @@ public:
 
 private:
   MainWindow *mw;
-  void drawCurves ();
   void createMenubar ();
   void setGranularity ();
   void setControls ();

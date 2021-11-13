@@ -15,6 +15,7 @@
 #include "enums.h"
 
 class Plot2DWindow;
+class Chart2DWindow;
 
 // https://doc.qt.io/qt-5/qabstractscrollarea.html
 
@@ -32,7 +33,7 @@ class QaplChartView : public QChartView
   Q_OBJECT
   
 public:
-  QaplChartView(QWidget *parent);
+  QaplChartView(Chart2DWindow *parent);
   ~QaplChartView () {}
 
 protected:
@@ -42,7 +43,9 @@ protected:
 
 private:
   QPoint origin;
+  QPoint currentPoint;
   QRubberBand *rubberBand;
+  Chart2DWindow *pc;
 };
 
 class Chart2DWindow : public QMainWindow
@@ -61,9 +64,10 @@ public:
   //  void exportImage ();
   void exportAsImage ();
   
- private:
-
   Plot2DWindow *pw;
+
+private:
+
   MainWindow *mw;
   void createMenubar ();
 #if 0

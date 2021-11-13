@@ -792,31 +792,35 @@ void Chart2DWindow::createMenubar ()
   exportAct->setStatusTip(tr("Export chart"));
 }
 
-QaplChartView::QaplChartView (QWidget *parent)
+QaplChartView::QaplChartView (Chart2DWindow *parent)
   : QChartView (parent)
 {
+  pc = parent;
   rubberBand = nullptr;
 }
 
 void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
-    origin = event->pos();
-    if (!rubberBand)
-      rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+  origin = event->pos();
+  currentPoint = event->pos();
+  if (!rubberBand)
+    rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
 
-    //const QRect newGeom = QRect(QPoint(origin.x(), 0),
-    //				QSize ());
+  //const QRect newGeom = QRect(QPoint(origin.x(), 0),
+  //				QSize ());
     
-    rubberBand->setGeometry(QRect(origin, QSize()));
-    //rubberBand->setGeometry(newGeom);
-    rubberBand->show();
+  rubberBand->setGeometry(QRect(origin, QSize()));
+  //rubberBand->setGeometry(newGeom);
+  rubberBand->show();
 }
 
 void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 {
 #if 1
+  currentPoint = event->pos();
   if (rubberBand) {
     rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+#if 0
     auto const scenePos1 = mapToScene(origin);
     auto const chartItemPos1 = chart()->mapFromScene(scenePos1); 
     QPointF p1 = chart()->mapToValue(chartItemPos1);
@@ -825,6 +829,7 @@ void QaplChartView::mouseMoveEvent(QMouseEvent *event)
     QPointF p2 = chart()->mapToValue(chartItemPos2);
     fprintf (stderr, "x: %g -> %g, y:  %g -> %g\n",
 	     p1.x (), p2.x (), p1.y (), p2.y ());
+#endif
   }
 #else
   QPoint p = event->pos ();
@@ -837,10 +842,76 @@ void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 
 void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
 {
+  if (origin != currentPoint) {
     rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
     rubberBand->hide();
+
+    auto const scenePos1 = mapToScene(origin);
+    auto const chartItemPos1 = chart()->mapFromScene(scenePos1); 
+    QPointF initP = chart()->mapToValue(chartItemPos1);
+    auto const scenePos2 = mapToScene(currentPoint);
+    auto const chartItemPos2 = chart()->mapFromScene(scenePos2); 
+    QPointF finalP = chart()->mapToValue(chartItemPos2);
+#if 0
+    fprintf (stderr, "rubber: %g %g\n",
+	     initP.x (), finalP.x ());
+#endif
+
+    double initReal  = pc->pw->getRealInit ();
+    double initImag  = pc->pw->getImagInit ();
+    double finalReal = pc->pw->getRealFinal ();
+    double finalImag = pc->pw->getImagFinal ();
+
+#if 0
+    fprintf (stderr, "range: init = %g, %g, final = %g %g\n",
+	     initReal, 
+	     initImag, 
+	     finalReal, 
+	     finalImag); 
+#endif
+
+    /****
+                    p1x
+		     |
+		     |		             v
+                     |                      p2x
+		     |			     |
+		     v		             v
+	 |----------------------------------------------|
+      initR                                          finalR
+
+      fracI = (p1x - initR) / (finalR - initR)
+      fracF = (p2x - initR) / (finalR - initR)
+      initR'  = p1x
+      finalR' = p2x
+      initI'  = initI + fracI * (finalI - initI)
+      finalI' = initI + fracF * (finalI - initI)
+      
+     ****/
+
+    double fracI = (initP.x ()  - initReal) / (finalReal - initReal);
+    double fracF = (finalP.x () - initReal) / (finalReal - initReal);
+    double imagI = initImag + fracI * (finalImag - initImag);
+    double imagF = initImag + fracF * (finalImag - initImag);
+    double realI = initP.x ();
+    double realF = finalP.x ();
+
+#if 0
+    fprintf (stderr, "new range: init = %g, %g, final = %g %g\n",
+	     realI, 
+	     imagI, 
+	     realF, 
+	     imagF);
+#endif
+
+    ComplexSpinBox *ibox =  pc->pw->getRangeInit ();
+    ComplexSpinBox *fbox =  pc->pw->getRangeFinal ();
+    ibox->setComplex (realI, imagI);
+    fbox->setComplex (realF, imagF);
+    pc->pw->drawCurves ();
     // determine selection, for example using QRect::intersects()
     // and QRect::contains().
+  }
 }
 
 Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
