@@ -784,6 +784,8 @@ Chart2DWindow::exportAsImage ()
 
 void Chart2DWindow::createMenubar ()
 {
+  readout = new QLabel ("           ");
+  menuBar()->setCornerWidget (readout);
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
   
   QAction *exportAct =
@@ -809,6 +811,7 @@ QPointF QaplChartView::coordinateTransform (QPoint d)
 void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
   origin = event->pos();
+  origin.setY (0);
   currentPoint = event->pos();
   if (!rubberBand)
     rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
@@ -820,8 +823,14 @@ void QaplChartView::mousePressEvent(QMouseEvent *event)
 void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 {
   currentPoint = event->pos();
+  QPointF pt = coordinateTransform (currentPoint);
+  QString pts = QString ("%1, %2")
+    .arg (QString::number (pt.x (), 'g', 3))
+    .arg (QString::number (pt.y (), 'g', 3));
+  pc->readout->setText (pts);
+  currentPoint.setY (this->height ());
   if (rubberBand) {
-    rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+    rubberBand->setGeometry(QRect(origin, currentPoint).normalized());
   }
 }
 

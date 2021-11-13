@@ -66,6 +66,7 @@ public:
   void exportAsImage ();
   
   Plot2DWindow *pw;
+  QLabel *readout;
 
 private:
 
