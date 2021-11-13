@@ -808,6 +808,53 @@ QPointF QaplChartView::coordinateTransform (QPoint d)
   return chart()->mapToValue(chartItemPos1);
 }
 
+void QaplChartView::wheelEvent(QWheelEvent *event)
+{
+  Qt::KeyboardModifiers mods = event->modifiers ();
+  bool ctl = (0 == (mods & Qt::ControlModifier));
+  QPoint angle = event->angleDelta ();
+#if 0
+  fprintf (stderr, "wheel mods 0x%08x %d %d\n",
+	   (int)mods, angle.x (), angle.y ());
+#endif
+
+  double direction = (angle.y () > 0.0) ? -1.0 : 1.0;
+  
+  QPointF initP  = coordinateTransform (origin);
+  QPointF finalP = coordinateTransform (currentPoint);
+  double ipx = initP.x ();
+  double fpx = finalP.x ();
+  if (ipx > fpx) {double tmp = ipx; ipx = fpx; fpx = tmp; }
+
+  double initReal  = pc->pw->getRealInit ();
+  double initImag  = pc->pw->getImagInit ();
+  double finalReal = pc->pw->getRealFinal ();
+  double finalImag = pc->pw->getImagFinal ();
+
+  ComplexSpinBox *ibox =  pc->pw->getRangeInit ();
+  ComplexSpinBox *fbox =  pc->pw->getRangeFinal ();
+  
+#define RANGE_STEP 0.005
+  
+  double deltaReal = direction * (finalReal -initReal) * RANGE_STEP;
+  double deltaImag = direction * (finalImag -initImag) * RANGE_STEP;
+
+  if (ctl) {
+    /*** motion ***/
+    
+    ibox->setComplex (initReal  + deltaReal, initImag  + deltaImag);
+    fbox->setComplex (finalReal + deltaReal, finalImag + deltaImag);
+  }
+  else {
+    /*** zoom ***/
+
+    ibox->setComplex (initReal  - deltaReal, initImag  - deltaImag);
+    fbox->setComplex (finalReal + deltaReal, finalImag + deltaImag);
+  }
+
+  pc->pw->drawCurves ();
+}
+
 void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
   origin = event->pos();
