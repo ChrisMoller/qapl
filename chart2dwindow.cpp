@@ -1,8 +1,13 @@
 // https://doc.qt.io/qt-5/qtcharts-customchart-example.html
+//
+//  https://stackoverflow.com/questions/42941508/display-text-on-qtcharts
+//
 
 #include <QScatterSeries>
 #include <QCategoryAxis>
 #include <QPolarChart>
+
+#include "textitem.h"
 
 #include "mainwindow.h"
 #include "plot2dwindow.h"
@@ -251,6 +256,7 @@ void Chart2DWindow::drawCurves ()
   chartView->setChart (chart);
   if (oldChart != nullptr)
     delete oldChart;
+
   
   chart->setTheme (pw->getTheme ());
     
@@ -486,6 +492,12 @@ Using only the real components in the axis."));
 	for (int i = 0; i < seriesList.size (); i++) {
 	  seriesList[i]->attachAxis(axisX);
 	  seriesList[i]->attachAxis(axisY);
+	  if (i == 0) {
+	    TextItem *ti =
+	      new TextItem (QString ("Hello, World"),
+			    QPoint (150, 150), chart,
+			    seriesList[i]);
+	  }
 	}
       }
     }
