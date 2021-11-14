@@ -504,8 +504,9 @@ Using only the real components in the axis."));
 	    ti->setAlignment (al->getHorizontalAlignment (),
 			      al->getVerticalAlignment ());
 #if 1
-	    ti->setText (al->getLabel (), QPoint (150, 150), false);
-#else
+	    ti->setText (al->getLabel (), QPoint (0, 0),
+			 al->getWorldCoordinates ());
+#else	
 	    ti->setText (al->getLabel (), QPoint (0, 0), true);
 #endif
 	  }

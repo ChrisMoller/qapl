@@ -46,55 +46,66 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   painter->setFont (_font);
       
   painter->setPen (_colour);
-  double x1, y1, x2, y2;
-  _textRect.getCoords(&x1, &y1, &x2, &y2);
-  fprintf (stderr, "left/right  %g %g, top/bottom %g %g\n",
-	   x1, x2, y1, y2);
+  //  double x1, y1, x2, y2;
+  //  _textRect.getCoords(&x1, &y1, &x2, &y2);
+  //  fprintf (stderr, "left/right  %g %g, top/bottom %g %g\n",
+  //	   x1, x2, y1, y2);
   //painter->rotate (_angle);
 
   painter->save();
 
   QPointF anchor;
+  QPointF delta (0.0, 0.0);
+  switch(_halign) {
+  case Qt::AlignLeft:
+    delta.setX (0.0);
+    break;
+  case Qt::AlignRight:
+    delta.setX (_textRect.right ());
+    break;
+  case Qt::AlignHCenter:
+    delta.setX ((_textRect.right () - _textRect.left ()) / 2.0);
+    break;
+  case Qt::AlignJustify:
+    delta.setX ((_textRect.right () - _textRect.left ()) / 2.0);
+    break;
+  }
+  switch(_valign) {
+  case Qt::AlignTop:
+    delta.setY (_textRect.top ());
+    break;
+  case Qt::AlignBottom:
+    delta.setY (_textRect.bottom ());
+    break;
+  case Qt::AlignVCenter:
+    delta.setY ((_textRect.top () - _textRect.bottom ()) / 2.0);
+    break;
+  case Qt::AlignJustify:
+    delta.setY (0.0);
+    break;
+  }
   if (_world) {
     //                             returns screen from world
     //       returns world from screen
-    painter->translate (_anchor);
+#if 1
+    fprintf (stderr, "_anchor %g %g\n", _anchor.x (), _anchor.y ());
+    QPointF im = _chart->mapToPosition(_anchor, _series);
+    fprintf (stderr, "im %g %g\n", im.x (), im.y ());
+    painter->translate (im);
     painter->rotate (_angle);
-    painter->translate (-_anchor);
-    fprintf (stderr, "rotating world\n");
+    painter->translate (-im);
+    painter->translate (-delta);
+#if 0
+    anchor = mapFromParent(_chart->mapToPosition(im, _series));
+#endif
+    anchor = im;
+    
+#else
     anchor = mapFromParent(_chart->mapToPosition(_anchor, _series));
+#endif
   }
   else {			//screen
     // rotation works
-    QPointF delta (0.0, 0.0);
-    switch(_halign) {
-    case Qt::AlignLeft:
-      delta.setX (0.0);
-      break;
-    case Qt::AlignRight:
-      delta.setX (_textRect.right ());
-      break;
-    case Qt::AlignHCenter:
-      delta.setX ((_textRect.right () - _textRect.left ()) / 2.0);
-      break;
-    case Qt::AlignJustify:
-      delta.setX ((_textRect.right () - _textRect.left ()) / 2.0);
-      break;
-    }
-    switch(_valign) {
-    case Qt::AlignTop:
-      delta.setY (_textRect.top ());
-      break;
-    case Qt::AlignBottom:
-      delta.setY (_textRect.bottom ());
-      break;
-    case Qt::AlignVCenter:
-      delta.setY ((_textRect.top () - _textRect.bottom ()) / 2.0);
-      break;
-    case Qt::AlignJustify:
-      delta.setY (0.0);
-      break;
-    }
     
     painter->translate (_anchor);
     painter->rotate (_angle);
