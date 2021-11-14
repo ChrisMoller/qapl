@@ -73,6 +73,7 @@ void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
       series = nullptr;
       break;
     }
+    
     if (fontScale != 1.0) {
       //      fprintf (stderr, "setting pw %g\n",
       //	       10.0 * fontScale * (double)pen.width ());
@@ -492,12 +493,15 @@ Using only the real components in the axis."));
 	for (int i = 0; i < seriesList.size (); i++) {
 	  seriesList[i]->attachAxis(axisX);
 	  seriesList[i]->attachAxis(axisY);
+#if 1
+
 	  if (i == 0) {
 	    TextItem *ti =
 	      new TextItem (QString ("Hello, World"),
-			    QPoint (150, 150), chart,
+			    QPoint (0, 0), chart,
 			    seriesList[i]);
 	  }
+#endif
 	}
       }
     }
@@ -796,7 +800,8 @@ Chart2DWindow::exportAsImage ()
 
 void Chart2DWindow::createMenubar ()
 {
-  readout = new QLabel ("           ");
+  readout = new QLabel ();
+  readout->setAlignment (Qt::AlignLeft);
   menuBar()->setCornerWidget (readout);
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
   
@@ -895,7 +900,7 @@ void QaplChartView::mouseMoveEvent(QMouseEvent *event)
 {
   currentPoint = event->pos();
   QPointF pt = coordinateTransform (currentPoint);
-  QString pts = QString ("%1, %2")
+  QString pts = QString ("%1, %2       ")
     .arg (QString::number (pt.x (), 'g', 3))
     .arg (QString::number (pt.y (), 'g', 3));
   pc->readout->setText (pts);

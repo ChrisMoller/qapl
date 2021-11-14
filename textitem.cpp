@@ -33,9 +33,17 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     font.setItalic (true);
     painter->setFont(font);
     painter->setPen (QColor ("red"));
+    painter->save();
+    //    painter->rotate (10);
 
+#if 0
+    QPointF anchor = _anchor;
+#else
     QPointF anchor = mapFromParent(_chart->mapToPosition(_anchor, _series));
+#endif
     painter->drawText(anchor, _text);
+
+    painter->restore();
 }
 
 void TextItem::setText(const QString &text) {
