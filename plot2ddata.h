@@ -22,6 +22,8 @@ public:
   int     getHorizontalAlignment () { return horizontalAlignment; }
   void    setWorldCoordinates (bool w) { worldCoordinates = w; }
   bool    getWorldCoordinates () { return worldCoordinates; }
+  void    setPosition (QPointF p) { position = p; }
+  QPointF getPosition () { return position; }
 
 private:
   QString label;
@@ -31,6 +33,7 @@ private:
   int     verticalAlignment;
   int     horizontalAlignment;
   bool    worldCoordinates;
+  QPointF position;
 };
   
 

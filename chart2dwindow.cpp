@@ -503,12 +503,8 @@ Using only the real components in the axis."));
 	    ti->setAngle (al->getAngle ());
 	    ti->setAlignment (al->getHorizontalAlignment (),
 			      al->getVerticalAlignment ());
-#if 1
-	    ti->setText (al->getLabel (), QPoint (0, 0),
+	    ti->setText (al->getLabel (), al->getPosition (),
 			 al->getWorldCoordinates ());
-#else	
-	    ti->setText (al->getLabel (), QPoint (0, 0), true);
-#endif
 	  }
 	}
       }
@@ -881,7 +877,7 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
   event->accept ();
 }
 
-void QaplChartView::chartLabel ()
+void QaplChartView::chartLabel (QPoint screenPoint)
 {
   QDialog dialog (this, Qt::Dialog);
   dialog.setModal (false);
@@ -1014,6 +1010,10 @@ void QaplChartView::chartLabel ()
 	   &QCheckBox::stateChanged,
 	   [=](int index)
 	   {
+	     if (index == Qt::Checked) 
+	       activeLabel->setPosition (coordinateTransform (screenPoint));
+	     else
+	       activeLabel->setPosition (QPointF (screenPoint));
 	     activeLabel->setWorldCoordinates ((index == Qt::Checked)
 					       ? true : false);
 	     pc->pw->drawCurves ();
@@ -1046,7 +1046,8 @@ void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
   Qt::MouseButton button = event->button();
   if (button == Qt::RightButton) {	// pop up label stuff
-    chartLabel ();
+    //    QPointF pt = coordinateTransform (currentPoint);
+    chartLabel (currentPoint);
     //Qt::KeyboardModifiers mods = event->modifiers ();
     //bool ctl = (0 == (mods & Qt::ControlModifier));
     // unctl, use world coords

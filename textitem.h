@@ -25,7 +25,7 @@ public:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	     QWidget *widget) override;
 
-  void setText(const QString &text, QPoint pos, bool world);
+  void setText(const QString &text, QPointF pos, bool world);
   void setFont(const QFont &font) { _font = font; }
   void setColour(const QColor &colour) { _colour = colour; }
   void setAngle(const double angle) { _angle = angle; }

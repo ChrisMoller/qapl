@@ -44,7 +44,7 @@ protected:
   void	wheelEvent(QWheelEvent *event) override;
 
 private:
-  void chartLabel ();
+  void chartLabel (QPoint screenPoint);
   QPoint origin;
   QPoint currentPoint;
   QRubberBand *rubberBand;

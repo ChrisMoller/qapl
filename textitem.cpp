@@ -35,25 +35,37 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 		     QWidget *widget) {
   Q_UNUSED(option);
   Q_UNUSED(widget);
-
-#if 0
-  QFont font = painter->font();
-  font.setPixelSize(24);
-  font.setFamily ("Serif");
-  font.setItalic (true);
-  painter->setFont(font);
-#endif
+  
   painter->setFont (_font);
       
   painter->setPen (_colour);
-  //  double x1, y1, x2, y2;
-  //  _textRect.getCoords(&x1, &y1, &x2, &y2);
-  //  fprintf (stderr, "left/right  %g %g, top/bottom %g %g\n",
-  //	   x1, x2, y1, y2);
-  //painter->rotate (_angle);
 
   painter->save();
 
+
+  /***
+      The horizontal flags are:
+
+      Qt::AlignLeft		x += 0
+      Qt::AlignRight		x += right
+      Qt::AlignHCenter		x += (right - left) / 2
+      Qt::AlignJustify		x += (right - left) / 2
+
+      The vertical flags are:
+
+      Qt::AlignTop		y += top
+      Qt::AlignBottom		y += bottom
+      Qt::AlignVCenter		y += (bottom - top) / 2
+      Qt::AlignBaseline		y += 0;
+
+      |¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨|
+      |                          |
+      |                          |
+      ○--------------------------|
+      |__________________________|
+      
+  ***/
+  
   QPointF anchor;
   QPointF delta (0.0, 0.0);
   switch(_halign) {
@@ -85,28 +97,14 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     break;
   }
   if (_world) {
-    //                             returns screen from world
-    //       returns world from screen
-#if 1
-    fprintf (stderr, "_anchor %g %g\n", _anchor.x (), _anchor.y ());
     QPointF im = _chart->mapToPosition(_anchor, _series);
-    fprintf (stderr, "im %g %g\n", im.x (), im.y ());
     painter->translate (im);
     painter->rotate (_angle);
     painter->translate (-im);
     painter->translate (-delta);
-#if 0
-    anchor = mapFromParent(_chart->mapToPosition(im, _series));
-#endif
     anchor = im;
-    
-#else
-    anchor = mapFromParent(_chart->mapToPosition(_anchor, _series));
-#endif
   }
   else {			//screen
-    // rotation works
-    
     painter->translate (_anchor);
     painter->rotate (_angle);
     painter->translate (-_anchor);
@@ -119,44 +117,14 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   painter->restore();
 }
 
-void TextItem::setText(const QString &text, QPoint pos, bool world)
+void TextItem::setText(const QString &text, QPointF pos, bool world)
 {
   _text = text;
   _anchor = pos;
   _world = world;
   QFontMetrics metrics(_font);
-
-  /***
-      The horizontal flags are:
-
-      Qt::AlignLeft		x += 0
-      Qt::AlignRight		x += right
-      Qt::AlignHCenter		x += (right - left) / 2
-      Qt::AlignJustify		x += (right - left) / 2
-
-      The vertical flags are:
-
-      Qt::AlignTop		y += top
-      Qt::AlignBottom		y += bottom
-      Qt::AlignVCenter		y += (bottom - top) / 2
-      Qt::AlignBaseline		y += 0;
-
-      |¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨|
-      |                          |
-      |                          |
-      ○--------------------------|
-      |__________________________|
-      
-   ***/
   
-#if 1
   _textRect = metrics.boundingRect (_text);
-#else
-  _textRect = metrics.boundingRect(QRect(0, 0, 5000, 5000),
-                                   _halign | _valign, _text);
-#endif
-  //  fprintf (stderr, "al %d %d\n", _halign, _valign);
-  //  _textRect.translate(5, 5);
   prepareGeometryChange();
 }
 
