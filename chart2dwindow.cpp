@@ -493,15 +493,22 @@ Using only the real components in the axis."));
 	for (int i = 0; i < seriesList.size (); i++) {
 	  seriesList[i]->attachAxis(axisX);
 	  seriesList[i]->attachAxis(axisY);
-#if 1
+
 
 	  if (i == 0) {
-	    TextItem *ti =
-	      new TextItem (QString ("Hello, World"),
-			    QPoint (0, 0), chart,
-			    seriesList[i]);
-	  }
+	    PlotLabel  *al = pw->getActiveLabel ();
+	    TextItem *ti = new TextItem (chart, seriesList[i]);
+	    ti->setFont (al->getFont ());
+	    ti->setColour (al->getColour ());
+	    ti->setAngle (al->getAngle ());
+	    ti->setAlignment (al->getHorizontalAlignment (),
+			      al->getVerticalAlignment ());
+#if 1
+	    ti->setText (al->getLabel (), QPoint (150, 150), false);
+#else
+	    ti->setText (al->getLabel (), QPoint (0, 0), true);
 #endif
+	  }
 	}
       }
     }
@@ -873,10 +880,172 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
   event->accept ();
 }
 
+void QaplChartView::chartLabel ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  dialog.setModal (false);
+  dialog.setWindowTitle ("Chart labels");
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  PlotLabel *activeLabel = pc->pw->getActiveLabel ();
+
+  int row = 0;
+  int col = 0;
+  int colMax = 0;
+  
+  QLabel *labelLabel = new QLabel (tr ("Label:"));
+  layout->addWidget (labelLabel, row, col++);
+
+  QLineEdit *labelBox = new QLineEdit ();
+  labelBox->setText (activeLabel->getLabel ());
+  connect (labelBox,
+           &QLineEdit::editingFinished,
+          [=](){
+	    activeLabel->setLabel (labelBox->text ());
+	    pc->pw->drawCurves ();
+          });
+  layout->addWidget (labelBox, row, col++, 1, 2);
+
+  row++;
+  if (colMax < col) colMax = col;
+  col = 0;
+
+  col++;
+  QPushButton *labelFontButton =
+    new QPushButton (QObject::tr ("Label font"));
+  layout->addWidget (labelFontButton, row, col++);
+  QObject::connect (labelFontButton, &QPushButton::clicked,
+		    [=](){
+		      bool ok;
+
+		      QFont font = QFontDialog::getFont(&ok,
+							activeLabel->getFont (),
+							this,
+							"Label font");
+		      if (ok) {
+			activeLabel->setFont (font);
+			pc->pw->drawCurves ();
+		      } 
+		    });
+
+  QPushButton *labelColourButton =
+    new QPushButton (QObject::tr ("Label colour"));
+  layout->addWidget (labelColourButton, row, col++);
+  QObject::connect (labelColourButton, &QPushButton::clicked,
+		    [=](){
+		      QColor colour
+			= QColorDialog::getColor (activeLabel->getColour (),
+						  this,
+						  "Label colour",
+					  QColorDialog::ShowAlphaChannel);
+		      if (colour.isValid ()) {
+			activeLabel->setColour (colour);
+			pc->pw->drawCurves ();
+		      }
+		    });
+  
+  row++;
+  if (colMax < col) colMax = col;
+  col = 0;
+
+  QLabel *angleLabel = new QLabel (tr ("Angle:"));
+  layout->addWidget (angleLabel, row, col++);
+
+  QDoubleSpinBox *angleBox = new QDoubleSpinBox ();
+  angleBox->setValue (activeLabel->getAngle ());
+  connect(angleBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  [=](double d){
+	    activeLabel->setAngle (d);
+	    pc->pw->drawCurves ();
+	  });
+  layout->addWidget (angleBox, row, col++);
+  
+  row++;
+  if (colMax < col) colMax = col;
+  col = 0;
+
+  QLabel *alignmentLabel = new QLabel (tr ("Alignment:"));
+  layout->addWidget (alignmentLabel, row, col++);
+  
+  QComboBox *verticalAlignment = new QComboBox ();
+  verticalAlignment->addItem ("Top",      QVariant(Qt::AlignTop));
+  verticalAlignment->addItem ("Bottom",   QVariant(Qt::AlignBottom));
+  verticalAlignment->addItem ("Centre",   QVariant(Qt::AlignVCenter));
+  verticalAlignment->addItem ("Baseline", QVariant(Qt::AlignBaseline));
+  int vi =
+    verticalAlignment->findData (QVariant (activeLabel->getVerticalAlignment ()));
+  if (vi >= 0) verticalAlignment->setCurrentIndex (vi);
+  connect (verticalAlignment, QOverload<int>::of(&QComboBox::activated),
+          [=](int index __attribute__((unused)))
+          {
+	    activeLabel->setVerticalAlignment (verticalAlignment->currentData ().toInt ());
+	    pc->pw->drawCurves ();
+	  });
+  layout->addWidget (verticalAlignment, row, col++);
+
+  QComboBox *horizontalAlignment = new QComboBox ();
+  horizontalAlignment->addItem ("Left",    QVariant(Qt::AlignLeft));
+  horizontalAlignment->addItem ("Right",   QVariant(Qt::AlignRight));
+  horizontalAlignment->addItem ("Centre",  QVariant(Qt::AlignHCenter));
+  horizontalAlignment->addItem ("Justify", QVariant(Qt::AlignJustify));
+  int hi =
+    horizontalAlignment->findData (QVariant (activeLabel->getHorizontalAlignment ()));
+  if (hi >= 0) horizontalAlignment->setCurrentIndex (hi);
+  connect (horizontalAlignment, QOverload<int>::of(&QComboBox::activated),
+          [=](int index __attribute__((unused)))
+          {
+	    activeLabel->setHorizontalAlignment (horizontalAlignment->currentData ().toInt ());
+	    pc->pw->drawCurves ();
+	  });
+  layout->addWidget (horizontalAlignment, row, col++);
+  
+
+  row++;
+  if (colMax < col) colMax = col;
+  col = 0;
+
+  col++;
+  QCheckBox *worldButton = new QCheckBox (tr ("World coordinates"));
+  worldButton->setCheckState (activeLabel->getWorldCoordinates ()
+			      ? Qt::Checked : Qt::Unchecked );
+  connect (worldButton,
+	   &QCheckBox::stateChanged,
+	   [=](int index)
+	   {
+	     activeLabel->setWorldCoordinates ((index == Qt::Checked)
+					       ? true : false);
+	     pc->pw->drawCurves ();
+	   });
+  layout->addWidget (worldButton, row, col++);
+
+  row++;
+  if (colMax < col) colMax = col;
+  col = 0;
+
+  QPushButton *saveButton = new QPushButton (QObject::tr ("Save"));
+  saveButton->setAutoDefault (true);
+  saveButton->setDefault (true);
+  layout->addWidget (saveButton, row, colMax-2);
+  QObject::connect (saveButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Cancel"));
+  layout->addWidget (closeButton, row, colMax-1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::reject);
+  
+
+  int drc = dialog.exec ();
+  if (drc == QDialog::Accepted) {
+  }
+}
+
 void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
   Qt::MouseButton button = event->button();
   if (button == Qt::RightButton) {	// pop up label stuff
+    chartLabel ();
     //Qt::KeyboardModifiers mods = event->modifiers ();
     //bool ctl = (0 == (mods & Qt::ControlModifier));
     // unctl, use world coords

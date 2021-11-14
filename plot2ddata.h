@@ -5,6 +5,35 @@
 #include "chart2dwindow.h"
 #include "complexspinbox.h"
 
+class PlotLabel {
+public:
+  PlotLabel () {}
+  void    setLabel (QString l) { label = l; }
+  QString getLabel () { return label; }
+  void    setFont (QFont f) { font = f; }
+  QFont   getFont () { return font; }
+  void    setColour (QColor c) { colour = c; }
+  QColor  getColour () { return colour; }
+  void    setAngle (double a) { angle = a; }
+  double  getAngle () { return angle; }
+  void    setVerticalAlignment (int v) { verticalAlignment = v; }
+  int     getVerticalAlignment () { return verticalAlignment; }
+  void    setHorizontalAlignment (int h) { horizontalAlignment = h; }
+  int     getHorizontalAlignment () { return horizontalAlignment; }
+  void    setWorldCoordinates (bool w) { worldCoordinates = w; }
+  bool    getWorldCoordinates () { return worldCoordinates; }
+
+private:
+  QString label;
+  QFont   font;
+  QColor  colour;
+  double  angle;
+  int     verticalAlignment;
+  int     horizontalAlignment;
+  bool    worldCoordinates;
+};
+  
+
 class PlotParameter {
 public:
   PlotParameter () {
@@ -110,6 +139,12 @@ public:
     chartTitleColour = QColor (mw->getSettings ()
 			       ->value (SETTINGS_CHART_TITLE_COLOUR,
 					colourVariant).toString ());
+    activeLabel.setFont (QFont ("Serif", 26));
+    activeLabel.setColour (QColor ("red"));
+    activeLabel.setAngle (0.0);
+    activeLabel.setVerticalAlignment (Qt::AlignBaseline);
+    activeLabel.setHorizontalAlignment (Qt::AlignLeft);
+    activeLabel.setWorldCoordinates (true);
   };
   ~Plot2dData () {};
   void setCurrentPlotFile (QString fn) { currentPlotFile = fn; }
@@ -132,6 +167,7 @@ public:
   QString 	chartTitle;
   QString 	indexVariable;
   PlotCurve	activeCurve;
+  PlotLabel	activeLabel;
   QList<PlotCurve *> plotCurves;
   QList<PlotParameter *> plotParameters;
   std::complex<double> rangeInit;
