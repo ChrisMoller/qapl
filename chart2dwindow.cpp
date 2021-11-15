@@ -503,13 +503,9 @@ Using only the real components in the axis."));
 	    ti->setAngle (al->getAngle ());
 	    ti->setAlignment (al->getHorizontalAlignment (),
 			      al->getVerticalAlignment ());
-	    fprintf (stderr, "active %g %g\n",
-		     al->getPosition ().x (),
-		     al->getPosition ().y ());
 	    ti->setText (al->getLabel (), al->getPosition (),
 			 al->getWorldCoordinates ());
 	    QList<PlotLabel *> pq = pw->getPlotLabels ();
-	    fprintf (stderr, "sz = %d\n", (int)pq.size ());
 	    
 	    for (int j = 0; j < pq.size ();  j++) {
 	      PlotLabel  *al = pw->getPlotLabels ().at (j);
@@ -519,9 +515,6 @@ Using only the real components in the axis."));
 	      ti->setAngle (al->getAngle ());
 	      ti->setAlignment (al->getHorizontalAlignment (),
 				al->getVerticalAlignment ());
-	      fprintf (stderr, "stack %d %g %g\n", j,
-		     al->getPosition ().x (),
-		     al->getPosition ().y ());
 	      ti->setText (al->getLabel (), al->getPosition (),
 			   al->getWorldCoordinates ());
 	    }
@@ -899,7 +892,6 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
 
 void QaplChartView::chartLabel (QPoint screenPoint)
 {
-  fprintf (stderr, "passed %d %d\n", screenPoint.x (), screenPoint.y ());
   QDialog dialog (this, Qt::Dialog);
   dialog.setModal (false);
   dialog.setWindowTitle ("Chart labels");
@@ -1073,10 +1065,7 @@ void QaplChartView::chartLabel (QPoint screenPoint)
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
     PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
-    QList<PlotLabel *> pq = pc->pw->getPlotLabels ();
-    pq.append (copy);
-    fprintf (stderr, "pushing %p\n", copy);
-    fprintf (stderr, "lsz = %d\n", (int)pq.size ());
+    pc->pw-> appendPlotLabels (copy);
   }
 }
 

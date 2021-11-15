@@ -142,8 +142,8 @@ public:
     chartTitleColour = QColor (mw->getSettings ()
 			       ->value (SETTINGS_CHART_TITLE_COLOUR,
 					colourVariant).toString ());
-    activeLabel.setFont (QFont ("Serif", 26));
-    activeLabel.setColour (QColor ("red"));
+    activeLabel.setFont (QFont ("Serif", 16));
+    activeLabel.setColour (QColor ("green"));
     activeLabel.setAngle (0.0);
     activeLabel.setVerticalAlignment (Qt::AlignBaseline);
     activeLabel.setHorizontalAlignment (Qt::AlignLeft);
