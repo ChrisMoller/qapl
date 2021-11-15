@@ -497,19 +497,21 @@ Using only the real components in the axis."));
 
 	  if (i == 0) {
 	    PlotLabel  *al = pw->getActiveLabel ();
-	    TextItem *ti = new TextItem (chart, seriesList[i]);
-	    ti->setFont (al->getFont ());
-	    ti->setColour (al->getColour ());
-	    ti->setAngle (al->getAngle ());
-	    ti->setAlignment (al->getHorizontalAlignment (),
-			      al->getVerticalAlignment ());
-	    ti->setText (al->getLabel (), al->getPosition (),
-			 al->getWorldCoordinates ());
-	    QList<PlotLabel *> pq = pw->getPlotLabels ();
+	    if (!al->getLabel ().isEmpty ()) {
+	      TextItem *ti = new TextItem (chart, seriesList[i]);
+	      ti->setFont (al->getFont ());
+	      ti->setColour (al->getColour ());
+	      ti->setAngle (al->getAngle ());
+	      ti->setAlignment (al->getHorizontalAlignment (),
+				al->getVerticalAlignment ());
+	      ti->setText (al->getLabel (), al->getPosition (),
+			   al->getWorldCoordinates ());
+	    }
 	    
+	    QList<PlotLabel *> pq = pw->getPlotLabels ();
 	    for (int j = 0; j < pq.size ();  j++) {
 	      PlotLabel  *al = pw->getPlotLabels ().at (j);
-	      ti = new TextItem (chart, seriesList[i]);
+	      TextItem *ti = new TextItem (chart, seriesList[i]);
 	      ti->setFont (al->getFont ());
 	      ti->setColour (al->getColour ());
 	      ti->setAngle (al->getAngle ());
@@ -963,9 +965,21 @@ void QaplChartView::chartLabel (QPoint screenPoint)
   layout->addWidget (angleLabel, row, col++);
 
   QDoubleSpinBox *angleBox = new QDoubleSpinBox ();
+  angleBox->setRange (-200.0, 200.0);
+  angleBox->setAccelerated (true);
   angleBox->setValue (activeLabel->getAngle ());
   connect(angleBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 	  [=](double d){
+	    bool dChanged = false;
+	    if (d < -180.0) {
+	      d += 360.0;
+	      dChanged = true;
+	    }
+	    else if (d > 180.0) {
+	      d -= 360.0;
+	      dChanged = true;
+	    }
+	    if (dChanged) angleBox->setValue (d);
 	    activeLabel->setAngle (d);
 	    pc->pw->drawCurves ();
 	  });
@@ -1067,6 +1081,8 @@ void QaplChartView::chartLabel (QPoint screenPoint)
     PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
     pc->pw-> appendPlotLabels (copy);
   }
+  activeLabel->clearLabel ();
+  pc->pw->drawCurves ();
 }
 
 void QaplChartView::mousePressEvent(QMouseEvent *event)

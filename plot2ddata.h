@@ -9,6 +9,7 @@ class PlotLabel {
 public:
   PlotLabel () {}
   void    setLabel (QString l) { label = l; }
+  void    clearLabel () { label.clear (); }
   QString getLabel () { return label; }
   void    setFont (QFont f) { font = f; }
   QFont   getFont () { return font; }
