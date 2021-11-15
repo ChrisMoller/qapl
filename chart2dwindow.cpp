@@ -921,6 +921,20 @@ void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
   if (colMax < col) colMax = col;
   col = 0;
 
+  
+  QLabel *positonLabel = new QLabel (tr ("Position:"));
+  layout->addWidget (positonLabel, row, col++);
+  
+  SciDoubleSpinBox *positionXBox = new SciDoubleSpinBox ();
+  layout->addWidget (positionXBox, row, col++);
+  
+  SciDoubleSpinBox *positionYBox = new SciDoubleSpinBox ();
+  layout->addWidget (positionYBox, row, col++);
+  
+  row++;
+  if (colMax < col) colMax = col;
+  col = 0;
+
   col++;
   QPushButton *labelFontButton =
     new QPushButton (QObject::tr ("Label font"));
