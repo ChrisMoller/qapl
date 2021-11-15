@@ -892,15 +892,13 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
   event->accept ();
 }
 
-void QaplChartView::chartLabel (QPoint screenPoint)
+void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
 {
   QDialog dialog (this, Qt::Dialog);
   dialog.setModal (false);
   dialog.setWindowTitle ("Chart labels");
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
-
-  PlotLabel *activeLabel = pc->pw->getActiveLabel ();
 
   int row = 0;
   int col = 0;
@@ -1089,12 +1087,8 @@ void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
   Qt::MouseButton button = event->button();
   if (button == Qt::RightButton) {	// pop up label stuff
-    //    QPointF pt = coordinateTransform (currentPoint);
-    chartLabel (currentPoint);
-    //Qt::KeyboardModifiers mods = event->modifiers ();
-    //bool ctl = (0 == (mods & Qt::ControlModifier));
-    // unctl, use world coords
-    // ctl, use window coords as pct of window size
+    PlotLabel *activeLabel = pc->pw->getActiveLabel ();
+    chartLabel (currentPoint, activeLabel);
     event->accept ();
   }
   else {

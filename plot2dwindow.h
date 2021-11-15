@@ -155,6 +155,8 @@ public:
 			     bool trace, int index);
   static int parseParameter (QXmlStreamReader &stream, Plot2dData *plot2DData,
 			     bool trace);
+  static int parseLabel (QXmlStreamReader &stream, Plot2dData *plot2DData,
+			     bool trace);
 
 private:
   MainWindow *mw;
@@ -178,6 +180,7 @@ private:
   void exportAsChart ();
   void importChart ();
   void dumpXML (QString fileName);
+  void dumpPlotLabel (int index, PlotLabel *plabel, QXmlStreamWriter &stream);
   void setBGImage ();
   double yMin;
   double yMax;

@@ -1,6 +1,7 @@
 xml_def(OK,		0),
 xml_def(active,		0),
 xml_def(aspect,		0),
+xml_def(angle,		0),					// label
 xml_def(axes,		0),
 xml_def(cerulean,	QChart::ChartThemeBlueCerulean),	// theme
 xml_def(chart,		0),
@@ -16,6 +17,7 @@ xml_def(Xexpression,	0),
 xml_def(Yexpression,	0),
 xml_def(final,		0),
 xml_def(font,		0),
+xml_def(halign,		0),
 xml_def(icy,		QChart::ChartThemeBlueIcy),		// theme
 xml_def(imag,		0),
 xml_def(imaginary,	ASPECT_IMAG),				// aspect
@@ -49,7 +51,11 @@ xml_def(stack,		0),
 xml_def(style,		0),
 xml_def(theme,		0),
 xml_def(title,		0),
+xml_def(valign,		0),
 xml_def(width,		0),
+xml_def(world,		0),
 xml_def(xlabel,		0),
+xml_def(xpos,		0),
 xml_def(ylabel,		0),
+xml_def(ypos,		0),
 xml_def(LAST,		0)

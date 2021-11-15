@@ -45,6 +45,11 @@
 
       repeat parameter...
       
+      <label index="..." angle="..." halign="..." valign="..." world="..."
+      xpos="..." ypos="..." font="..." colour="...">...</label>
+
+      repeat label...
+      
     </qapl>
  ***/
 
@@ -532,6 +537,59 @@ int Plot2DWindow::parseParameter (QXmlStreamReader &stream,
   return rc;
 }
 
+int Plot2DWindow::parseLabel (QXmlStreamReader &stream,
+			      Plot2dData *plot2DData, bool trace)
+{
+  if (trace) fprintf (stderr, "parseLabel\n");
+  int rc = XML_OK;
+  bool run = true;
+  int index = -1;
+  PlotLabel *plotLabel = new PlotLabel ();
+  while (run && rc == XML_OK) {
+    QXmlStreamAttributes attrs = stream.attributes();
+    if (!attrs.isEmpty ()) {
+      index = ((attrs.value (xml_tags[XML_index].tag)).toInt ());
+      plotLabel->setAngle ((attrs.value (xml_tags[XML_angle].tag)).toFloat ());
+      plotLabel->setHorizontalAlignment ((attrs.value (xml_tags[XML_halign].tag)).toInt ());
+      plotLabel->setVerticalAlignment ((attrs.value (xml_tags[XML_valign].tag)).toInt ());
+      plotLabel->setWorldCoordinates ((attrs.value (xml_tags[XML_world].tag)).toInt ());
+      double xpos = (attrs.value (xml_tags[XML_xpos].tag)).toFloat ();
+      double ypos = (attrs.value (xml_tags[XML_ypos].tag)).toFloat ();
+      plotLabel->setPosition (QPointF (xpos, ypos));
+      {
+	QString fs (attrs.value (xml_tags[XML_font].tag).toString ());
+	QFont ft;
+	ft.fromString (fs);
+	plotLabel->setFont (QFont (ft));
+      }
+      plotLabel->setColour (QColor (attrs.value (xml_tags[XML_colour].tag)));
+      if (trace) {
+	fprintf (stderr,
+		 "labels %d: angle %g, halign %d, valign %d, xp %g, yp %g\n",
+		 index,
+		 plotLabel->getAngle (),
+		 plotLabel->getHorizontalAlignment (),
+		 plotLabel->getVerticalAlignment (),
+		 xpos,
+		 ypos);
+	fprintf (stderr, "\tfont \"%s\"m colour %s \n",
+		 toCString (plotLabel->getFont ().toString ()),
+		 toCString (plotLabel->getColour ().name (QColor::HexArgb)));
+      }
+    }
+    {
+      QString name = stream.readElementText ();
+      plotLabel->setLabel (name);
+      if (trace)
+	fprintf (stderr, "\tlabel %s\n",  toCString (plotLabel->getLabel ()));
+    }
+    run = false;
+  }
+  plot2DData->plotLabels.append (plotLabel);
+
+  return rc;
+}
+
 int Plot2DWindow::parseStack (QXmlStreamReader &stream,
 			       Plot2dData *plot2DData, bool trace)
 {
@@ -670,6 +728,11 @@ int Plot2DWindow::parseQapl (QXmlStreamReader &stream, Plot2dData *plot2DData,
       case XML_parameter:
 	rc = parseParameter (stream, plot2DData, trace);
         break;
+      case XML_label:
+	{
+	  rc = parseLabel (stream, plot2DData, trace);
+	}
+        break;
       default:
 	if (trace)
 	  fprintf (stderr, "unhandled qapl value \"%s\"\n", toCString (sn));
@@ -767,6 +830,32 @@ void Plot2DWindow::readXML (QString &fileName, MainWindow *mw, bool trace)
   if (rc != XML_OK)
     fprintf (stderr, "parsing error %d\n", rc);  // fixme--message box
 #endif
+}
+
+void  Plot2DWindow::dumpPlotLabel (int index, PlotLabel *plabel,
+				   QXmlStreamWriter &stream)
+{
+  stream.writeStartElement(xml_tags[XML_label].tag);
+  stream.writeAttribute(xml_tags[XML_index].tag,
+			QString::number (index));
+  stream.writeAttribute(xml_tags[XML_angle].tag,
+			QString::number (plabel->getAngle ()));
+  stream.writeAttribute(xml_tags[XML_halign].tag,
+			QString::number (plabel->getHorizontalAlignment ()));
+  stream.writeAttribute(xml_tags[XML_valign].tag,
+			QString::number (plabel->getVerticalAlignment ()));
+  stream.writeAttribute(xml_tags[XML_world].tag,
+			QString::number (plabel->getWorldCoordinates ()));
+  stream.writeAttribute(xml_tags[XML_xpos].tag,
+			QString::number (plabel->getPosition ().x ()));
+  stream.writeAttribute(xml_tags[XML_ypos].tag,
+			QString::number (plabel->getPosition ().y ()));
+  stream.writeAttribute(xml_tags[XML_font].tag,
+			plabel->getFont ().toString ());
+  stream.writeAttribute(xml_tags[XML_colour].tag,
+			plabel->getColour ().name (QColor::HexArgb));
+  stream.writeCharacters(plabel->getLabel ());
+  stream.writeEndElement(); // label
 }
 
 void Plot2DWindow::dumpXML (QString fileName)
@@ -966,6 +1055,11 @@ void Plot2DWindow::dumpXML (QString fileName)
 
     stream.writeEndElement(); // parameter
 
+  }
+
+  for (int i = 0; i < getPlotLabelsSize (); i++) {
+    PlotLabel *al = getPlotLabels ().at (i);
+    dumpPlotLabel (i, al, stream);
   }
 
 

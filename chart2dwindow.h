@@ -10,7 +10,7 @@
 
 #include "mainwindow.h"
 #include "plot2dwindow.h"
-//#include "chart2dwindow.h"
+#include "plot2ddata.h"
 
 #include "enums.h"
 
@@ -44,7 +44,7 @@ protected:
   void	wheelEvent(QWheelEvent *event) override;
 
 private:
-  void chartLabel (QPoint screenPoint);
+  void chartLabel (QPoint screenPoint, PlotLabel *activeLabel);
   QPoint origin;
   QPoint currentPoint;
   QRubberBand *rubberBand;
