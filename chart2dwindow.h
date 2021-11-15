@@ -36,6 +36,7 @@ public:
   QaplChartView(Chart2DWindow *parent);
   ~QaplChartView () {}
   QPointF coordinateTransform (QPoint d);
+  void chartLabel (QPoint screenPoint, PlotLabel *activeLabel);
 
 protected:
   void	mouseMoveEvent(QMouseEvent *e) override;
@@ -44,7 +45,6 @@ protected:
   void	wheelEvent(QWheelEvent *event) override;
 
 private:
-  void chartLabel (QPoint screenPoint, PlotLabel *activeLabel);
   QPoint origin;
   QPoint currentPoint;
   QRubberBand *rubberBand;
@@ -66,6 +66,7 @@ public:
 		  std::vector<double> idxVector, double markerSize);
   //  void exportImage ();
   void exportAsImage ();
+  QaplChartView *getChartView () { return chartView; }
   
   Plot2DWindow *pw;
   QLabel *readout;
@@ -77,7 +78,7 @@ private:
 #if 0
   void setAxesFont (QAbstractAxis *axis);
 #endif
-  QChartView *chartView;
+  QaplChartView *chartView;
   QChart *chart;
   QAbstractSeries *series;
   bool appendSeries (double x, double y, series_mode_e mode,

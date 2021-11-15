@@ -164,6 +164,7 @@ private:
   void setGranularity ();
   void setControls ();
   void setParameters ();
+  void editLabels ();
   void pushExpression ();
   void updatePen (QPen *pen);
   void updatParmValue (int idx, QTableWidget *parametersTable);

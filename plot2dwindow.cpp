@@ -909,6 +909,87 @@ void Plot2DWindow::setParameters ()
   dialog.exec ();
 }
 
+enum {
+  LABELS_COLUMN_LABEL,
+  LABELS_COLUMN_POSITION,
+  LABELS_COLUMN_EDIT,
+  LABELS_COLUMN_DELETE,
+  LABELS_COLUMN_LAST
+};
+
+void Plot2DWindow::editLabels ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  dialog.setMinimumWidth (480);
+  dialog.setWindowTitle ("qapl parameters");
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  int col = 0;
+
+  QTableWidget *labelsTable =
+    new QTableWidget (getPlotLabelsSize (),
+		      LABELS_COLUMN_LAST, this);
+  
+  QStringList headers = {
+    "Label",
+    "Position",
+    "Edit",
+    "Delete"
+  };
+
+  // ./qtbase/src/widgets/styles/images/
+  // /usr/share/icons
+  
+  labelsTable->setHorizontalHeaderLabels (headers);
+
+  for (int i = 0; i < getPlotLabelsSize (); i++) {
+    PlotLabel *al = getPlotLabels ().at (i);
+
+    QTableWidgetItem *vhdrItem =
+      new QTableWidgetItem (QString::number (i));
+    labelsTable->setVerticalHeaderItem (i, vhdrItem);
+
+    QTableWidgetItem *labelItem =
+      new QTableWidgetItem (al->getLabel ());
+    labelsTable->setItem (i, LABELS_COLUMN_LABEL, labelItem);
+
+    QPointF pos = al->getPosition ();
+    QString ps = QString ("%1 %2").arg (pos.x ()).arg (pos.y ());
+    QTableWidgetItem *positionItem =
+      new QTableWidgetItem (ps);
+    labelsTable->setItem (i, LABELS_COLUMN_POSITION, positionItem);
+
+    QTableWidgetItem *editItem =
+      new QTableWidgetItem ("Edit");
+    QBrush editBrush ("cyan");
+    editItem->setBackground (editBrush);
+    labelsTable->setItem (i, LABELS_COLUMN_EDIT, editItem);
+
+    QTableWidgetItem *deleteItem =
+      new QTableWidgetItem ("Delete");
+    QBrush deleteBrush ("red");
+    deleteItem->setBackground (deleteBrush);
+    labelsTable->setItem (i, LABELS_COLUMN_DELETE, deleteItem);
+  }
+
+  layout->addWidget (labelsTable, row, col++, 1, 3);
+  //chart2DWindow->getChartView ()->chartLabel (QPoint (0,0), nullptr);
+
+  row++;
+  col = 0;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  closeButton->setAutoDefault (true);
+  closeButton->setDefault (true);
+  layout->addWidget (closeButton, row, 2);
+  QObject::connect (closeButton, &QPushButton::clicked,
+                    &dialog, &QDialog::accept);
+
+  dialog.exec ();
+}
+
 void Plot2DWindow::setControls ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -1245,6 +1326,11 @@ void Plot2DWindow::createMenubar ()
     settingsMenu->addAction(tr("&Parameters"), this,
 			    & Plot2DWindow::setParameters);
   parametersAct->setStatusTip(tr("Set plot parameters"));
+
+  QAction *labelsAct =
+    settingsMenu->addAction(tr("&Labels"), this,
+			    & Plot2DWindow::editLabels);
+  labelsAct->setStatusTip(tr("Edit plot labels"));
 
   QAction *fontsAct =
     settingsMenu->addAction(tr("&Appearance"), this,
