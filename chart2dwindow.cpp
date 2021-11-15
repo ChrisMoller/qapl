@@ -503,8 +503,28 @@ Using only the real components in the axis."));
 	    ti->setAngle (al->getAngle ());
 	    ti->setAlignment (al->getHorizontalAlignment (),
 			      al->getVerticalAlignment ());
+	    fprintf (stderr, "active %g %g\n",
+		     al->getPosition ().x (),
+		     al->getPosition ().y ());
 	    ti->setText (al->getLabel (), al->getPosition (),
 			 al->getWorldCoordinates ());
+	    QList<PlotLabel *> pq = pw->getPlotLabels ();
+	    fprintf (stderr, "sz = %d\n", (int)pq.size ());
+	    
+	    for (int j = 0; j < pq.size ();  j++) {
+	      PlotLabel  *al = pw->getPlotLabels ().at (j);
+	      ti = new TextItem (chart, seriesList[i]);
+	      ti->setFont (al->getFont ());
+	      ti->setColour (al->getColour ());
+	      ti->setAngle (al->getAngle ());
+	      ti->setAlignment (al->getHorizontalAlignment (),
+				al->getVerticalAlignment ());
+	      fprintf (stderr, "stack %d %g %g\n", j,
+		     al->getPosition ().x (),
+		     al->getPosition ().y ());
+	      ti->setText (al->getLabel (), al->getPosition (),
+			   al->getWorldCoordinates ());
+	    }
 	  }
 	}
       }
@@ -879,6 +899,7 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
 
 void QaplChartView::chartLabel (QPoint screenPoint)
 {
+  fprintf (stderr, "passed %d %d\n", screenPoint.x (), screenPoint.y ());
   QDialog dialog (this, Qt::Dialog);
   dialog.setModal (false);
   dialog.setWindowTitle ("Chart labels");
@@ -1004,18 +1025,30 @@ void QaplChartView::chartLabel (QPoint screenPoint)
 
   col++;
   QCheckBox *worldButton = new QCheckBox (tr ("World coordinates"));
-  worldButton->setCheckState (activeLabel->getWorldCoordinates ()
-			      ? Qt::Checked : Qt::Unchecked );
+  bool isWorld = activeLabel->getWorldCoordinates ();
+  QPointF worldCooords = coordinateTransform (screenPoint);
+  if (isWorld) {
+    worldButton->setCheckState (Qt::Checked);
+    activeLabel->setWorldCoordinates (true);
+    activeLabel->setPosition (worldCooords);
+  }
+  else {
+    worldButton->setCheckState (Qt::Unchecked);
+    activeLabel->setWorldCoordinates (true);
+    activeLabel->setPosition (QPointF (screenPoint));
+  }
   connect (worldButton,
 	   &QCheckBox::stateChanged,
 	   [=](int index)
 	   {
-	     if (index == Qt::Checked) 
-	       activeLabel->setPosition (coordinateTransform (screenPoint));
-	     else
+	     if (index == Qt::Checked) {
+	       activeLabel->setPosition (worldCooords);
+	       activeLabel->setWorldCoordinates (true);
+	     }
+	     else {
 	       activeLabel->setPosition (QPointF (screenPoint));
-	     activeLabel->setWorldCoordinates ((index == Qt::Checked)
-					       ? true : false);
+	       activeLabel->setWorldCoordinates (false);
+	     }
 	     pc->pw->drawCurves ();
 	   });
   layout->addWidget (worldButton, row, col++);
@@ -1039,6 +1072,11 @@ void QaplChartView::chartLabel (QPoint screenPoint)
 
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
+    PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
+    QList<PlotLabel *> pq = pc->pw->getPlotLabels ();
+    pq.append (copy);
+    fprintf (stderr, "pushing %p\n", copy);
+    fprintf (stderr, "lsz = %d\n", (int)pq.size ());
   }
 }
 

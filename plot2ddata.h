@@ -173,6 +173,7 @@ public:
   PlotLabel	activeLabel;
   QList<PlotCurve *> plotCurves;
   QList<PlotParameter *> plotParameters;
+  QList<PlotLabel *> plotLabels;
   std::complex<double> rangeInit;
   std::complex<double> rangeFinal;
   MainWindow   *mw;

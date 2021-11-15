@@ -109,6 +109,7 @@ public:
   {
     return plot2DData->plotParameters;
   }
+  QList<PlotLabel *> getPlotLabels () { return plot2DData->plotLabels; }
 #if 1
   aspect_e  getAspect () { return plot2DData->activeCurve.aspect (); }
   series_mode_e  getMode () { return plot2DData->activeCurve.mode (); }
