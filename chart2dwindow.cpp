@@ -900,6 +900,9 @@ void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
 
+  QPointF worldCooords = coordinateTransform (screenPoint);
+  bool isWorld = activeLabel->getWorldCoordinates ();
+
   int row = 0;
   int col = 0;
   int colMax = 0;
@@ -925,11 +928,43 @@ void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
   QLabel *positonLabel = new QLabel (tr ("Position:"));
   layout->addWidget (positonLabel, row, col++);
   
-  SciDoubleSpinBox *positionXBox = new SciDoubleSpinBox ();
+  SciDoubleSpinBox *positionXBox =
+    new SciDoubleSpinBox (SciDoubleSpinBox::Unset);
+  connect(positionXBox,
+	  &SciDoubleSpinBox::valueChanged,
+	  [=](){
+	    double val = positionXBox->getValue ();
+	    if (isWorld)
+	      activeLabel->setPositionX (val);
+	    else
+	      activeLabel->setPositionX (val);
+	    pc->pw->drawCurves ();
+	  });
   layout->addWidget (positionXBox, row, col++);
   
-  SciDoubleSpinBox *positionYBox = new SciDoubleSpinBox ();
+  SciDoubleSpinBox *positionYBox = 
+    new SciDoubleSpinBox (SciDoubleSpinBox::Unset);
+  connect(positionYBox,
+	  &SciDoubleSpinBox::valueChanged,
+	  [=](){
+	    double val = positionYBox->getValue ();
+	    if (isWorld)
+	      activeLabel->setPositionY (val);
+	    else
+	      activeLabel->setPositionY (val);
+	    pc->pw->drawCurves ();
+	  });
   layout->addWidget (positionYBox, row, col++);
+
+  
+  if (isWorld) {
+    positionXBox->setValue (worldCooords.x ());
+    positionYBox->setValue (worldCooords.y ());
+  }
+  else {
+    positionXBox->setValue (QPointF (screenPoint).x ());
+    positionYBox->setValue (QPointF (screenPoint).y ());
+  }
   
   row++;
   if (colMax < col) colMax = col;
@@ -1043,12 +1078,12 @@ void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
 
   col++;
   QCheckBox *worldButton = new QCheckBox (tr ("World coordinates"));
-  bool isWorld = activeLabel->getWorldCoordinates ();
-  QPointF worldCooords = coordinateTransform (screenPoint);
   if (isWorld) {
     worldButton->setCheckState (Qt::Checked);
     activeLabel->setWorldCoordinates (true);
     activeLabel->setPosition (worldCooords);
+    positionXBox->setValue (worldCooords.x ());
+    positionYBox->setValue (worldCooords.y ());
   }
   else {
     worldButton->setCheckState (Qt::Unchecked);
@@ -1062,10 +1097,14 @@ void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
 	     if (index == Qt::Checked) {
 	       activeLabel->setPosition (worldCooords);
 	       activeLabel->setWorldCoordinates (true);
+	       positionXBox->setValue (worldCooords.x ());
+	       positionYBox->setValue (worldCooords.y ());
 	     }
 	     else {
 	       activeLabel->setPosition (QPointF (screenPoint));
 	       activeLabel->setWorldCoordinates (false);
+	       positionXBox->setValue (QPointF (screenPoint).x ());
+	       positionYBox->setValue (QPointF (screenPoint).y ());
 	     }
 	     pc->pw->drawCurves ();
 	   });

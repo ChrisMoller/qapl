@@ -13,7 +13,8 @@ SciDoubleSpinBox : public QAbstractSpinBox
 public:
     typedef enum {
       Min,
-      Max
+      Max,
+      Unset
     } SpinType;
 
     SciDoubleSpinBox (SpinType t, QWidget *parent = nullptr);

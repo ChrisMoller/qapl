@@ -24,6 +24,8 @@ public:
   void    setWorldCoordinates (bool w) { worldCoordinates = w; }
   bool    getWorldCoordinates () { return worldCoordinates; }
   void    setPosition (QPointF p) { position = p; }
+  void    setPositionX (double v) { position.setX (v); }
+  void    setPositionY (double v) { position.setY (v); }
   QPointF getPosition () { return position; }
 
 private:
