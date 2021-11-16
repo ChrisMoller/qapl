@@ -36,7 +36,8 @@ public:
   QaplChartView(Chart2DWindow *parent);
   ~QaplChartView () {}
   QPointF coordinateTransform (QPoint d);
-  void chartLabel (QPoint screenPoint, PlotLabel *activeLabel);
+  void chartLabel (QPoint screenPoint, PlotLabel *activeLabel,
+		   bool editMode);
 
 protected:
   void	mouseMoveEvent(QMouseEvent *e) override;
@@ -70,6 +71,9 @@ public:
   
   Plot2DWindow *pw;
   QLabel *readout;
+
+protected:
+  void  closeEvent(QCloseEvent *event) override;
 
 private:
 

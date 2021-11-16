@@ -975,7 +975,7 @@ void Plot2DWindow::editLabels ()
   }
 
   layout->addWidget (labelsTable, row, col++, 1, 3);
-  //chart2DWindow->getChartView ()->chartLabel (QPoint (0,0), nullptr);
+  //chart2DWindow->getChartView ()->chartLabel (QPoint (0,0), nullptr, true);
 
   row++;
   col = 0;
@@ -1283,6 +1283,7 @@ void Plot2DWindow::importChart ()
   if (drc == QDialog::Accepted) {
     QString cf = dialog.selectedFiles().first();
     readXML (cf, mw, false);
+    drawCurves ();
   }
 }
 
@@ -1357,6 +1358,11 @@ Plot2DWindow::Plot2DWindow (MainWindow *parent, Plot2dData *data)
   plot2DData   = (data != nullptr) ? data : new Plot2dData (mw);
   chart 	= nullptr;
   chart2DWindow = new Chart2DWindow (this, mw);
+  connect (chart2DWindow,
+           &QObject::destroyed,
+          [=](){
+	    this->close ();
+          });
 
   yMin = nan ("NaN");
   yMax = nan ("NaN");

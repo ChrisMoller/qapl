@@ -892,7 +892,8 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
   event->accept ();
 }
 
-void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
+void QaplChartView::chartLabel (QPoint screenPoint,
+				PlotLabel *activeLabel, bool editMode)
 {
   QDialog dialog (this, Qt::Dialog);
   dialog.setModal (false);
@@ -1114,6 +1115,13 @@ void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
   if (colMax < col) colMax = col;
   col = 0;
 
+  QPushButton *showButton = new QPushButton (QObject::tr ("Show"));
+  layout->addWidget (showButton, row, colMax-3);
+  connect (showButton, &QPushButton::clicked,
+	   [=](){
+	     pc->pw->drawCurves ();
+	   });
+
   QPushButton *saveButton = new QPushButton (QObject::tr ("Save"));
   saveButton->setAutoDefault (true);
   saveButton->setDefault (true);
@@ -1129,8 +1137,10 @@ void QaplChartView::chartLabel (QPoint screenPoint, PlotLabel *activeLabel)
 
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
-    PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
-    pc->pw-> appendPlotLabels (copy);
+    if (!editMode && !activeLabel->getLabel ().isEmpty ()) {
+      PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
+      pc->pw-> appendPlotLabels (copy);
+    }
   }
   activeLabel->clearLabel ();
   pc->pw->drawCurves ();
@@ -1141,7 +1151,7 @@ void QaplChartView::mousePressEvent(QMouseEvent *event)
   Qt::MouseButton button = event->button();
   if (button == Qt::RightButton) {	// pop up label stuff
     PlotLabel *activeLabel = pc->pw->getActiveLabel ();
-    chartLabel (currentPoint, activeLabel);
+    chartLabel (currentPoint, activeLabel, false);
     event->accept ();
   }
   else {
@@ -1215,6 +1225,12 @@ void QaplChartView::mouseReleaseEvent(QMouseEvent *event)
       event->accept ();
     }
     else event->ignore ();
+}
+
+void Chart2DWindow::closeEvent(QCloseEvent *event)
+{
+  Q_UNUSED (event);
+  Q_EMIT destroyed ();
 }
 
 Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
