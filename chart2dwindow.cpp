@@ -1147,7 +1147,8 @@ void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
   if (drc == QDialog::Accepted) {
     if (!editMode && !activeLabel->getLabel ().isEmpty ()) {
       PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
-      pc->pw-> appendPlotLabels (copy);
+      pc->pw->appendPlotLabels (copy);
+      //      pc->pw->deleteActiveLabel ();
     }
   }
   activeLabel->clearLabel ();
