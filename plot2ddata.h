@@ -7,7 +7,14 @@
 
 class PlotLabel {
 public:
-  PlotLabel () {}
+  PlotLabel () {
+    font   = QFont ("Serif", 16);
+    colour = QColor ("green");
+    angle  = 0.0;
+    verticalAlignment   = Qt::AlignBaseline;
+    horizontalAlignment = Qt::AlignLeft;
+    worldCoordinates    = true;
+  }
   void    setLabel (QString l) { label = l; }
   void    clearLabel () { label.clear (); }
   QString getLabel () { return label; }
@@ -146,12 +153,7 @@ public:
     chartTitleColour = QColor (mw->getSettings ()
 			       ->value (SETTINGS_CHART_TITLE_COLOUR,
 					colourVariant).toString ());
-    activeLabel.setFont (QFont ("Serif", 16));
-    activeLabel.setColour (QColor ("green"));
-    activeLabel.setAngle (0.0);
-    activeLabel.setVerticalAlignment (Qt::AlignBaseline);
-    activeLabel.setHorizontalAlignment (Qt::AlignLeft);
-    activeLabel.setWorldCoordinates (true);
+    activeLabel = nullptr;
   };
   ~Plot2dData () {};
   void setCurrentPlotFile (QString fn) { currentPlotFile = fn; }
@@ -174,7 +176,7 @@ public:
   QString 	chartTitle;
   QString 	indexVariable;
   PlotCurve	activeCurve;
-  PlotLabel	activeLabel;
+  PlotLabel	*activeLabel;
   QList<PlotCurve *> plotCurves;
   QList<PlotParameter *> plotParameters;
   QList<PlotLabel *> plotLabels;

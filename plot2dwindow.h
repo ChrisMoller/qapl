@@ -126,7 +126,8 @@ public:
     return (series_mode_e)sel.toInt ();
   }
 #endif
-  PlotLabel *getActiveLabel () { return &(plot2DData->activeLabel); }
+  PlotLabel *getActiveLabel () { return plot2DData->activeLabel; }
+  void newActiveLabel () { plot2DData->activeLabel = new PlotLabel (); }
 
   void showPlot2dData (Plot2dData *data);
   void drawCurves ();

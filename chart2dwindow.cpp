@@ -497,7 +497,7 @@ Using only the real components in the axis."));
 
 	  if (i == 0) {
 	    PlotLabel  *al = pw->getActiveLabel ();
-	    if (!al->getLabel ().isEmpty ()) {
+	    if (al && !al->getLabel ().isEmpty ()) {
 	      TextItem *ti = new TextItem (chart, seriesList[i]);
 	      ti->setFont (al->getFont ());
 	      ti->setColour (al->getColour ());
@@ -892,14 +892,15 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
   event->accept ();
 }
 
-void QaplChartView::chartLabel (QPoint screenPoint,
-				PlotLabel *activeLabel, bool editMode)
+void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
 {
   QDialog dialog (this, Qt::Dialog);
   dialog.setModal (false);
   dialog.setWindowTitle ("Chart labels");
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
+
+  PlotLabel *activeLabel = pc->pw->getActiveLabel ();
 
   QPointF worldCooords;
 
@@ -1157,8 +1158,8 @@ void QaplChartView::mousePressEvent(QMouseEvent *event)
 {
   Qt::MouseButton button = event->button();
   if (button == Qt::RightButton) {	// pop up label stuff
-    PlotLabel *activeLabel = pc->pw->getActiveLabel ();
-    chartLabel (currentPoint, activeLabel, false);
+    pc->pw->newActiveLabel ();
+    chartLabel (currentPoint, false);
     event->accept ();
   }
   else {
