@@ -1003,7 +1003,10 @@ void Plot2DWindow::editLabels ()
 	       drawCurves ();
 	     }
 	     else if (column == LABELS_COLUMN_EDIT) {
-#if 0
+#if 1
+	       PlotLabel *copy = new PlotLabel (*getPlotLabels ().at (row));
+	       setActiveLabel (copy);
+#else
 	       PlotLabel *targetLabel = getPlotLabels ().at (row);
 	       PlotLabel *activeLabel = getActiveLabel ();
 	       activeLabel = new PlotLabel (*targetLabel);

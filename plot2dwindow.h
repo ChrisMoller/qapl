@@ -127,11 +127,8 @@ public:
   }
 #endif
   PlotLabel *getActiveLabel () { return plot2DData->activeLabel; }
+  void setActiveLabel (PlotLabel *pl) { plot2DData->activeLabel = pl; }
   void newActiveLabel () { plot2DData->activeLabel = new PlotLabel (); }
-  void deleteActiveLabel () {
-    delete plot2DData->activeLabel;
-    plot2DData->activeLabel = nullptr;
-  }
 
   void showPlot2dData (Plot2dData *data);
   void drawCurves ();
