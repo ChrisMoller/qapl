@@ -37,6 +37,7 @@ private:
   int     horizontalAlignment;
   bool    worldCoordinates;
   QPointF position;
+  QPoint  screenPosition;
 };
   
 

@@ -901,8 +901,13 @@ void QaplChartView::chartLabel (QPoint screenPoint,
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
 
-  QPointF worldCooords = coordinateTransform (screenPoint);
+  QPointF worldCooords;
+
   bool isWorld = activeLabel->getWorldCoordinates ();
+  if (editMode)
+    worldCooords = QPointF (screenPoint);
+  else	
+    worldCooords = coordinateTransform (screenPoint);
 
   int row = 0;
   int col = 0;
@@ -1079,6 +1084,7 @@ void QaplChartView::chartLabel (QPoint screenPoint,
 
   col++;
   QCheckBox *worldButton = new QCheckBox (tr ("World coordinates"));
+  worldButton->setEnabled (!editMode);
   if (isWorld) {
     worldButton->setCheckState (Qt::Checked);
     activeLabel->setWorldCoordinates (true);
@@ -1123,11 +1129,12 @@ void QaplChartView::chartLabel (QPoint screenPoint,
 	   });
 
   QPushButton *saveButton = new QPushButton (QObject::tr ("Save"));
+  saveButton->setEnabled (!editMode);
   saveButton->setAutoDefault (true);
   saveButton->setDefault (true);
   layout->addWidget (saveButton, row, colMax-2);
-  QObject::connect (saveButton, &QPushButton::clicked,
-                    &dialog, &QDialog::accept);
+    QObject::connect (saveButton, &QPushButton::clicked,
+		      &dialog, &QDialog::accept);
 
   QPushButton *closeButton = new QPushButton (QObject::tr ("Cancel"));
   layout->addWidget (closeButton, row, colMax-1);

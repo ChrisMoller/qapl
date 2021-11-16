@@ -917,6 +917,64 @@ enum {
   LABELS_COLUMN_LAST
 };
 
+void Plot2DWindow::fillLabelsTable ( QTableWidget *labelsTable)
+{
+  for (int i = 0; i < getPlotLabelsSize (); i++) {
+    PlotLabel *al = getPlotLabels ().at (i);
+    
+    QTableWidgetItem *vhdrItem =
+      new QTableWidgetItem (QString::number (i));
+    labelsTable->setVerticalHeaderItem (i, vhdrItem);
+
+    QTableWidgetItem *labelItem =
+      new QTableWidgetItem (al->getLabel ());
+    Qt::ItemFlags labelFlags = labelItem->flags ();
+    labelFlags &= ~Qt::ItemIsEditable;
+    labelItem->setFlags (labelFlags);
+    labelsTable->setItem (i, LABELS_COLUMN_LABEL, labelItem);
+
+    QPointF pos = al->getPosition ();
+    QString ps = QString ("%1 %2").arg (pos.x ()).arg (pos.y ());
+    QTableWidgetItem *positionItem =
+      new QTableWidgetItem (ps);
+    Qt::ItemFlags positionFlags = positionItem->flags ();
+    positionFlags &= ~Qt::ItemIsEditable;
+    positionItem->setFlags (positionFlags);
+    labelsTable->setItem (i, LABELS_COLUMN_POSITION, positionItem);
+
+    QTableWidgetItem *editItem =
+      new QTableWidgetItem ("Edit");
+    QBrush editBrush ("cyan");
+    editItem->setBackground (editBrush);
+    Qt::ItemFlags editFlags = editItem->flags ();
+    editFlags &= ~Qt::ItemIsEditable;
+    editItem->setFlags (editFlags);
+    labelsTable->setItem (i, LABELS_COLUMN_EDIT, editItem);
+
+    QTableWidgetItem *deleteItem =
+      new QTableWidgetItem ("Delete");
+    QBrush deleteBrush ("red");
+    deleteItem->setBackground (deleteBrush);
+    Qt::ItemFlags deleteFlags = deleteItem->flags ();
+    deleteFlags &= ~Qt::ItemIsEditable;
+    deleteItem->setFlags (deleteFlags);
+    labelsTable->setItem (i, LABELS_COLUMN_DELETE, deleteItem);
+  }
+}
+
+void Plot2DWindow:: deleteLabelEntry (int row)
+{
+  QMessageBox msgBox;
+  msgBox.setText(tr ("Are you sure?"));
+  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+  msgBox.setDefaultButton(QMessageBox::Cancel);
+  int ret = msgBox.exec();
+  if (ret == QMessageBox::Yes) {
+    if (row >= 0 && row < getPlotLabelsSize ())
+      plot2DData->plotLabels.removeAt (row);
+  }
+}
+
 void Plot2DWindow::editLabels ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -931,6 +989,26 @@ void Plot2DWindow::editLabels ()
   QTableWidget *labelsTable =
     new QTableWidget (getPlotLabelsSize (),
 		      LABELS_COLUMN_LAST, this);
+
+  connect (labelsTable,
+	   QOverload<int, int>::of(&QTableWidget::cellDoubleClicked),
+	   [=](int row, int column)
+	   {
+	     if (column == LABELS_COLUMN_DELETE) {
+	       deleteStackEntry (row);
+	       int rc = labelsTable->rowCount ();
+	       labelsTable->setRowCount (0);
+	       labelsTable->setRowCount (rc - 1);
+	       fillLabelsTable (labelsTable);
+	       drawCurves ();
+	     }
+	     else if (column == LABELS_COLUMN_EDIT) {
+	       PlotLabel *al = getPlotLabels ().at (row);
+	       chart2DWindow->getChartView ()->chartLabel (QPoint (0,0), al,
+							   true);
+	       drawCurves ();
+	     }
+	   });
   
   QStringList headers = {
     "Label",
@@ -944,35 +1022,7 @@ void Plot2DWindow::editLabels ()
   
   labelsTable->setHorizontalHeaderLabels (headers);
 
-  for (int i = 0; i < getPlotLabelsSize (); i++) {
-    PlotLabel *al = getPlotLabels ().at (i);
-
-    QTableWidgetItem *vhdrItem =
-      new QTableWidgetItem (QString::number (i));
-    labelsTable->setVerticalHeaderItem (i, vhdrItem);
-
-    QTableWidgetItem *labelItem =
-      new QTableWidgetItem (al->getLabel ());
-    labelsTable->setItem (i, LABELS_COLUMN_LABEL, labelItem);
-
-    QPointF pos = al->getPosition ();
-    QString ps = QString ("%1 %2").arg (pos.x ()).arg (pos.y ());
-    QTableWidgetItem *positionItem =
-      new QTableWidgetItem (ps);
-    labelsTable->setItem (i, LABELS_COLUMN_POSITION, positionItem);
-
-    QTableWidgetItem *editItem =
-      new QTableWidgetItem ("Edit");
-    QBrush editBrush ("cyan");
-    editItem->setBackground (editBrush);
-    labelsTable->setItem (i, LABELS_COLUMN_EDIT, editItem);
-
-    QTableWidgetItem *deleteItem =
-      new QTableWidgetItem ("Delete");
-    QBrush deleteBrush ("red");
-    deleteItem->setBackground (deleteBrush);
-    labelsTable->setItem (i, LABELS_COLUMN_DELETE, deleteItem);
-  }
+  fillLabelsTable (labelsTable);
 
   layout->addWidget (labelsTable, row, col++, 1, 3);
   //chart2DWindow->getChartView ()->chartLabel (QPoint (0,0), nullptr, true);
@@ -1283,7 +1333,6 @@ void Plot2DWindow::importChart ()
   if (drc == QDialog::Accepted) {
     QString cf = dialog.selectedFiles().first();
     readXML (cf, mw, false);
-    drawCurves ();
   }
 }
 

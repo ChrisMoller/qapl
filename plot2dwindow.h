@@ -173,8 +173,10 @@ private:
   QString getAspectString (int idx);
   QString getModeString (int idx);
   void deleteStackEntry (int row);
+  void deleteLabelEntry (int row);
   void deleteParameterEntry (int row);
   void fillTable (QTableWidget *curvesTable);
+  void fillLabelsTable (QTableWidget *labelsTable);
   void fillParametersTable (QTableWidget *parametersTable);
   void setFonts ();
   void exportChart ();
