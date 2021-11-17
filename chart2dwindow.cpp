@@ -249,6 +249,26 @@ are of different lengths: %1 %2").arg (seriesCount).arg (idxVector.size ());
   }
 }
 
+void Chart2DWindow::doSubstitutions (QString &aplXExpr, QString &aplYExpr)
+{
+  aplXExpr.replace (QString ("%1"), QString (IDXVAR));
+  aplYExpr.replace (QString ("%1"), QString (IDXVAR));
+    
+  for (int i = 0; i < pw->getPlotParameters ().size (); i++) {
+    double  real  = pw->getPlotParameters ().at (i)->real ();
+    double  imag  = pw->getPlotParameters ().at (i)->imag ();
+    QString vname = pw->getPlotParameters ().at (i)->vname ();
+    if (vname.isEmpty ()) {
+      vname = QString ("%1%2").arg (PARMVAR).arg (i);
+      QString tgt = QString ("$%1").arg (i);
+      aplXExpr.replace (tgt, QString (vname));
+      aplYExpr.replace (tgt, QString (vname));
+    }
+    QString cmd = QString ("%1←%2j%3").arg (vname).arg (real).arg (imag);
+    mw->processLine (false, cmd);
+  }
+}
+
 void Chart2DWindow::drawCurves ()
 {
   series = nullptr;
@@ -332,25 +352,10 @@ void Chart2DWindow::drawCurves ()
     if (idxComplex)		// fixme
       mw->printError (tr ("Index contains imaginary components.  \
 Using only the real components in the axis."));
-    
+
     QString aplXExpr = pw->getAplXExpression ();
-    aplXExpr.replace (QString ("%1"), QString (IDXVAR));
     QString aplYExpr = pw->getAplYExpression ();
-    aplYExpr.replace (QString ("%1"), QString (IDXVAR));
-    
-    for (int i = 0; i < pw->getPlotParameters ().size (); i++) {
-      double  real  = pw->getPlotParameters ().at (i)->real ();
-      double  imag  = pw->getPlotParameters ().at (i)->imag ();
-      QString vname = pw->getPlotParameters ().at (i)->vname ();
-      if (vname.isEmpty ()) {
-	vname = QString ("%1%2").arg (PARMVAR).arg (i);
-	QString tgt = QString ("$%1").arg (i);
-	aplXExpr.replace (tgt, QString (vname));
-	aplYExpr.replace (tgt, QString (vname));
-      }
-      QString cmd = QString ("%1←%2j%3").arg (vname).arg (real).arg (imag);
-      mw->processLine (false, cmd);
-    }
+    doSubstitutions (aplXExpr, aplYExpr);
     
     aspect_e aspect = pw->getAspect ();
     QString label = pw->getCurveTitle ();
@@ -366,8 +371,12 @@ Using only the real components in the axis."));
 	       idxVector, markerSize);
     for (int i = 0; i < pw->getPlotCurves ().size (); i++) {
       pen = *(pw->getPlotCurves ().at (i)->pen ());
-      drawCurve (pw->getPlotCurves ().at (i)->Xexpression (),
-		 pw->getPlotCurves ().at (i)->Yexpression (),
+      QString aplXExpr = pw->getPlotCurves ().at (i)->Xexpression ();
+      QString aplYExpr = pw->getPlotCurves ().at (i)->Yexpression ();
+      doSubstitutions (aplXExpr, aplYExpr);
+      
+      drawCurve (aplXExpr,
+		 aplYExpr,
 		 pw->getPlotCurves ().at (i)->aspect (),
 		 pw->getPlotCurves ().at (i)->title (),
 		 pen,

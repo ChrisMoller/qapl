@@ -58,6 +58,7 @@ class Chart2DWindow : public QMainWindow
 public:
   Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin);
   ~Chart2DWindow ();
+  void doSubstitutions (QString &aplXExpr, QString &aplYExpr);
   void drawCurves ();
   void drawCurve (QString aplXExpr, QString aplYExpr,aspect_e aspect,
 		  QString label, QPen pen, series_mode_e mode,

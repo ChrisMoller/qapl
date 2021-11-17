@@ -440,6 +440,8 @@ Unicode characters may be entered in any of the standard C forms, 0x???? for
 hexadecimal, 0????  for octal, or standard decimal.  For Greek Character
 insertion, the shift keys do what you expect.
 
+<h3>Chart Labels</h1>
+
 <h1>Installation</h1>
 
 Step Zero, if you don't have Qt installed, is to install it.  I'm running
