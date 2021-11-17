@@ -34,6 +34,8 @@ public:
   void    setPositionX (double v) { position.setX (v); }
   void    setPositionY (double v) { position.setY (v); }
   QPointF getPosition () { return position; }
+  void    setEnable (bool v) { enable = v; }
+  bool    getEnable () { return enable; }
 
 private:
   QString label;
@@ -45,6 +47,7 @@ private:
   bool    worldCoordinates;
   QPointF position;
   QPoint  screenPosition;
+  bool    enable;
 };
   
 

@@ -511,14 +511,16 @@ Using only the real components in the axis."));
 	    QList<PlotLabel *> pq = pw->getPlotLabels ();
 	    for (int j = 0; j < pq.size ();  j++) {
 	      PlotLabel  *al = pw->getPlotLabels ().at (j);
-	      TextItem *ti = new TextItem (chart, seriesList[i]);
-	      ti->setFont (al->getFont ());
-	      ti->setColour (al->getColour ());
-	      ti->setAngle (al->getAngle ());
-	      ti->setAlignment (al->getHorizontalAlignment (),
-				al->getVerticalAlignment ());
-	      ti->setText (al->getLabel (), al->getPosition (),
-			   al->getWorldCoordinates ());
+	      if (al->getEnable ()) {
+		  TextItem *ti = new TextItem (chart, seriesList[i]);
+		  ti->setFont (al->getFont ());
+		  ti->setColour (al->getColour ());
+		  ti->setAngle (al->getAngle ());
+		  ti->setAlignment (al->getHorizontalAlignment (),
+				    al->getVerticalAlignment ());
+		  ti->setText (al->getLabel (), al->getPosition (),
+			       al->getWorldCoordinates ());
+		}
 	    }
 	  }
 	}
@@ -892,8 +894,9 @@ void QaplChartView::wheelEvent(QWheelEvent *event)
   event->accept ();
 }
 
-void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
+bool QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
 {
+  bool rc = false;
   QDialog dialog (this, Qt::Dialog);
   dialog.setModal (false);
   dialog.setWindowTitle ("Chart labels");
@@ -902,13 +905,16 @@ void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
 
   PlotLabel *activeLabel = pc->pw->getActiveLabel ();
 
-  QPointF worldCooords;
+  QPointF worldCoords;
 
   bool isWorld = activeLabel->getWorldCoordinates ();
-  if (editMode)
-    worldCooords = QPointF (screenPoint);
+  if (editMode) {
+    worldCoords = activeLabel->getPosition ();
+    screenPoint = QPoint ((int)(worldCoords.x ()),
+			  (int)(worldCoords.y ()));
+  }
   else	
-    worldCooords = coordinateTransform (screenPoint);
+    worldCoords = coordinateTransform (screenPoint);
 
   int row = 0;
   int col = 0;
@@ -965,8 +971,8 @@ void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
 
   
   if (isWorld) {
-    positionXBox->setValue (worldCooords.x ());
-    positionYBox->setValue (worldCooords.y ());
+    positionXBox->setValue (worldCoords.x ());
+    positionYBox->setValue (worldCoords.y ());
   }
   else {
     positionXBox->setValue (QPointF (screenPoint).x ());
@@ -1089,9 +1095,9 @@ void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
   if (isWorld) {
     worldButton->setCheckState (Qt::Checked);
     activeLabel->setWorldCoordinates (true);
-    activeLabel->setPosition (worldCooords);
-    positionXBox->setValue (worldCooords.x ());
-    positionYBox->setValue (worldCooords.y ());
+    activeLabel->setPosition (worldCoords);
+    positionXBox->setValue (worldCoords.x ());
+    positionYBox->setValue (worldCoords.y ());
   }
   else {
     worldButton->setCheckState (Qt::Unchecked);
@@ -1103,10 +1109,10 @@ void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
 	   [=](int index)
 	   {
 	     if (index == Qt::Checked) {
-	       activeLabel->setPosition (worldCooords);
+	       activeLabel->setPosition (worldCoords);
 	       activeLabel->setWorldCoordinates (true);
-	       positionXBox->setValue (worldCooords.x ());
-	       positionYBox->setValue (worldCooords.y ());
+	       positionXBox->setValue (worldCoords.x ());
+	       positionYBox->setValue (worldCoords.y ());
 	     }
 	     else {
 	       activeLabel->setPosition (QPointF (screenPoint));
@@ -1130,7 +1136,6 @@ void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
 	   });
 
   QPushButton *saveButton = new QPushButton (QObject::tr ("Save"));
-  saveButton->setEnabled (!editMode);
   saveButton->setAutoDefault (true);
   saveButton->setDefault (true);
   layout->addWidget (saveButton, row, colMax-2);
@@ -1145,14 +1150,19 @@ void QaplChartView::chartLabel (QPoint screenPoint, bool editMode)
 
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
-    if (!editMode && !activeLabel->getLabel ().isEmpty ()) {
-      PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
-      pc->pw->appendPlotLabels (copy);
-      //      pc->pw->deleteActiveLabel ();
+    if (editMode)
+      rc = true;
+    else {
+      if (!activeLabel->getLabel ().isEmpty ()) {
+	PlotLabel *copy = new PlotLabel (*(pc->pw->getActiveLabel ()));
+	pc->pw->appendPlotLabels (copy);
+	//      pc->pw->deleteActiveLabel ();
+      }
     }
   }
-  activeLabel->clearLabel ();
+  // activeLabel->clearLabel ();
   pc->pw->drawCurves ();
+  return rc;
 }
 
 void QaplChartView::mousePressEvent(QMouseEvent *event)

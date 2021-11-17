@@ -112,6 +112,9 @@ public:
   QList<PlotLabel *> getPlotLabels () { return plot2DData->plotLabels; }
   int getPlotLabelsSize () { return plot2DData->plotLabels.size (); }
   void appendPlotLabels (PlotLabel *l) { plot2DData->plotLabels.append (l); }
+  void replacePlotLabels (int idx, PlotLabel *l) {
+    plot2DData->plotLabels.replace (idx, l);
+  }
 #if 1
   aspect_e  getAspect () { return plot2DData->activeCurve.aspect (); }
   series_mode_e  getMode () { return plot2DData->activeCurve.mode (); }

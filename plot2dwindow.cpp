@@ -1003,16 +1003,20 @@ void Plot2DWindow::editLabels ()
 	       drawCurves ();
 	     }
 	     else if (column == LABELS_COLUMN_EDIT) {
-#if 1
-	       PlotLabel *copy = new PlotLabel (*getPlotLabels ().at (row));
-	       setActiveLabel (copy);
-#else
-	       PlotLabel *targetLabel = getPlotLabels ().at (row);
-	       PlotLabel *activeLabel = getActiveLabel ();
-	       activeLabel = new PlotLabel (*targetLabel);
+	       PlotLabel *original = getPlotLabels ().at (row);
+	       PlotLabel *copy = new PlotLabel (*original);
+	       copy->setEnable (true);
 	       
-	       chart2DWindow->getChartView ()->chartLabel (QPoint (0,0), true);
-#endif
+	       setActiveLabel (copy);
+	       original->setEnable (false);
+
+	       bool rc =
+		 chart2DWindow->getChartView ()->chartLabel (QPoint (0,0),
+							     true);	
+	       if (rc) 
+		 replacePlotLabels (row, copy);
+	       else
+		 original->setEnable (true);
 	       drawCurves ();
 	     }
 	   });
