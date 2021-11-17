@@ -38,4 +38,5 @@
         <label>Magnitude</label>
         <pen colour="#ff5555ff" style="1" width="2"/>
     </stack>
+    <label index="0" angle="0" halign="1" valign="256" world="1" xpos="3.7" ypos="2.80961" font="Serif,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1" colour="#ff008000">Four projections of an Euler helix.</label>
 </qapl>
