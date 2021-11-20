@@ -68,6 +68,7 @@ public:
   //  void exportImage ();
   void exportAsImage ();
   QaplChartView *getChartView () { return chartView; }
+  static QFont scaleFont (double fontScale, QFont &font);
   
   Plot2DWindow *pw;
   QLabel *readout;
@@ -91,6 +92,9 @@ private:
   QString currentImageExportFile;
   bool showPreview (QPixmap plotPixmap);
   double fontScale;
+  double heightScale;
+  double widthScale;
+  double avgScale;
   double currentWidth;
   double currentHeight;
 };

@@ -74,10 +74,10 @@ void Chart2DWindow::drawCurve (QString aplXExpr, QString aplYExpr,
       break;
     }
     
-    if (fontScale != 1.0) {
+    if (avgScale != 1.0) {
       //      fprintf (stderr, "setting pw %g\n",
       //	       10.0 * fontScale * (double)pen.width ());
-      pen.setWidth ((int)(10.0 * fontScale * (double)pen.width ()));
+      pen.setWidth ((int)(10.0 * avgScale * (double)pen.width ()));
     }
   
     QString cmd = QString ("%1←%2").arg (PLOTVARY, aplYExpr);
@@ -269,6 +269,16 @@ void Chart2DWindow::doSubstitutions (QString &aplXExpr, QString &aplYExpr)
   }
 }
 
+QFont Chart2DWindow::scaleFont (double fontScale, QFont &font)
+{
+  QString family = font.family ();
+  int pointSize  =
+    (int) (2.0 * fontScale * font.pointSizeF ());
+  int weight     = font.weight ();
+  bool italic    = font.italic ();
+  return QFont(family, pointSize, weight, italic);
+}
+
 void Chart2DWindow::drawCurves ()
 {
   series = nullptr;
@@ -415,13 +425,8 @@ Using only the real components in the axis."));
       
 #if 1
 	if (fontScale != 1.0) {
-	  QString family = pw->getAxisTitleFont ().family ();
-	  int pointSize  =
-	    (int) (2.0 * fontScale *
-		   pw->getAxisTitleFont ().pointSizeF ());
-	  int weight     = pw->getAxisTitleFont ().weight ();
-	  bool italic    = pw->getAxisTitleFont ().italic ();
-	  QFont tfont = QFont(family, pointSize, weight, italic);
+	  QFont ufont =  pw->getAxisTitleFont ();
+	  QFont tfont = scaleFont (fontScale, ufont);
 	  axisX->setTitleFont (tfont);
 	  axisY->setTitleFont (tfont);
 	}
@@ -469,7 +474,7 @@ Using only the real components in the axis."));
 
       {
 	QPen axisPen(QColor(pw->getAxisColour ()));
-	axisPen.setWidth(2 * fontScale);
+	axisPen.setWidth(2 * avgScale);
 	axisX->setLinePen(axisPen);
 	axisY->setLinePen(axisPen);
       
@@ -502,13 +507,22 @@ Using only the real components in the axis."));
 	for (int i = 0; i < seriesList.size (); i++) {
 	  seriesList[i]->attachAxis(axisX);
 	  seriesList[i]->attachAxis(axisY);
-
-
 	  if (i == 0) {
 	    PlotLabel  *al = pw->getActiveLabel ();
 	    if (al && !al->getLabel ().isEmpty ()) {
 	      TextItem *ti = new TextItem (chart, seriesList[i]);
-	      ti->setFont (al->getFont ());
+#if 1
+	      ti->setFontP (fontScale, al->getFont ());
+#else
+	      if (fontScale != 1.0) {
+		QFont ufont = al->getFont ();
+		QFont tfont = scaleFont (fontScale, ufont);
+		ti->setFont (tfont);
+	      }
+	      else {
+		ti->setFont (al->getFont ());
+	      }
+#endif
 	      ti->setColour (al->getColour ());
 	      ti->setAngle (al->getAngle ());
 	      ti->setAlignment (al->getHorizontalAlignment (),
@@ -522,7 +536,18 @@ Using only the real components in the axis."));
 	      PlotLabel  *al = pw->getPlotLabels ().at (j);
 	      if (al->getEnable ()) {
 		  TextItem *ti = new TextItem (chart, seriesList[i]);
-		  ti->setFont (al->getFont ());
+#if 1
+		  ti->setFontP (fontScale, al->getFont ());
+#else
+		  if (fontScale != 1.0) {
+		    QFont ufont = al->getFont ();
+		    QFont tfont = scaleFont (fontScale, ufont);
+		    ti->setFontP (tfont);
+		  }
+		  else {
+		    ti->setFontP (al->getFont ());
+		  }
+#endif
 		  ti->setColour (al->getColour ());
 		  ti->setAngle (al->getAngle ());
 		  ti->setAlignment (al->getHorizontalAlignment (),
@@ -558,7 +583,8 @@ Using only the real components in the axis."));
 enum {
   UNITS_PIXELS,
   UNITS_CM,
-  UNITS_INCHES
+  UNITS_INCHES,
+  UNITS_PERCENT
 };
 
 static QComboBox *
@@ -568,6 +594,7 @@ unitsComboBox ()
   unitsCombo->addItem ("Pixels",	QVariant(UNITS_PIXELS));
   unitsCombo->addItem ("Centimetres",	QVariant(UNITS_CM));
   unitsCombo->addItem ("Inches",	QVariant(UNITS_INCHES));
+  unitsCombo->addItem ("Percent",	QVariant(UNITS_PERCENT));
   return unitsCombo;
 }
 
@@ -656,6 +683,24 @@ Chart2DWindow::exportAsImage ()
   QComboBox *heightUnits = unitsComboBox ();
   btnlayout->addWidget (heightUnits, row, col++);
 
+  connect (widthUnits,
+	   QOverload<int>::of(&QComboBox::activated),
+	   [=](int index){
+	     if (index == UNITS_PERCENT)
+	       widthBox->setValue (100.0);
+	     else
+	       widthBox->setValue (currentWidth);
+	   });
+
+  connect (heightUnits,
+	   QOverload<int>::of(&QComboBox::activated),
+	   [=](int index){
+	     if (index == UNITS_PERCENT)
+	       heightBox->setValue (100.0);
+	     else
+	       heightBox->setValue (currentHeight);
+	   });
+
 
   row++;
   col = 0;  
@@ -682,7 +727,7 @@ Chart2DWindow::exportAsImage ()
     QVariant widthSel = widthUnits->currentData ();
     int widthUnits = widthSel.toInt ();
     double widthDim = widthBox->value ();
-    currentWidth = widthDim;
+    //    currentWidth = widthDim;
     switch(widthUnits) {	// fixme
     case UNITS_PIXELS:
       break;
@@ -692,7 +737,13 @@ Chart2DWindow::exportAsImage ()
     case UNITS_INCHES:
       widthDim *= ppu;
       break;
+    case UNITS_PERCENT:
+      widthDim *= currentWidth / 100.0;
+      break;
     }
+
+    int cvw = chartView->width ();
+    int cvh = chartView->height ();
 
     QVariant heightSel = heightUnits->currentData ();
     int heightUnits = heightSel.toInt ();
@@ -700,25 +751,35 @@ Chart2DWindow::exportAsImage ()
     currentHeight = heightDim;
     switch(heightUnits) {	// fixme
     case UNITS_PIXELS:
+      fontScale  = heightDim / (double)cvh;
       break;
     case UNITS_CM:
       heightDim *= ppu;
+      fontScale  = heightDim / (double)cvh;
       break;
     case UNITS_INCHES:
       heightDim *= ppu;
+      fontScale  = heightDim / (double)cvh;
+      break;
+    case UNITS_PERCENT:
+      fontScale = heightDim / 100.0;
+      heightDim *= currentHeight / 100.0;
       break;
     }
     
     // https://forum.qt.io/topic/76684/qpaintdevice-cannot-destroy-paint-device-that-is-being-painted/3
-    int cvw = chartView->width ();
-    int cvh = chartView->height ();
 
+    heightScale = heightDim / (double)cvh;
+    widthScale  = widthDim / (double)cvw;
+    avgScale = (heightScale + widthScale) / 2.0;
+#if 0
 #if 1
     fontScale  = heightDim / (double)cvh;
 #else
     double diagInit   = hypot ((double)cvw, (double)cvh);
     double diagExport = hypot (widthDim, heightDim);
     fontScale  = diagExport / diagInit;
+#endif
 #endif
 
 
@@ -775,6 +836,7 @@ Chart2DWindow::exportAsImage ()
     plotPixmap.fill(Qt::white);
 
     QPainter *paint = new QPainter(&plotPixmap);
+    fprintf (stderr, "start\n");
     // see void QPainter::setBackgroundMode(Qt::BGMode mode)
     //  paint->setPen(*(new QColor(255,34,255,255)));
     //QColor colour(255,34,255,255);
@@ -782,7 +844,7 @@ Chart2DWindow::exportAsImage ()
 
     drawCurves ();
 
-    paint->end ();
+    bool rc = paint->end ();
 
     bool doit = true;
     if (Qt::Checked == previewButton->checkState ())
@@ -816,7 +878,10 @@ Chart2DWindow::exportAsImage ()
       }
     }
     
-    fontScale  = 1.0;
+    fontScale = 1.0;
+    heightScale = 1.0;
+    widthScale = 1.0;
+    avgScale = 1.0;
     chartView->setMinimumSize (cvw, cvh);
 
     if (fontChanged)
@@ -1268,6 +1333,9 @@ Chart2DWindow::Chart2DWindow (Plot2DWindow *parent, MainWindow *mainWin)
   pw = parent;
   mw = mainWin;
   fontScale = 1.0;
+  heightScale = 1.0;
+  widthScale = 1.0;
+  avgScale = 1.0;
   currentWidth = 640.0;
   currentHeight = 640.0;
 

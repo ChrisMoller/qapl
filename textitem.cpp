@@ -6,6 +6,8 @@
 #include <QPainter>
 #include <QRect>
 
+#include "chart2dwindow.h"
+
 #if 0
 TextItem::TextItem(QString text, QPoint pos, bool world, QChart *chart,
 		   QAbstractSeries *series)
@@ -35,8 +37,23 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 		     QWidget *widget) {
   Q_UNUSED(option);
   Q_UNUSED(widget);
-  
+
+  fprintf (stderr, "painting \"%s\"\n", toCString (_text));
+#if 1
   painter->setFont (_font);
+#else
+  fprintf (stderr, "fontScale = %g\n", _fontScale);
+  if (_fontScale != 1.0) {
+    QFont ufont = _font;
+    QFont tfont = Chart2DWindow::scaleFont (_fontScale, ufont);
+    fprintf (stderr, "tfont \"%s\"\n", toCString (tfont.toString ()));
+    painter->setFont (tfont);
+  }
+  else {
+    painter->setFont (_font);
+    fprintf (stderr, "_font \"%s\"\n", toCString (_font.toString ()));
+  }
+#endif
       
   painter->setPen (_colour);
 
@@ -112,6 +129,9 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     anchor = _anchor;
     
   }
+
+
+  fprintf (stderr, "drawing\n");
   painter->drawText(anchor, _text);
 
   painter->restore();
@@ -124,6 +144,7 @@ void TextItem::setText(const QString &text, QPointF pos, bool world)
   _world = world;
   QFontMetrics metrics(_font);
   
+  fprintf (stderr, "setting\n");
   _textRect = metrics.boundingRect (_text);
   prepareGeometryChange();
 }

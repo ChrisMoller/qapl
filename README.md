@@ -442,6 +442,17 @@ insertion, the shift keys do what you expect.
 
 <h3>Chart Labels</h1>
 
+Right-clicking on the plot window will bring up a panel that allows the entry
+of labels on the plot.  Everything does the obvious except perhaps the
+"World coordinates" checkbox.  The default is having it checked which anchors
+the label to the plot in world coordinates&mdash;if the size of the chart is
+changed, the label will stay anchored at the plot XY location.  If world
+coordinates are disabled, the label is anchored to a fixed pixel offset from
+the upper left corner of the plot window.
+
+Most aspects of labels entered by that mechanism may be edited under the
+Settings&rArr;Labels menu of the Plot Controls panel
+
 <h1>Installation</h1>
 
 Step Zero, if you don't have Qt installed, is to install it.  I'm running

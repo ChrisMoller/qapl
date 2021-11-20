@@ -10,6 +10,7 @@ class QAbstractSeries;
 
 //QT_CHARTS_USE_NAMESPACE
 
+#include "chart2dwindow.h"
 
 class TextItem : public QGraphicsItem {
 public:
@@ -25,8 +26,24 @@ public:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	     QWidget *widget) override;
 
-  void setText(const QString &text, QPointF pos, bool world);
-  void setFont(const QFont &font) { _font = font; }
+  void setText (const QString &text, QPointF pos, bool world);
+  void setFontP (double fontScale, const QFont &font) {
+#if 1
+    fprintf (stderr, "fontScale = %g\n", fontScale);
+    if (fontScale != 1.0) {
+      QFont ufont = _font;
+      QFont tfont = Chart2DWindow::scaleFont (fontScale, ufont);
+      _font = tfont;
+    }
+    else {
+      _font = font;
+    }
+    fprintf (stderr, "_font \"%s\"\n", toCString (_font.toString ()));
+#else
+    _fontScale = fontScale;
+    _font = font;
+#endif
+  }
   void setColour(const QColor &colour) { _colour = colour; }
   void setAngle(const double angle) { _angle = angle; }
   void setAlignment(const int halign, int valign) {
@@ -44,4 +61,5 @@ private:
   double _angle;
   int _halign;
   int _valign;
+  //  double _fontScale;
 };
