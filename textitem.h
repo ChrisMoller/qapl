@@ -29,7 +29,6 @@ public:
   void setText (const QString &text, QPointF pos, bool world);
   void setFontP (double fontScale, const QFont &font) {
 #if 1
-    fprintf (stderr, "fontScale = %g\n", fontScale);
     if (fontScale != 1.0) {
       QFont ufont = _font;
       QFont tfont = Chart2DWindow::scaleFont (fontScale, ufont);
@@ -38,7 +37,6 @@ public:
     else {
       _font = font;
     }
-    fprintf (stderr, "_font \"%s\"\n", toCString (_font.toString ()));
 #else
     _fontScale = fontScale;
     _font = font;

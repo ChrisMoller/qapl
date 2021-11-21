@@ -38,7 +38,6 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
-  fprintf (stderr, "painting \"%s\"\n", toCString (_text));
 #if 1
   painter->setFont (_font);
 #else
@@ -130,8 +129,6 @@ void TextItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     
   }
 
-
-  fprintf (stderr, "drawing\n");
   painter->drawText(anchor, _text);
 
   painter->restore();
@@ -144,7 +141,6 @@ void TextItem::setText(const QString &text, QPointF pos, bool world)
   _world = world;
   QFontMetrics metrics(_font);
   
-  fprintf (stderr, "setting\n");
   _textRect = metrics.boundingRect (_text);
   prepareGeometryChange();
 }

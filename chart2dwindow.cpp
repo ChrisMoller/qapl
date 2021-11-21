@@ -836,7 +836,6 @@ Chart2DWindow::exportAsImage ()
     plotPixmap.fill(Qt::white);
 
     QPainter *paint = new QPainter(&plotPixmap);
-    fprintf (stderr, "start\n");
     // see void QPainter::setBackgroundMode(Qt::BGMode mode)
     //  paint->setPen(*(new QColor(255,34,255,255)));
     //QColor colour(255,34,255,255);
@@ -844,7 +843,7 @@ Chart2DWindow::exportAsImage ()
 
     drawCurves ();
 
-    bool rc = paint->end ();
+    paint->end ();
 
     bool doit = true;
     if (Qt::Checked == previewButton->checkState ())
